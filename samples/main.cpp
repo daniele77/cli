@@ -101,16 +101,22 @@ int main()
     // setup cli
 
     auto rootMenu = make_shared< Menu >( "cli" );
-    rootMenu -> Add( make_shared< FuncCmd >( "hello", [](auto& out)
-            { out << "Hello, world\n"; }, "Print hello world" ) );
-    rootMenu -> Add( make_shared< FuncCmd1< int > >( "answer", [](int x, auto& out)
-            { out << "The answer is: " << x << "\n"; }, "Print the answer to Life, the Universe and Everything " ) );
+    rootMenu -> Add(
+            "hello",
+            [](std::ostream& out){ out << "Hello, world\n"; },
+            "Print hello world" );
+    rootMenu -> Add(
+            "answer",
+            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
+            "Print the answer to Life, the Universe and Everything " );
 
     auto subMenu = make_shared< Menu >( "sub" );
-    subMenu -> Add( "hello",
-                    [](std::ostream& out){ out << "Hello, submenu world\n"; },
-                    "Print hello world in the submenu" );
+    subMenu -> Add(
+            "hello",
+            [](std::ostream& out){ out << "Hello, submenu world\n"; },
+            "Print hello world in the submenu" );
     rootMenu -> Add( subMenu );
+
 
     Cli cli( rootMenu );
     // global exit action
