@@ -67,7 +67,7 @@ namespace cli
     {
     public:
         Cli(
-            const cxx0x::shared_ptr< Menu >& rootMenu,
+            cxx0x::unique_ptr< Menu >&& rootMenu,
             cxx0x::function< void(std::ostream&) > exitAction = cxx0x::function< void(std::ostream&) >()
         );
         void ExitAction( cxx0x::function< void(std::ostream&)> action );
@@ -77,8 +77,8 @@ namespace cli
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
     private:
         void Help( std::ostream& out );
-        cxx0x::shared_ptr< Menu > rootMenu; // just to keep it alive
-        cxx0x::shared_ptr< Menu > global;
+        cxx0x::unique_ptr< Menu > rootMenu; // just to keep it alive
+        cxx0x::unique_ptr< Menu > global;
         cxx0x::function< void(std::ostream&) > exitAction;
     };
 
@@ -130,9 +130,16 @@ namespace cli
 
         void Help();
 
-        void Add( const cxx0x::shared_ptr< Command >& cmd )
+        void Add( cxx0x::unique_ptr< Command >&& cmd )
         {
-            cmds.push_back( cmd );
+            cmds.push_back( std::move(cmd) );
+        }
+
+        template < typename F >
+        void Add( const std::string& name, F f, const std::string& help = "" )
+        {
+            // dispatch to private Add methods
+            Add( name, help, f, &F::operator() );
         }
 
         void Exit()
@@ -147,33 +154,6 @@ namespace cli
         }
 
     private:
-
-        bool ScanCmds( const std::vector< std::string >& cmdLine )
-        {
-            for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
-                if ( ( *i ) -> Exec( cmdLine, *this ) ) return true;
-            return false;
-        }
-
-
-        Cli& cli;
-        Menu* current;
-        bool run;
-        std::ostream& out;
-        typedef std::vector< cxx0x::shared_ptr< Command > > Cmds;
-        Cmds cmds;
-        cxx0x::function< void(std::ostream&)> exitAction;
-    };
-
-    // ********************************************************************
-
-    class Menu : public Command
-    {
-    public:
-        Menu() : name(), parent( nullptr ), description() {}
-        Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
-            name( _name ), parent( nullptr ), description( desc )
-        {}
 
         template < typename F, typename R >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
@@ -190,21 +170,52 @@ namespace cli
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
 
+        bool ScanCmds( const std::vector< std::string >& cmdLine )
+        {
+            for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
+                if ( ( *i ) -> Exec( cmdLine, *this ) ) return true;
+            return false;
+        }
+
+
+        Cli& cli;
+        Menu* current;
+        bool run;
+        std::ostream& out;
+        using Cmds = std::vector< cxx0x::unique_ptr< Command > >;
+        Cmds cmds;
+        cxx0x::function< void(std::ostream&)> exitAction;
+    };
+
+    // ********************************************************************
+
+    class Menu : public Command
+    {
+    public:
+        Menu() : name(), parent( nullptr ), description() {}
+
+        Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
+            name( _name ), parent( nullptr ), description( desc )
+        {}
+
         template < typename F >
         void Add( const std::string& name, F f, const std::string& help = "" )
         {
+            // dispatch to private Add methods
             Add( name, help, f, &F::operator() );
         }
 
-        void Add( const cxx0x::shared_ptr< Command >& cmd )
+        void Add( cxx0x::unique_ptr< Command >&& cmd )
         {
-            cmds.push_back( cmd );
+            cmds.push_back( std::move(cmd) );
         }
-        void Add( const cxx0x::shared_ptr< Menu >& menu )
+
+        void Add( cxx0x::unique_ptr< Menu >&& menu )
         {
             menu -> parent = this;
-            cmds.push_back( menu );
+            cmds.push_back( std::move(menu) );
         }
+
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine[ 0 ] == name )
@@ -214,6 +225,7 @@ namespace cli
             }
             return false;
         }
+
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
         {
             for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
@@ -221,25 +233,45 @@ namespace cli
             if ( parent && parent -> Exec( cmdLine, session ) ) return true;
             return false;
         }
+
         std::string Prompt() const
         {
             return name;
         }
+
         void MainHelp( std::ostream& out )
         {
             for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
                 ( *i ) -> Help( out );
             if ( parent ) parent -> Help( out );
         }
+
         void Help( std::ostream& out ) override
         {
             out << " - " << name << "\n\t" << description << std::endl;
         }
+
     private:
+
+        template < typename F, typename R >
+        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
+
+        template < typename F, typename R, typename A1 >
+        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, std::ostream& out) const );
+
+        template < typename F, typename R, typename A1, typename A2 >
+        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, std::ostream& out) const );
+
+        template < typename F, typename R, typename A1, typename A2, typename A3 >
+        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, std::ostream& out) const );
+
+        template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
+        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
+
         const std::string name;
         Menu* parent;
         const std::string description;
-        typedef std::vector< cxx0x::shared_ptr< Command > > Cmds;
+        using Cmds = std::vector< cxx0x::unique_ptr< Command > >;
         Cmds cmds;
     };
 
@@ -482,13 +514,14 @@ namespace cli
 
     // ********************************************************************
 
+    // Cli implementation
 
-    inline Cli::Cli( const cxx0x::shared_ptr< Menu >& _rootMenu, cxx0x::function< void( std::ostream& )> _exitAction ) :
-        rootMenu( _rootMenu ),
-        global( new Menu() ),
+    inline Cli::Cli( cxx0x::unique_ptr< Menu >&& _rootMenu, cxx0x::function< void( std::ostream& )> _exitAction ) :
+        rootMenu( std::move(_rootMenu) ),
+        global( std::make_unique< Menu >() ),
         exitAction( _exitAction )
     {
-        global -> Add( cxx0x::make_shared< BasicCommand >(
+        global -> Add( cxx0x::make_unique< BasicCommand >(
                 "help",
                 [](CliSession& s){ s.Help(); },
                 "This help message"
@@ -511,6 +544,8 @@ namespace cli
         global -> MainHelp( out );
     }
 
+    // CliSession implementation
+
     inline bool CliSession::Feed( const std::string& cmd )
     {
         std::vector< std::string > strs;
@@ -528,7 +563,7 @@ namespace cli
         // global cmds check
         bool found = cli.ScanCmds( strs, *this );
         if ( !found ) found = ScanCmds( strs );
-        // nel caso sia stato dato il comando di uscita:
+        // if the user gave the exit command:
         if ( ! run )
         {
             cli.ExitAction( out );
@@ -556,33 +591,65 @@ namespace cli
     }
 
     template < typename F, typename R >
+    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
+    {
+        cmds.push_back( std::make_unique< FuncCmd >( name, f, help ) );
+    }
+
+    template < typename F, typename R, typename A1 >
+    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
+    {
+        cmds.push_back( std::make_unique< FuncCmd1< A1 > >( name, f, help ) );
+    }
+
+    template < typename F, typename R, typename A1, typename A2 >
+    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
+    {
+        cmds.push_back( std::make_unique< FuncCmd2< A1, A2 > >( name, f, help ) );
+    }
+
+    template < typename F, typename R, typename A1, typename A2, typename A3 >
+    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
+    {
+        cmds.push_back( std::make_unique< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
+    }
+
+    template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
+    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
+    {
+        cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
+    }
+
+    // Menu implementation
+
+    template < typename F, typename R >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
     {
-        cmds.push_back( std::make_shared< FuncCmd >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
     {
-        cmds.push_back( std::make_shared< FuncCmd1< A1 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd1< A1 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
     {
-        cmds.push_back( std::make_shared< FuncCmd2< A1, A2 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd2< A1, A2 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
     {
-        cmds.push_back( std::make_shared< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
     {
-        cmds.push_back( std::make_shared< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
     }
 
 } // namespace

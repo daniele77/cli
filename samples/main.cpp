@@ -44,7 +44,7 @@ public:
         session( _session ),
         input( ios, ::dup( STDIN_FILENO ) )
     {
-        session.Add( cxx0x::make_shared< FuncCmd >( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" ) );
+        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
         Read();
     }
     ~AsyncCli()
@@ -100,7 +100,7 @@ int main()
 
     // setup cli
 
-    auto rootMenu = make_shared< Menu >( "cli" );
+    auto rootMenu = make_unique< Menu >( "cli" );
     rootMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, world\n"; },
@@ -110,15 +110,15 @@ int main()
             [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
 
-    auto subMenu = make_shared< Menu >( "sub" );
+    auto subMenu = make_unique< Menu >( "sub" );
     subMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
-    rootMenu -> Add( subMenu );
+    rootMenu -> Add( std::move(subMenu) );
 
 
-    Cli cli( rootMenu );
+    Cli cli( std::move(rootMenu) );
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 

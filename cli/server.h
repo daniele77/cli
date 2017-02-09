@@ -126,6 +126,7 @@ public:
         Accept();
     }
     virtual ~Server() = default;
+    // returns shared_ptr instead of unique_ptr because Session needs to use enable_shared_from_this
     virtual std::shared_ptr< Session > CreateSession( boost::asio::ip::tcp::socket socket ) = 0;
 private:
     void Accept()

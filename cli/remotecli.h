@@ -44,7 +44,7 @@ public:
         cliSession( _cli, this -> OutStream() )
     {
         cliSession.ExitAction( exitAction );
-        cliSession.Add( cxx0x::make_shared< FuncCmd >( "exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session" ) );
+        cliSession.Add( cxx0x::make_unique< FuncCmd >( "exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session" ) );
     }
 
 protected:
