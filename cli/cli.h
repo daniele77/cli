@@ -33,9 +33,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
-#include "cli/cxx0x.h"
 
 namespace cli
 {
@@ -67,19 +67,19 @@ namespace cli
     {
     public:
         Cli(
-            cxx0x::unique_ptr< Menu >&& rootMenu,
-            cxx0x::function< void(std::ostream&) > exitAction = cxx0x::function< void(std::ostream&) >()
+            std::unique_ptr< Menu >&& rootMenu,
+            std::function< void(std::ostream&) > exitAction = std::function< void(std::ostream&) >()
         );
-        void ExitAction( cxx0x::function< void(std::ostream&)> action );
+        void ExitAction( std::function< void(std::ostream&)> action );
         Menu* RootMenu() { return rootMenu.get(); }
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
         void MainHelp( std::ostream& out );
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
     private:
         void Help( std::ostream& out );
-        cxx0x::unique_ptr< Menu > rootMenu; // just to keep it alive
-        cxx0x::unique_ptr< Menu > global;
-        cxx0x::function< void(std::ostream&) > exitAction;
+        std::unique_ptr< Menu > rootMenu; // just to keep it alive
+        std::unique_ptr< Menu > global;
+        std::function< void(std::ostream&) > exitAction;
     };
 
     // ********************************************************************
@@ -130,7 +130,7 @@ namespace cli
 
         void Help();
 
-        void Add( cxx0x::unique_ptr< Command >&& cmd )
+        void Add( std::unique_ptr< Command >&& cmd )
         {
             cmds.push_back( std::move(cmd) );
         }
@@ -148,7 +148,7 @@ namespace cli
             if ( exitAction ) exitAction( out );
         }
 
-        void ExitAction( cxx0x::function< void(std::ostream&)> action )
+        void ExitAction( std::function< void(std::ostream&)> action )
         {
             exitAction = action;
         }
@@ -182,9 +182,9 @@ namespace cli
         Menu* current;
         bool run;
         std::ostream& out;
-        using Cmds = std::vector< cxx0x::unique_ptr< Command > >;
+        using Cmds = std::vector< std::unique_ptr< Command > >;
         Cmds cmds;
-        cxx0x::function< void(std::ostream&)> exitAction;
+        std::function< void(std::ostream&)> exitAction;
     };
 
     // ********************************************************************
@@ -205,12 +205,12 @@ namespace cli
             Add( name, help, f, &F::operator() );
         }
 
-        void Add( cxx0x::unique_ptr< Command >&& cmd )
+        void Add( std::unique_ptr< Command >&& cmd )
         {
             cmds.push_back( std::move(cmd) );
         }
 
-        void Add( cxx0x::unique_ptr< Menu >&& menu )
+        void Add( std::unique_ptr< Menu >&& menu )
         {
             menu -> parent = this;
             cmds.push_back( std::move(menu) );
@@ -271,7 +271,7 @@ namespace cli
         const std::string name;
         Menu* parent;
         const std::string description;
-        using Cmds = std::vector< cxx0x::unique_ptr< Command > >;
+        using Cmds = std::vector< std::unique_ptr< Command > >;
         Cmds cmds;
     };
 
@@ -280,7 +280,7 @@ namespace cli
     class BasicCommand : public Command
     {
     public:
-        BasicCommand( const std::string& _name, cxx0x::function< void(CliSession&) > f, const std::string& _help = "" ) :
+        BasicCommand( const std::string& _name, std::function< void(CliSession&) > f, const std::string& _help = "" ) :
             name( _name ), func( f ), help( _help ) {}
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
@@ -298,7 +298,7 @@ namespace cli
         }
     private:
         const std::string name;
-        cxx0x::function< void(CliSession&) > func;
+        std::function< void(CliSession&) > func;
         const std::string help;
     };
 
@@ -307,7 +307,7 @@ namespace cli
     public:
         FuncCmd(
             const std::string& _name,
-            cxx0x::function< void( std::ostream& )> _function,
+            std::function< void( std::ostream& )> _function,
             const std::string& desc = ""
         ) : name( _name ), function( _function ), description( desc )
         {
@@ -328,7 +328,7 @@ namespace cli
         }
     private:
         const std::string name;
-        const cxx0x::function< void( std::ostream& )> function;
+        const std::function< void( std::ostream& )> function;
         const std::string description;
     };
 
@@ -338,7 +338,7 @@ namespace cli
     public:
         FuncCmd1(
             const std::string& _name,
-            cxx0x::function< void( T, std::ostream& ) > _function,
+            std::function< void( T, std::ostream& ) > _function,
             const std::string& desc = ""
             ) : name( _name ), function( _function ), description( desc )
         {
@@ -370,7 +370,7 @@ namespace cli
         }
     private:
         const std::string name;
-        const cxx0x::function< void( T, std::ostream& )> function;
+        const std::function< void( T, std::ostream& )> function;
         const std::string description;
     };
 
@@ -380,7 +380,7 @@ namespace cli
     public:
         FuncCmd2(
             const std::string& _name,
-            cxx0x::function< void( T1, T2, std::ostream& ) > _function,
+            std::function< void( T1, T2, std::ostream& ) > _function,
             const std::string& desc = "2 parameter command"
             ) : name( _name ), function( _function ), description( desc )
         {
@@ -414,7 +414,7 @@ namespace cli
         }
     private:
         const std::string name;
-        const cxx0x::function< void( T1, T2, std::ostream& )> function;
+        const std::function< void( T1, T2, std::ostream& )> function;
         const std::string description;
     };
 
@@ -424,7 +424,7 @@ namespace cli
     public:
         FuncCmd3(
             const std::string& _name,
-            cxx0x::function< void( T1, T2, T3, std::ostream& ) > _function,
+            std::function< void( T1, T2, T3, std::ostream& ) > _function,
             const std::string& desc = "3 parameters command"
             ) : name( _name ), function( _function ), description( desc )
         {
@@ -460,7 +460,7 @@ namespace cli
         }
     private:
         const std::string name;
-        const cxx0x::function< void( T1, T2, T3, std::ostream& )> function;
+        const std::function< void( T1, T2, T3, std::ostream& )> function;
         const std::string description;
     };
 
@@ -470,7 +470,7 @@ namespace cli
     public:
         FuncCmd4(
             const std::string& _name,
-            cxx0x::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
+            std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
             const std::string& desc = "4 parameters command"
             ) : name( _name ), function( _function ), description( desc )
         {
@@ -508,7 +508,7 @@ namespace cli
         }
     private:
         const std::string name;
-        const cxx0x::function< void( T1, T2, T3, T4, std::ostream& )> function;
+        const std::function< void( T1, T2, T3, T4, std::ostream& )> function;
         const std::string description;
     };
 
@@ -516,12 +516,12 @@ namespace cli
 
     // Cli implementation
 
-    inline Cli::Cli( cxx0x::unique_ptr< Menu >&& _rootMenu, cxx0x::function< void( std::ostream& )> _exitAction ) :
+    inline Cli::Cli( std::unique_ptr< Menu >&& _rootMenu, std::function< void( std::ostream& )> _exitAction ) :
         rootMenu( std::move(_rootMenu) ),
         global( std::make_unique< Menu >() ),
         exitAction( _exitAction )
     {
-        global -> Add( cxx0x::make_unique< BasicCommand >(
+        global -> Add( std::make_unique< BasicCommand >(
                 "help",
                 [](CliSession& s){ s.Help(); },
                 "This help message"
@@ -529,7 +529,7 @@ namespace cli
         );
     }
 
-    inline void Cli::ExitAction( cxx0x::function< void(std::ostream&)> action )
+    inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
     {
         exitAction = action;
     }
@@ -555,7 +555,7 @@ namespace cli
             std::remove_if(
                 strs.begin(),
                 strs.end(),
-                cxx0x::bind( &std::string::empty, cxx0x_ph::_1 )
+                std::bind( &std::string::empty, std::placeholders::_1 )
             ),
             strs.end()
         );

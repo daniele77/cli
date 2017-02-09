@@ -30,6 +30,7 @@
 #ifndef SERVER_H_
 #define SERVER_H_
 
+#include <memory>
 #include <boost/asio.hpp>
 
 namespace cli

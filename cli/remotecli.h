@@ -30,6 +30,7 @@
 #ifndef REMOTECLI_H_
 #define REMOTECLI_H_
 
+#include <memory>
 #include "cli/cli.h"
 #include "cli/server.h"
 
@@ -39,12 +40,12 @@ namespace cli
 class TcpCliSession : public Session
 {
 public:
-    TcpCliSession( boost::asio::ip::tcp::socket socket, Cli& _cli, cxx0x::function< void(std::ostream&)> exitAction ) :
+    TcpCliSession( boost::asio::ip::tcp::socket socket, Cli& _cli, std::function< void(std::ostream&)> exitAction ) :
         Session( std::move( socket ) ),
         cliSession( _cli, this -> OutStream() )
     {
         cliSession.ExitAction( exitAction );
-        cliSession.Add( cxx0x::make_unique< FuncCmd >( "exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session" ) );
+        cliSession.Add( std::make_unique< FuncCmd >( "exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session" ) );
     }
 
 protected:
@@ -76,7 +77,7 @@ public:
         Server( ios, port ),
         cli( _cli )
     {}
-    void ExitAction( cxx0x::function< void(std::ostream&)> action )
+    void ExitAction( std::function< void(std::ostream&)> action )
     {
         exitAction = action;
     }
@@ -86,7 +87,7 @@ public:
     }
 private:
     Cli& cli;
-    cxx0x::function< void(std::ostream&)> exitAction;
+    std::function< void(std::ostream&)> exitAction;
 };
 
 } // namespace
