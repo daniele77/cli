@@ -70,6 +70,11 @@ namespace cli
             std::unique_ptr< Menu >&& rootMenu,
             std::function< void(std::ostream&) > exitAction = std::function< void(std::ostream&) >()
         );
+
+        // disable value semantics
+        Cli( const Cli& ) = delete;
+        Cli& operator = ( const Cli& ) = delete;
+
         void ExitAction( std::function< void(std::ostream&)> action );
         Menu* RootMenu() { return rootMenu.get(); }
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
@@ -83,8 +88,6 @@ namespace cli
     };
 
     // ********************************************************************
-
-    class CliSession; // forward declaration
 
     class Command
     {
@@ -105,6 +108,10 @@ namespace cli
             run( true ),
             out( _out )
         {}
+
+        // disable value semantics
+        CliSession( const CliSession& ) = delete;
+        CliSession& operator = ( const CliSession& ) = delete;
 
         bool Feed( const std::string& cmd );
 
@@ -172,11 +179,10 @@ namespace cli
 
         bool ScanCmds( const std::vector< std::string >& cmdLine )
         {
-            for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
-                if ( ( *i ) -> Exec( cmdLine, *this ) ) return true;
+            for ( auto& cmd: cmds )
+                if ( cmd -> Exec( cmdLine, *this ) ) return true;
             return false;
         }
-
 
         Cli& cli;
         Menu* current;
@@ -192,6 +198,10 @@ namespace cli
     class Menu : public Command
     {
     public:
+        // disable value semantics
+        Menu( const Menu& ) = delete;
+        Menu& operator = ( const Menu& ) = delete;
+
         Menu() : name(), parent( nullptr ), description() {}
 
         Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
@@ -228,8 +238,8 @@ namespace cli
 
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
         {
-            for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
-                if ( ( *i ) -> Exec( cmdLine, session ) ) return true;
+            for ( auto& cmd: cmds )
+                if ( cmd -> Exec( cmdLine, session ) ) return true;
             if ( parent && parent -> Exec( cmdLine, session ) ) return true;
             return false;
         }
@@ -241,8 +251,8 @@ namespace cli
 
         void MainHelp( std::ostream& out )
         {
-            for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
-                ( *i ) -> Help( out );
+            for ( auto& cmd: cmds )
+                cmd -> Help( out );
             if ( parent ) parent -> Help( out );
         }
 
@@ -280,6 +290,10 @@ namespace cli
     class BasicCommand : public Command
     {
     public:
+        // disable value semantics
+        BasicCommand( const BasicCommand& ) = delete;
+        BasicCommand& operator = ( const BasicCommand& ) = delete;
+
         BasicCommand( const std::string& _name, std::function< void(CliSession&) > f, const std::string& _help = "" ) :
             name( _name ), func( f ), help( _help ) {}
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
@@ -305,6 +319,10 @@ namespace cli
     class FuncCmd : public Command
     {
     public:
+        // disable value semantics
+        FuncCmd( const FuncCmd& ) = delete;
+        FuncCmd& operator = ( const FuncCmd& ) = delete;
+
         FuncCmd(
             const std::string& _name,
             std::function< void( std::ostream& )> _function,
@@ -336,6 +354,10 @@ namespace cli
     class FuncCmd1 : public Command
     {
     public:
+        // disable value semantics
+        FuncCmd1( const FuncCmd1& ) = delete;
+        FuncCmd1& operator = ( const FuncCmd1& ) = delete;
+
         FuncCmd1(
             const std::string& _name,
             std::function< void( T, std::ostream& ) > _function,
@@ -343,7 +365,7 @@ namespace cli
             ) : name( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 2 ) return false;
             if ( name == cmdLine[ 0 ] )
@@ -362,7 +384,7 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) override
         {
             out << " - " << name
                 << " " << TypeDesc< T >::Name()
@@ -378,6 +400,10 @@ namespace cli
     class FuncCmd2 : public Command
     {
     public:
+        // disable value semantics
+        FuncCmd2( const FuncCmd2& ) = delete;
+        FuncCmd2& operator = ( const FuncCmd2& ) = delete;
+
         FuncCmd2(
             const std::string& _name,
             std::function< void( T1, T2, std::ostream& ) > _function,
@@ -385,7 +411,7 @@ namespace cli
             ) : name( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 3 ) return false;
             if ( name == cmdLine[ 0 ] )
@@ -405,7 +431,7 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
@@ -422,6 +448,10 @@ namespace cli
     class FuncCmd3 : public Command
     {
     public:
+        // disable value semantics
+        FuncCmd3( const FuncCmd3& ) = delete;
+        FuncCmd3& operator = ( const FuncCmd3& ) = delete;
+
         FuncCmd3(
             const std::string& _name,
             std::function< void( T1, T2, T3, std::ostream& ) > _function,
@@ -429,7 +459,7 @@ namespace cli
             ) : name( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 4 ) return false;
             if ( name == cmdLine[ 0 ] )
@@ -450,7 +480,7 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
@@ -468,6 +498,10 @@ namespace cli
     class FuncCmd4 : public Command
     {
     public:
+        // disable value semantics
+        FuncCmd4( const FuncCmd4& ) = delete;
+        FuncCmd4& operator = ( const FuncCmd4& ) = delete;
+
         FuncCmd4(
             const std::string& _name,
             std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
@@ -475,7 +509,7 @@ namespace cli
             ) : name( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 5 ) return false;
             if ( name == cmdLine[ 0 ] )
@@ -497,7 +531,7 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
@@ -585,8 +619,8 @@ namespace cli
     {
         out << "Commands available:" << std::endl;
         cli.MainHelp( out );
-        for ( Cmds::iterator i = cmds.begin(); i != cmds.end(); ++i )
-            ( *i ) -> Help( out );
+        for ( auto& cmd: cmds )
+            cmd -> Help( out );
         current -> MainHelp( out );
     }
 

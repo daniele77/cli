@@ -120,6 +120,10 @@ private:
 class Server
 {
 public:
+    // disable value semantics
+    Server( const Server& ) = delete;
+    Server& operator = ( const Server& ) = delete;
+
     Server( boost::asio::io_service& ios, short port ) :
         acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::tcp::v4(), port ) ),
         socket( ios )
