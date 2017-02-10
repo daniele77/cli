@@ -59,6 +59,45 @@ namespace cli
 
     // ********************************************************************
 
+    class History
+    {
+    public:
+
+        using Item = std::vector<std::string>;
+
+        explicit History(std::size_t size) : maxSize(size) {}
+
+        template <typename T>
+        void Add(T&& item)
+        {
+            buffer.push_back(std::forward<T>(item));
+            if (buffer.size() > maxSize) buffer.pop_front();
+        }
+
+        void Show(std::ostream& out) const
+        {
+            out << '\n';
+            for ( auto& item: buffer )
+                out << ToString(item) << '\n';
+            out << '\n' << std::flush;
+        }
+
+    private:
+
+        static std::string ToString(const Item& item)
+        {
+            std::string result;
+            std::for_each(item.begin(), item.end(), [&](const std::string &piece){ result += piece + ' '; });
+            return result;
+        }
+
+        using Buffer = std::deque<Item>;
+        Buffer buffer;
+        const std::size_t maxSize;
+    };
+
+    // ********************************************************************
+
     // forward declarations
     class Menu;
     class CliSession;
@@ -160,6 +199,11 @@ namespace cli
             exitAction = action;
         }
 
+        void ShowHistory() const
+        {
+            history.Show(out);
+        }
+
     private:
 
         template < typename F, typename R >
@@ -191,6 +235,7 @@ namespace cli
         using Cmds = std::vector< std::unique_ptr< Command > >;
         Cmds cmds;
         std::function< void(std::ostream&)> exitAction;
+        History history{ 5 };
     };
 
     // ********************************************************************
@@ -561,6 +606,12 @@ namespace cli
                 "This help message"
             )
         );
+        global -> Add( std::make_unique< BasicCommand >(
+                "history",
+                [](CliSession& s){ s.ShowHistory(); },
+                "Show the history"
+            )
+        );
     }
 
     inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
@@ -605,8 +656,12 @@ namespace cli
         }
         // root menu recursive cmds check
         if ( !found ) found = current -> ScanCmds( strs, *this );
-        // error msg if not found
-        if ( !found ) out << "Command unknown: " << cmd << std::endl;
+
+        if ( found ) // insert into history
+            history.Add( std::move(strs) ); // last use of strs
+        else // error msg if not found
+            out << "Command unknown: " << cmd << std::endl;
+
         return true;
     }
 
