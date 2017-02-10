@@ -37,17 +37,17 @@ using namespace std;
 /////////////
 
 
-class AsyncCli
+class AsyncInput
 {
 public:
-    AsyncCli( boost::asio::io_service& ios, CliSession& _session ) :
+    AsyncInput( boost::asio::io_service& ios, CliSession& _session ) :
         session( _session ),
         input( ios, ::dup( STDIN_FILENO ) )
     {
         session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
         Read();
     }
-    ~AsyncCli()
+    ~AsyncInput()
     {
         input.close();
     }
@@ -62,7 +62,7 @@ private:
             input,
             inputBuffer,
             '\n',
-            std::bind( &AsyncCli::NewLine, this,
+            std::bind( &AsyncInput::NewLine, this,
                        std::placeholders::_1,
                        std::placeholders::_2 )
         );
@@ -90,6 +90,155 @@ private:
     CliSession& session;
     boost::asio::streambuf inputBuffer;
     boost::asio::posix::stream_descriptor input;
+};
+
+/////////////
+
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <thread>
+
+class PollKeyboardInput
+{
+public:
+    explicit PollKeyboardInput(CliSession& _session) :
+        session( _session )
+    {
+        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
+        ChangeMode(1);
+        servant = std::make_unique<std::thread>( [this](){ Read(); } );
+        servant -> detach();
+    }
+    ~PollKeyboardInput()
+    {
+        run = false;
+        ChangeMode(0);
+    }
+
+private:
+
+    enum class Symbol { command, up, down, left, right, ignored };
+    void Read()
+    {
+        session.Prompt();
+        while (run)
+        {
+            auto symbol = GetInput();
+            switch (symbol)
+            {
+                case Symbol::command:
+                    if ( ! session.Feed( currentLine ) ) run = false;
+                    currentLine.clear();
+                    session.Prompt();
+                    break;
+                case Symbol::up:
+                    ClearLine();
+                    currentLine = session.PreviousCmd();
+                    std::cout << currentLine << std::flush;
+                    break;
+                case Symbol::down:
+                    ClearLine();
+                    currentLine = session.NextCmd();
+                    std::cout << currentLine << std::flush;
+                    break;
+                case Symbol::left:
+                case Symbol::right:
+                case Symbol::ignored:
+                    break;
+            }
+        }
+    }
+
+    Symbol GetInput()
+    {
+        while (true)
+        {
+            while ( !KbHit() ) {}
+            int ch = getchar();
+            //std::cout << "== " << ch << std::endl;
+            if ( ch == 127 ) // backspace
+            {
+                if ( currentLine.empty() ) continue;
+                std::cout << "\b \b" << std::flush;
+                currentLine.pop_back();
+            }
+            else if ( ch == 27 ) // symbol
+            {
+                ch = getchar();
+                if ( ch == 91 ) // arrow keys
+                {
+                    ch = getchar();
+                    switch( ch )
+                    {
+                        case 65: return Symbol::up; break;
+                        case 66: return Symbol::down; break;
+                        case 68: return Symbol::left; break;
+                        case 67: return Symbol::right; break;
+                    }
+                }
+            }
+            else
+            {
+                const char c = static_cast<char>(ch);
+                if ( c == '\n' )
+                {
+                    std::cout << std::endl;
+                    return Symbol::command;
+                }
+
+                currentLine += c;
+                std::cout << c << std::flush;
+            }
+        }
+        return Symbol::ignored;
+    }
+
+    void ClearLine()
+    {
+        auto size = currentLine.size();
+        std::string back( size, '\b' );
+        std::string spaces( size, ' ' );
+        std::cout << back << spaces << back << std::flush;
+        currentLine.clear();
+    }
+
+    void ChangeMode(int dir)
+    {
+      if ( dir == 1 )
+      {
+        tcgetattr( STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~( ICANON | ECHO );
+        tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+      }
+      else
+        tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+    }
+
+    static int KbHit()
+    {
+      struct timeval tv;
+      fd_set rdfs;
+
+      tv.tv_sec = 1;
+      tv.tv_usec = 0;
+
+      FD_ZERO(&rdfs);
+      FD_SET (STDIN_FILENO, &rdfs);
+
+      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
+      return FD_ISSET(STDIN_FILENO, &rdfs);
+    }
+
+    bool run = true;
+    CliSession& session;
+    termios oldt;
+    termios newt;
+    std::string currentLine;
+    std::unique_ptr<std::thread> servant;
 };
 
 /////////////
@@ -128,7 +277,8 @@ int main()
                 out << "Closing App...\n";
                 ios.stop();
             } );
-    AsyncCli ac( ios, session );
+    //AsyncInput ac( ios, session );
+    PollKeyboardInput ac(session);
 
     // setup server
 

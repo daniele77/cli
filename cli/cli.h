@@ -70,8 +70,8 @@ namespace cli
         template <typename T>
         void Add(T&& item)
         {
-            buffer.push_back(std::forward<T>(item));
-            if (buffer.size() > maxSize) buffer.pop_front();
+            buffer.push_front(std::forward<T>(item));
+            if (buffer.size() > maxSize) buffer.pop_back();
         }
 
         void Show(std::ostream& out) const
@@ -80,6 +80,33 @@ namespace cli
             for ( auto& item: buffer )
                 out << ToString(item) << '\n';
             out << '\n' << std::flush;
+        }
+
+        void ResetCurrent()
+        {
+            currentIndex = 0;
+        }
+
+        void ToPreviousEntry()
+        {
+            if ( currentIndex == buffer.size()-1 )
+                currentIndex = 0;
+            else
+                ++currentIndex;
+        }
+
+        void ToNextEntry()
+        {
+            if ( currentIndex == 0 )
+                currentIndex = buffer.size()-1;
+            else
+                --currentIndex;
+        }
+
+        std::string GetCurrent() const
+        {
+            if (buffer.empty()) return std::string();
+            return ToString( buffer[ currentIndex ] );
         }
 
     private:
@@ -94,6 +121,7 @@ namespace cli
         using Buffer = std::deque<Item>;
         Buffer buffer;
         const std::size_t maxSize;
+        std::size_t currentIndex = 0; // 0 = last entry, buffer.size()-1 = oldest entry
     };
 
     // ********************************************************************
@@ -199,9 +227,19 @@ namespace cli
             exitAction = action;
         }
 
-        void ShowHistory() const
+        void ShowHistory() const { history.Show(out); }
+
+        std::string PreviousCmd()
         {
-            history.Show(out);
+            auto result = history.GetCurrent();
+            history.ToPreviousEntry();
+            return result;
+        }
+
+        std::string NextCmd() {
+            auto result = history.GetCurrent();
+            history.ToNextEntry();
+            return result;
         }
 
     private:
@@ -633,6 +671,8 @@ namespace cli
 
     inline bool CliSession::Feed( const std::string& cmd )
     {
+        history.ResetCurrent(); // TODO here or in the caller?
+
         std::vector< std::string > strs;
         boost::split( strs, cmd, boost::is_any_of( " \t\r\n" ), boost::token_compress_on );
         // remove null entries from the vector:
