@@ -27,59 +27,72 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/cli.h"
-#include "cli/remotecli.h"
-#include "cli/server.h"
-#include "cli/pollkeyboardinput.h"
+#ifndef ASYNCINPUT_H_
+#define ASYNCINPUT_H_
 
-using namespace cli;
-using namespace std;
+#include <string>
+#include <boost/asio.hpp>
+#include "cli.h" // CliSession
 
-
-int main()
+namespace cli
 {
-    boost::asio::io_service ios;
 
-    // setup cli
+class AsyncInput
+{
+public:
+    AsyncInput( boost::asio::io_service& ios, CliSession& _session ) :
+        session( _session ),
+        input( ios, ::dup( STDIN_FILENO ) )
+    {
+        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
+        Read();
+    }
+    ~AsyncInput()
+    {
+        input.close();
+    }
 
-    auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, world\n"; },
-            "Print hello world" );
-    rootMenu -> Add(
-            "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+private:
 
-    auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, submenu world\n"; },
-            "Print hello world in the submenu" );
-    rootMenu -> Add( std::move(subMenu) );
+    void Read()
+    {
+        session.Prompt();
+        // Read a line of input entered by the user.
+        boost::asio::async_read_until(
+            input,
+            inputBuffer,
+            '\n',
+            std::bind( &AsyncInput::NewLine, this,
+                       std::placeholders::_1,
+                       std::placeholders::_2 )
+        );
+    }
+
+    void NewLine( const boost::system::error_code& error, std::size_t length )
+    {
+        if ( !error || error == boost::asio::error::not_found )
+        {
+            auto bufs = inputBuffer.data();
+            std::size_t size = length;
+            if ( !error ) --size; // tolgo il \n
+            std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
+            inputBuffer.consume( length );
 
 
-    Cli cli( std::move(rootMenu) );
-    // global exit action
-    cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
+            if ( session.Feed( s ) ) Read();
+        }
+        else
+        {
+            input.close();
+        }
+    }
 
-    CliSession session( cli, std::cout );
-    session.ExitAction( [&ios](auto& out) // session exit action
-            {
-                out << "Closing App...\n";
-                ios.stop();
-            } );
+    CliSession& session;
+    boost::asio::streambuf inputBuffer;
+    boost::asio::posix::stream_descriptor input;
+};
 
-    //AsyncInput ac( ios, session );
-    PollKeyboardInput ac(ios, session);
+} // namespace
 
-    // setup server
+#endif // ASYNCINPUT_H_
 
-    CliServer server( ios, 5000, cli );
-    // exit action for all the connections
-    server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
-    ios.run();
-
-    return 0;
-}

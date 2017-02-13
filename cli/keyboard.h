@@ -27,59 +27,34 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/cli.h"
-#include "cli/remotecli.h"
-#include "cli/server.h"
-#include "cli/pollkeyboardinput.h"
+#ifndef KEYBOARD_H_
+#define KEYBOARD_H_
 
-using namespace cli;
-using namespace std;
+#if defined(__unix__) || defined(__unix) || defined(__linux__)
+#define OS_LINUX
+#elif defined(WIN32) || defined(_WIN32) || defined(_WIN64)
+#define OS_WIN
+#elif defined(__APPLE__) || defined(__MACH__)
+#define OS_MAC
+#else
+#error Unknown Platform
+#endif
 
+#ifdef OS_LINUX
+    #include "linuxkeyboard.h"
+#else
+    #error "Platform not supported (yet)."
+#endif
 
-int main()
+namespace cli
 {
-    boost::asio::io_service ios;
+#ifdef OS_LINUX
+    using Keyboard = LinuxKeyboard;
+#else
+    #error "Platform not supported (yet)."
+#endif
 
-    // setup cli
+} // namespace
 
-    auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, world\n"; },
-            "Print hello world" );
-    rootMenu -> Add(
-            "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+#endif // KEYBOARD_H_
 
-    auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, submenu world\n"; },
-            "Print hello world in the submenu" );
-    rootMenu -> Add( std::move(subMenu) );
-
-
-    Cli cli( std::move(rootMenu) );
-    // global exit action
-    cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
-
-    CliSession session( cli, std::cout );
-    session.ExitAction( [&ios](auto& out) // session exit action
-            {
-                out << "Closing App...\n";
-                ios.stop();
-            } );
-
-    //AsyncInput ac( ios, session );
-    PollKeyboardInput ac(ios, session);
-
-    // setup server
-
-    CliServer server( ios, 5000, cli );
-    // exit action for all the connections
-    server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
-    ios.run();
-
-    return 0;
-}

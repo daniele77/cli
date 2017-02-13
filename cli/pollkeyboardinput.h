@@ -27,59 +27,59 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/cli.h"
-#include "cli/remotecli.h"
-#include "cli/server.h"
-#include "cli/pollkeyboardinput.h"
+#ifndef POLLKEYBOARDINPUT_H_
+#define POLLKEYBOARDINPUT_H_
 
-using namespace cli;
-using namespace std;
+#include <functional>
+#include <string>
+#include "terminal.h"
+#include "keyboard.h"
+#include "cli.h" // CliSession
 
+// forward declaraction
+namespace boost { namespace asio { class io_service; } }
 
-int main()
+namespace cli
 {
-    boost::asio::io_service ios;
 
-    // setup cli
+class PollKeyboardInput
+{
+public:
+    PollKeyboardInput(boost::asio::io_service& ios, CliSession& _session) :
+        session( _session ),
+        terminal( ios, [this](auto cmd){ NewCommand(cmd); } )
+    {
+        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
+        session.Prompt();
+    }
 
-    auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, world\n"; },
-            "Print hello world" );
-    rootMenu -> Add(
-            "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+private:
 
-    auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, submenu world\n"; },
-            "Print hello world in the submenu" );
-    rootMenu -> Add( std::move(subMenu) );
+    void NewCommand( std::pair< Symbol, std::string > s )
+    {
+        switch ( s.first )
+        {
+            case Symbol::command:
+                if ( session.Feed( s.second ) )
+                    session.Prompt();
+                break;
+            case Symbol::down:
+                terminal.SetLine( session.NextCmd() );
+                break;
+            case Symbol::up:
+                terminal.SetLine( session.PreviousCmd() );
+                break;
+            case Symbol::tab:
+                break;
+        }
 
+    }
 
-    Cli cli( std::move(rootMenu) );
-    // global exit action
-    cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
+    CliSession& session;
+    Terminal< Keyboard > terminal;
+};
 
-    CliSession session( cli, std::cout );
-    session.ExitAction( [&ios](auto& out) // session exit action
-            {
-                out << "Closing App...\n";
-                ios.stop();
-            } );
+} // namespace
 
-    //AsyncInput ac( ios, session );
-    PollKeyboardInput ac(ios, session);
+#endif // POLLKEYBOARDINPUT_H_
 
-    // setup server
-
-    CliServer server( ios, 5000, cli );
-    // exit action for all the connections
-    server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
-    ios.run();
-
-    return 0;
-}
