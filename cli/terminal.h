@@ -50,7 +50,7 @@ public:
     using Handler = std::function< void( std::pair<Symbol,std::string> ) >;
 
     Terminal( boost::asio::io_service& ios, Handler h ) :
-        keyboard( ios, [this](auto k){ Keypressed(k); } ),
+        keyboard( ios, [this](auto k){ this->Keypressed(k); } ),
         handler(h)
     {}
 

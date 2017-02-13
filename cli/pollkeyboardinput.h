@@ -47,7 +47,7 @@ class PollKeyboardInput
 public:
     PollKeyboardInput(boost::asio::io_service& ios, CliSession& _session) :
         session( _session ),
-        terminal( ios, [this](auto cmd){ NewCommand(cmd); } )
+        terminal( ios, [this](auto cmd){ this->NewCommand(cmd); } )
     {
         session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
         session.Prompt();
