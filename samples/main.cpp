@@ -101,121 +101,68 @@ private:
 #include <sys/time.h>
 #include <thread>
 
-class PollKeyboardInput
+enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ignored };
+
+class LinuxKeyboard
 {
 public:
-    explicit PollKeyboardInput(CliSession& _session) :
-        session( _session )
+    LinuxKeyboard()
     {
-        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
-        ChangeMode(1);
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
+        ToManualMode();
     }
-    ~PollKeyboardInput()
+    ~LinuxKeyboard()
     {
-        run = false;
-        ChangeMode(0);
+        ToStandardMode();
     }
-
-private:
-
-    enum class Symbol { command, up, down, left, right, ignored };
-    void Read()
+    std::pair<KeyType,char> Get()
     {
-        session.Prompt();
-        while (run)
+        while ( !KbHit() ) {}
+        int ch = getchar();
+        switch( ch )
         {
-            auto symbol = GetInput();
-            switch (symbol)
-            {
-                case Symbol::command:
-                    if ( ! session.Feed( currentLine ) ) run = false;
-                    currentLine.clear();
-                    session.Prompt();
-                    break;
-                case Symbol::up:
-                    ClearLine();
-                    currentLine = session.PreviousCmd();
-                    std::cout << currentLine << std::flush;
-                    break;
-                case Symbol::down:
-                    ClearLine();
-                    currentLine = session.NextCmd();
-                    std::cout << currentLine << std::flush;
-                    break;
-                case Symbol::left:
-                case Symbol::right:
-                case Symbol::ignored:
-                    break;
-            }
-        }
-    }
-
-    Symbol GetInput()
-    {
-        while (true)
-        {
-            while ( !KbHit() ) {}
-            int ch = getchar();
-            //std::cout << "== " << ch << std::endl;
-            if ( ch == 127 ) // backspace
-            {
-                if ( currentLine.empty() ) continue;
-                std::cout << "\b \b" << std::flush;
-                currentLine.pop_back();
-            }
-            else if ( ch == 27 ) // symbol
-            {
+            case 127: return std::make_pair(KeyType::backspace,' '); break;
+            case 27: // symbol
                 ch = getchar();
                 if ( ch == 91 ) // arrow keys
                 {
                     ch = getchar();
                     switch( ch )
                     {
-                        case 65: return Symbol::up; break;
-                        case 66: return Symbol::down; break;
-                        case 68: return Symbol::left; break;
-                        case 67: return Symbol::right; break;
+                        case 51:
+                            ch = getchar();
+                            if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
+                            else return std::make_pair(KeyType::ignored,' ');
+                            break;
+                        case 65: return std::make_pair(KeyType::up,' '); break;
+                        case 66: return std::make_pair(KeyType::down,' '); break;
+                        case 68: return std::make_pair(KeyType::left,' '); break;
+                        case 67: return std::make_pair(KeyType::right,' '); break;
+                        case 70: return std::make_pair(KeyType::end,' '); break;
+                        case 72: return std::make_pair(KeyType::home,' '); break;
                     }
                 }
-            }
-            else
+                break;
+            default: // ascii
             {
                 const char c = static_cast<char>(ch);
-                if ( c == '\n' )
-                {
-                    std::cout << std::endl;
-                    return Symbol::command;
-                }
-
-                currentLine += c;
-                std::cout << c << std::flush;
+                return std::make_pair(KeyType::ascii,c);
             }
         }
-        return Symbol::ignored;
+        return std::make_pair(KeyType::ignored,' ');
     }
 
-    void ClearLine()
-    {
-        auto size = currentLine.size();
-        std::string back( size, '\b' );
-        std::string spaces( size, ' ' );
-        std::cout << back << spaces << back << std::flush;
-        currentLine.clear();
-    }
+private:
 
-    void ChangeMode(int dir)
+    void ToManualMode()
     {
-      if ( dir == 1 )
-      {
-        tcgetattr( STDIN_FILENO, &oldt);
+        tcgetattr( STDIN_FILENO, &oldt );
         newt = oldt;
         newt.c_lflag &= ~( ICANON | ECHO );
-        tcsetattr( STDIN_FILENO, TCSANOW, &newt);
-      }
-      else
-        tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+        tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+    }
+    void ToStandardMode()
+    {
+        tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
     }
 
     static int KbHit()
@@ -233,12 +180,194 @@ private:
       return FD_ISSET(STDIN_FILENO, &rdfs);
     }
 
-    bool run = true;
-    CliSession& session;
     termios oldt;
     termios newt;
+};
+
+
+enum class Symbol { command, up, down, tab };
+
+class Terminal
+{
+public:
+    std::pair<Symbol,std::string> Get()
+    {
+        while (true)
+        {
+            auto k = keyboard.Get();
+
+            switch ( k.first )
+            {
+                case KeyType::backspace:
+                {
+                    if ( position == 0 ) continue;
+
+                    --position;
+                    // remove the char from buffer
+                    currentLine.erase( currentLine.begin()+position );
+                    //std::cout << "<" << currentLine << "> char=" << currentLine[position] << std::endl;
+                    // go back to the previous char
+                    std::cout << '\b';
+                    // output the rest of the line
+                    std::cout << std::string( currentLine.begin()+position, currentLine.end() );
+                    // remove last char
+                    std::cout << ' ';
+                    // go back to the original position
+                    std::string back( currentLine.size()-position+1, '\b' );
+                    std::cout << back << std::flush;
+                    break;
+                }
+                case KeyType::up: return std::make_pair(Symbol::up,std::string{}); break;
+                case KeyType::down: return std::make_pair(Symbol::down,std::string{}); break;
+                case KeyType::left:
+                    if ( position > 0 )
+                    {
+                        std::cout << '\b' << std::flush;
+                        --position;
+                    }
+                    break;
+                case KeyType::right:
+                    if ( position < currentLine.size() )
+                    {
+                        std::cout << currentLine[position] << std::flush;
+                        ++position;
+                    }
+                    break;
+                case KeyType::ascii:
+                {
+                    const char c = static_cast<char>(k.second);
+                    if ( c == '\n' )
+                    {
+                        std::cout << std::endl;
+                        auto cmd = currentLine;
+                        currentLine.clear();
+                        position = 0;
+                        return std::make_pair(Symbol::command, cmd);
+                    }
+                    else if ( c == '\t' )
+                        return std::make_pair(Symbol::tab, std::string());
+
+                    // output the new char:
+                    std::cout << c;
+                    // and the rest of the string:
+                    std::cout << std::string( currentLine.begin()+position, currentLine.end() );
+                    std::cout << std::flush;
+
+                    // go back to the original position
+                    std::string back( currentLine.size()-position, '\b' );
+                    std::cout << back << std::flush;
+
+                    // update the buffer and cursor position:
+                    currentLine.insert( currentLine.begin()+position, c );
+                    ++position;
+
+                    break;
+                }
+                case KeyType::canc:
+                {
+                    if ( position == currentLine.size() ) continue;
+
+                    // output the rest of the line
+                    std::cout << std::string( currentLine.begin()+position+1, currentLine.end() );
+                    // remove last char
+                    std::cout << ' ';
+                    // go back to the original position
+                    std::string back( currentLine.size()-position, '\b' );
+                    std::cout << back << std::flush;
+                    // remove the char from buffer
+                    currentLine.erase( currentLine.begin()+position );
+                    break;
+                }
+                case KeyType::end:
+                {
+                    std::cout << std::string( currentLine.begin()+position, currentLine.end() ) << std::flush;
+                    position = currentLine.size();
+                    break;
+                }
+                case KeyType::home:
+                {
+                    std::string back( position, '\b' );
+                    std::cout << back << std::flush;
+                    position = 0;
+                    break;
+                }
+                case KeyType::ignored:
+                    // TODO
+                    break;
+            }
+
+        }
+        return {};
+    }
+    void SetLine( const std::string& newLine )
+    {
+        std::string back( position, '\b' );
+        std::cout << back << newLine << std::flush;
+
+        // if newLine is shorter then currentLine, we have
+        // to clear the rest of the string
+        if ( newLine.size() < currentLine.size() )
+        {
+            std::cout << std::string( currentLine.size() - newLine.size(), ' ' );
+            // and go back
+            std::cout << std::string( currentLine.size() - newLine.size(), '\b' ) << std::flush;
+        }
+
+        currentLine = newLine;
+        position = currentLine.size();
+    }
+private:
+
+    LinuxKeyboard keyboard;
     std::string currentLine;
+    std::size_t position = 0; // next writing position in currentLine
+};
+
+class PollKeyboardInput
+{
+public:
+    explicit PollKeyboardInput(CliSession& _session) :
+        session( _session )
+    {
+        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
+        servant = std::make_unique<std::thread>( [this](){ Read(); } );
+        servant -> detach();
+    }
+    ~PollKeyboardInput()
+    {
+        run = false;
+    }
+
+private:
+
+    void Read()
+    {
+        session.Prompt();
+        while (run)
+        {
+            auto s = terminal.Get();
+            switch ( s.first )
+            {
+                case Symbol::command:
+                    if ( ! session.Feed( s.second ) ) run = false;
+                    session.Prompt();
+                    break;
+                case Symbol::down:
+                    terminal.SetLine( session.NextCmd() );
+                    break;
+                case Symbol::up:
+                    terminal.SetLine( session.PreviousCmd() );
+                    break;
+                case Symbol::tab:
+                    break;
+            }
+        }
+    }
+
+    bool run = true;
+    CliSession& session;
     std::unique_ptr<std::thread> servant;
+    Terminal terminal;
 };
 
 /////////////
