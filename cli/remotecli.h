@@ -52,22 +52,104 @@ protected:
 
     virtual void OnConnect() override
     {
-        cliSession.Prompt();
+        // to specify hexadecimal value as chars we use
+        // the syntax \xVVV
+        // and the std::string ctor that takes the size,
+        // so that it's not null-terminated
+        //std::string msg{ "\x0FF\x0FD\x027", 3 };
+        waitAck = true;
+        //std::string iacDoSuppressGoAhead{ "\x0FF\x0FD\x003", 3 };
+        //this -> OutStream() << iacDoSuppressGoAhead << std::flush;
+
+        // https://www.ibm.com/support/knowledgecenter/SSLTBW_1.13.0/com.ibm.zos.r13.hald001/telcmds.htm
+
+        std::string iacDoLineMode{ "\x0FF\x0FD\x022", 3 };
+        this -> OutStream() << iacDoLineMode << std::flush;
+        std::string iacSbLineMode0IacSe{ "\x0FF\x0FA\x022\x001\x000\x0FF\x0F0", 7 };
+        this -> OutStream() << iacSbLineMode0IacSe << std::flush;
+        std::string iacWillEcho{ "\x0FF\x0FB\x001", 3 };
+        this -> OutStream() << iacWillEcho << std::flush;
+/*
+        constexpr char IAC = '\x0FF'; // 255
+        constexpr char DO = '\x0FD'; // 253
+        constexpr char VT100 = '\x030'; // 48
+
+        this -> OutStream() << IAC << DO << VT100 << std::flush;
+*/
+        //cliSession.Prompt();
     }
     virtual void OnDisconnect() override {}
     virtual void OnError() override {}
     virtual void OnDataReceived( const std::string& data ) override
     {
-        auto str = data;
-        // trim trailing spaces
-        std::size_t endpos = str.find_last_not_of(" \t\r\n");
-        if( std::string::npos != endpos ) str = str.substr( 0, endpos+1 );
+        if (waitAck)
+        {
+            if ( data[0] == '\x0FF' )
+            {
+                // TODO
+                for ( size_t i = 0; i < data.size(); ++i )
+                    std::cout << static_cast<int>( data[i] & 0xFF ) << ' ';
+                std::cout << std::endl;
+            }
+            waitAck = false;
+/*
+            std::string iacWillSuppressGoAhead{ "\x0FF\x0FB\x003", 3 };
+            if ( data == iacWillSuppressGoAhead )
+            {
+                waitAck = false;
+                cliSession.Prompt();
+            }
 
-        if ( cliSession.Feed( str ) ) cliSession.Prompt();
-        else Disconnect();
+            else
+                Disconnect();
+*/
+        }
+        else
+        {
+            for ( size_t i = 0; i < data.size(); ++i )
+                Feed( data[i ] );
+/*
+            auto str = data;
+            // trim trailing spaces
+            std::size_t endpos = str.find_last_not_of(" \t\r\n");
+            if( std::string::npos != endpos ) str = str.substr( 0, endpos+1 );
+
+            if ( cliSession.Feed( str ) ) cliSession.Prompt();
+            else Disconnect();
+*/
+        }
     }
 private:
+    void Feed( char c )
+    {
+        switch ( c )
+        {
+        case 0: break;
+        case '\n':
+        case '\r':
+        {
+            // trim trailing spaces
+            std::size_t endpos = buffer.find_last_not_of(" \t\r\n");
+            if( std::string::npos != endpos ) buffer = buffer.substr( 0, endpos+1 );
+            if ( cliSession.Feed( buffer ) ) cliSession.Prompt();
+            else Disconnect();
+
+            buffer.clear();
+            break;
+        }
+        default:
+            Echo( c );
+            buffer += c;
+        }
+    }
+    void Echo( char c )
+    {
+        this -> OutStream() << c << std::flush;
+    }
+
+    std::string buffer;
     CliSession cliSession;
+    bool waitAck = false;
 };
 
 class CliServer : public Server
