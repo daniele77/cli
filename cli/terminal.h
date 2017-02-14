@@ -54,6 +54,8 @@ public:
         handler(h)
     {}
 
+    void ResetCursor() { position = 0; }
+
     void SetLine( const std::string& newLine )
     {
         std::cout << std::string( position, '\b' ) << newLine << std::flush;
@@ -70,6 +72,8 @@ public:
         currentLine = newLine;
         position = currentLine.size();
     }
+
+    std::string GetLine() const { return currentLine; }
 
 private:
 

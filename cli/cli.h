@@ -147,6 +147,7 @@ namespace cli
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
         void MainHelp( std::ostream& out );
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
+        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
     private:
         void Help( std::ostream& out );
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
@@ -161,8 +162,24 @@ namespace cli
     public:
         virtual ~Command() = default;
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
-        virtual void Help( std::ostream& out ) = 0;
+        virtual void Help( std::ostream& out ) const = 0;
+        virtual std::string GetCompletion(const std::string& line) const = 0;
     };
+
+    // ********************************************************************
+
+    std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
+    {
+        std::vector<std::string> result;
+        std::for_each( cmds.begin(), cmds.end(),
+            [&currentLine,&result](auto& cmd)
+            {
+                auto c = cmd->GetCompletion(currentLine);
+                if ( !c.empty() ) result.push_back(c);
+            }
+        );
+        return result;
+    }
 
     // ********************************************************************
 
@@ -242,6 +259,8 @@ namespace cli
             history.ToNextEntry();
             return result;
         }
+
+        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
 
     private:
 
@@ -340,9 +359,20 @@ namespace cli
             if ( parent ) parent -> Help( out );
         }
 
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name << "\n\t" << description << std::endl;
+        }
+
+        std::vector<std::string> GetCompletions(const std::string& currentLine) const
+        {
+            return cli::GetCompletions(cmds, currentLine);
+        }
+
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
 
     private:
@@ -390,9 +420,14 @@ namespace cli
 
             return false;
         }
-        virtual void Help( std::ostream& out ) override
+        virtual void Help( std::ostream& out ) const override
         {
             out << " - " << name << "\n\t" << help << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -424,9 +459,14 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name << "\n\t" << description << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -468,11 +508,16 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name
                 << " " << TypeDesc< T >::Name()
                 << "\n\t" << description << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -515,12 +560,17 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << "\n\t" << description << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -564,13 +614,18 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
                 << "\n\t" << description << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -615,7 +670,7 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
             out << " - " << name
                 << " " << TypeDesc< T1 >::Name()
@@ -623,6 +678,11 @@ namespace cli
                 << " " << TypeDesc< T3 >::Name()
                 << " " << TypeDesc< T4 >::Name()
                 << "\n\t" << description << std::endl;
+        }
+        virtual std::string GetCompletion(const std::string& line) const override
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
         }
     private:
         const std::string name;
@@ -667,6 +727,12 @@ namespace cli
     {
         global -> MainHelp( out );
     }
+
+    inline std::vector<std::string> Cli::GetCompletions( const std::string& currentLine ) const
+    {
+        return global->GetCompletions(currentLine);
+    }
+
 
     // CliSession implementation
 
@@ -718,6 +784,16 @@ namespace cli
         for ( auto& cmd: cmds )
             cmd -> Help( out );
         current -> MainHelp( out );
+    }
+
+    inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
+    {
+        auto v1 = cli.GetCompletions(currentLine);
+        auto v2 = cli::GetCompletions(cmds, currentLine);
+        auto v3 = current -> GetCompletions(currentLine);
+        v1.insert( v1.end(), std::make_move_iterator(v2.begin()), std::make_move_iterator(v2.end()) );
+        v1.insert( v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()) );
+        return v1;
     }
 
     template < typename F, typename R >

@@ -70,6 +70,21 @@ private:
                 terminal.SetLine( session.PreviousCmd() );
                 break;
             case Symbol::tab:
+                auto line = terminal.GetLine();
+                auto completions = session.GetCompletions( line );
+                if ( completions.empty() ) break;
+                if ( completions.size() == 1 )
+                    terminal.SetLine( completions[0] );
+                else
+                {
+                    session.OutStream() << '\n';
+                    std::string items;
+                    std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
+                    session.OutStream() << items << '\n';
+                    session.Prompt();
+                    terminal.ResetCursor();
+                    terminal.SetLine( line );
+                }
                 break;
         }
 
