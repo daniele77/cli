@@ -160,14 +160,24 @@ namespace cli
     class Command
     {
     public:
+        explicit Command(const std::string& _name) : name(_name) {}
         virtual ~Command() = default;
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
         virtual void Help( std::ostream& out ) const = 0;
-        virtual std::string GetCompletion(const std::string& line) const = 0;
+        virtual std::string GetCompletion(const std::string& line) const
+        {
+            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            else return {};
+        }
+    protected:
+        const std::string& Name() const { return name; }
+    private:
+        const std::string name;
     };
 
     // ********************************************************************
 
+    // free utility function to get completions from a list of commands and the current line
     std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
     {
         std::vector<std::string> result;
@@ -305,10 +315,10 @@ namespace cli
         Menu( const Menu& ) = delete;
         Menu& operator = ( const Menu& ) = delete;
 
-        Menu() : name(), parent( nullptr ), description() {}
+        Menu() : Command( {} ), parent( nullptr ), description() {}
 
         Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
-            name( _name ), parent( nullptr ), description( desc )
+            Command( _name ), parent( nullptr ), description( desc )
         {}
 
         template < typename F >
@@ -331,7 +341,7 @@ namespace cli
 
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine[ 0 ] == Name() )
             {
                 session.Current( this );
                 return true;
@@ -349,7 +359,7 @@ namespace cli
 
         std::string Prompt() const
         {
-            return name;
+            return Name();
         }
 
         void MainHelp( std::ostream& out )
@@ -361,18 +371,12 @@ namespace cli
 
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << description << std::endl;
+            out << " - " << Name() << "\n\t" << description << std::endl;
         }
 
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
         {
             return cli::GetCompletions(cmds, currentLine);
-        }
-
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
         }
 
     private:
@@ -392,7 +396,6 @@ namespace cli
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
 
-        const std::string name;
         Menu* parent;
         const std::string description;
         using Cmds = std::vector< std::unique_ptr< Command > >;
@@ -409,10 +412,10 @@ namespace cli
         BasicCommand& operator = ( const BasicCommand& ) = delete;
 
         BasicCommand( const std::string& _name, std::function< void(CliSession&) > f, const std::string& _help = "" ) :
-            name( _name ), func( f ), help( _help ) {}
+            Command( _name ), func( f ), help( _help ) {}
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine[ 0 ] == Name() )
             {
                 func( session );
                 return true;
@@ -422,15 +425,9 @@ namespace cli
         }
         virtual void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << help << std::endl;
-        }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
+            out << " - " << Name() << "\n\t" << help << std::endl;
         }
     private:
-        const std::string name;
         std::function< void(CliSession&) > func;
         const std::string help;
     };
@@ -446,12 +443,12 @@ namespace cli
             const std::string& _name,
             std::function< void( std::ostream& )> _function,
             const std::string& desc = ""
-        ) : name( _name ), function( _function ), description( desc )
+        ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine[ 0 ] == Name() )
             {
                 function( session.OutStream() );
                 return true;
@@ -461,15 +458,9 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << description << std::endl;
-        }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
+            out << " - " << Name() << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( std::ostream& )> function;
         const std::string description;
     };
@@ -486,13 +477,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T, std::ostream& ) > _function,
             const std::string& desc = ""
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 2 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -510,17 +501,11 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T >::Name()
                 << "\n\t" << description << std::endl;
         }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
-        }
     private:
-        const std::string name;
         const std::function< void( T, std::ostream& )> function;
         const std::string description;
     };
@@ -537,13 +522,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, std::ostream& ) > _function,
             const std::string& desc = "2 parameter command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 3 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -562,18 +547,12 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << "\n\t" << description << std::endl;
         }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
-        }
     private:
-        const std::string name;
         const std::function< void( T1, T2, std::ostream& )> function;
         const std::string description;
     };
@@ -590,13 +569,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, T3, std::ostream& ) > _function,
             const std::string& desc = "3 parameters command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 4 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -616,19 +595,13 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
                 << "\n\t" << description << std::endl;
         }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
-        }
     private:
-        const std::string name;
         const std::function< void( T1, T2, T3, std::ostream& )> function;
         const std::string description;
     };
@@ -645,13 +618,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
             const std::string& desc = "4 parameters command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 5 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -672,20 +645,14 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
                 << " " << TypeDesc< T4 >::Name()
                 << "\n\t" << description << std::endl;
         }
-        virtual std::string GetCompletion(const std::string& line) const override
-        {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
-            else return {};
-        }
     private:
-        const std::string name;
         const std::function< void( T1, T2, T3, T4, std::ostream& )> function;
         const std::string description;
     };
