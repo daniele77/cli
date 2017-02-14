@@ -169,11 +169,12 @@ namespace cli
     class CliSession
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out ) :
+        CliSession( Cli& _cli, std::ostream& _out, size_t historySize = 100 ) :
             cli( _cli ),
             current( cli.RootMenu() ),
             run( true ),
-            out( _out )
+            out( _out ),
+            history( historySize )
         {}
 
         // disable value semantics
@@ -273,7 +274,7 @@ namespace cli
         using Cmds = std::vector< std::unique_ptr< Command > >;
         Cmds cmds;
         std::function< void(std::ostream&)> exitAction;
-        History history{ 5 };
+        History history;
     };
 
     // ********************************************************************
