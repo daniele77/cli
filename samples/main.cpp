@@ -31,6 +31,7 @@
 #include "cli/remotecli.h"
 #include "cli/server.h"
 #include "cli/pollkeyboardinput.h"
+//#include "cli/asyncinput.h"
 
 using namespace cli;
 using namespace std;
@@ -39,6 +40,17 @@ using namespace std;
 int main()
 {
     boost::asio::io_service ios;
+
+#if 0
+	WinKeyboard k(ios, [](std::pair<KeyType, char> k) 
+	{ 
+		if (k.second == 'q') exit(0);
+		std::cout << (int)k.first << " " << k.second << std::endl; 
+	});
+	boost::asio::io_service::work w(ios);
+	ios.run();
+	return 0;
+#endif
 
     // setup cli
 

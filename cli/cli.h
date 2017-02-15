@@ -376,7 +376,13 @@ namespace cli
 
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
         {
-            return cli::GetCompletions(cmds, currentLine);
+            auto result = cli::GetCompletions(cmds, currentLine);
+			if (parent)
+			{
+				auto c = parent->GetCompletion(currentLine);
+				if (!c.empty()) result.push_back(c);
+			}
+			return result;
         }
 
     private:

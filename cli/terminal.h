@@ -118,10 +118,19 @@ private:
                     ++position;
                 }
                 break;
+			case KeyType::ret:
+				{
+					std::cout << std::endl;
+					auto cmd = currentLine;
+					currentLine.clear();
+					position = 0;
+					handler(std::make_pair(Symbol::command, cmd));
+				}
+				break;
             case KeyType::ascii:
             {
                 const char c = static_cast<char>(k.second);
-                if ( c == '\n' )
+/*                if ( c == '\n' )
                 {
                     std::cout << std::endl;
                     auto cmd = currentLine;
@@ -129,7 +138,7 @@ private:
                     position = 0;
                     handler( std::make_pair(Symbol::command, cmd) );
                 }
-                else if ( c == '\t' )
+                else*/ if ( c == '\t' )
                     handler( std::make_pair(Symbol::tab, std::string()) );
                 else
                 {

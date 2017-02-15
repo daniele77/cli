@@ -27,12 +27,16 @@
 *.exe
 *.out
 *.app
-/Debug/
-/Release/
+Debug
+Release
 
 # Project files
 .cproject
 .project
 .vscode/
+.vs
+*.opensdf
+*.vcxproj.filters
+*.sdf
 
 
