@@ -27,9 +27,13 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#define CLI_COLOR
+
+#include "cli/server.h" 
+// TODO. NB: server.h include boost asio, so on win should be before cli.h that includes rang
+// consider to provide a global header file for the library
 #include "cli/cli.h"
 #include "cli/remotecli.h"
-#include "cli/server.h"
 #include "cli/pollkeyboardinput.h"
 //#include "cli/asyncinput.h"
 
@@ -40,17 +44,6 @@ using namespace std;
 int main()
 {
     boost::asio::io_service ios;
-
-#if 0
-	WinKeyboard k(ios, [](std::pair<KeyType, char> k) 
-	{ 
-		if (k.second == 'q') exit(0);
-		std::cout << (int)k.first << " " << k.second << std::endl; 
-	});
-	boost::asio::io_service::work w(ios);
-	ios.run();
-	return 0;
-#endif
 
     // setup cli
 

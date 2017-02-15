@@ -36,6 +36,7 @@
 #include <memory>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include "colorprofile.h"
 
 namespace cli
 {
@@ -747,7 +748,9 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
-        out << current -> Prompt() << "> " << std::flush;
+        out << ColorProfile::ForceColor << ColorProfile::PromptColor
+            << current -> Prompt() << "> " << ColorProfile::Reset
+            << std::flush;
     }
 
     inline void CliSession::Help()

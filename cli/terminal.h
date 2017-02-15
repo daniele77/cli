@@ -33,6 +33,7 @@
 #include <functional>
 #include <string>
 #include "keyboard.h"
+#include "colorprofile.h"
 
 // forward declaraction
 namespace boost { namespace asio { class io_service; } }
@@ -58,7 +59,9 @@ public:
 
     void SetLine( const std::string& newLine )
     {
-        std::cout << std::string( position, '\b' ) << newLine << std::flush;
+		std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+			      << std::string(position, '\b') << newLine
+			      << ColorProfile::Reset << std::flush;
 
         // if newLine is shorter then currentLine, we have
         // to clear the rest of the string
@@ -130,22 +133,15 @@ private:
             case KeyType::ascii:
             {
                 const char c = static_cast<char>(k.second);
-/*                if ( c == '\n' )
-                {
-                    std::cout << std::endl;
-                    auto cmd = currentLine;
-                    currentLine.clear();
-                    position = 0;
-                    handler( std::make_pair(Symbol::command, cmd) );
-                }
-                else*/ if ( c == '\t' )
+                if ( c == '\t' )
                     handler( std::make_pair(Symbol::tab, std::string()) );
                 else
                 {
                     // output the new char:
-                    std::cout << c;
+					std::cout << ColorProfile::ForceColor << ColorProfile::InputColor << c;
                     // and the rest of the string:
-                    std::cout << std::string( currentLine.begin()+position, currentLine.end() );
+                    std::cout << std::string( currentLine.begin()+position, currentLine.end() ) 
+						      << ColorProfile::Reset;
 
                     // go back to the original position
                     std::cout << std::string( currentLine.size()-position, '\b' ) << std::flush;
