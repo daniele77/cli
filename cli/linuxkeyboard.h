@@ -47,7 +47,7 @@
 namespace cli
 {
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ignored };
+enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
 
 class LinuxKeyboard
 {
@@ -85,6 +85,7 @@ private:
         switch( ch )
         {
             case 127: return std::make_pair(KeyType::backspace,' '); break;
+            case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
                 ch = getchar();
                 if ( ch == 91 ) // arrow keys
