@@ -37,11 +37,13 @@ namespace cli
 namespace ColorProfile
 {
 #if defined(CLI_COLOR)
-	constexpr auto PromptColor = rang::fgB::green;
-	//constexpr auto PromptColor = rang::fg::green;
+	//constexpr auto PromptColor = rang::fgB::green;
+	constexpr auto PromptColor = rang::fg::green;
+	constexpr auto PromptStyle = rang::style::bold;
 	//constexpr auto InputColor = rang::fg::yellow;
 	//constexpr auto InputColor = rang::fg::magenta;
-	constexpr auto InputColor = rang::fg::cyan;
+	constexpr auto InputColor = rang::fgB::gray;
+	//constexpr auto InputColor = rang::fg::cyan;
 	constexpr auto ForceColor = rang::control::forceColor;
 	constexpr auto Reset = rang::style::reset;
 #else

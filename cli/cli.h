@@ -748,8 +748,10 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
-        out << ColorProfile::ForceColor << ColorProfile::PromptColor
-            << current -> Prompt() << "> " << ColorProfile::Reset
+        out << ColorProfile::ForceColor << ColorProfile::PromptColor << ColorProfile::PromptStyle
+            << current -> Prompt()
+            << ColorProfile::Reset
+            << "> "
             << std::flush;
     }
 

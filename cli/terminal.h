@@ -117,7 +117,9 @@ private:
             case KeyType::right:
                 if ( position < currentLine.size() )
                 {
-                    std::cout << currentLine[position] << std::flush;
+                    std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+                              << currentLine[position]
+                              << ColorProfile::Reset << std::flush;
                     ++position;
                 }
                 break;
@@ -169,7 +171,9 @@ private:
             }
             case KeyType::end:
             {
-                std::cout << std::string( currentLine.begin()+position, currentLine.end() ) << std::flush;
+                std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+                          << std::string( currentLine.begin()+position, currentLine.end() )
+                          << ColorProfile::Reset << std::flush;
                 position = currentLine.size();
                 break;
             }
