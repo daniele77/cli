@@ -48,6 +48,7 @@ namespace ColorProfile
 	constexpr auto Reset = rang::style::reset;
 #else
 	constexpr auto PromptColor = rang::style::reset;
+	constexpr auto PromptStyle = rang::style::reset;
 	constexpr auto InputColor = rang::style::reset;
 	constexpr auto ForceColor = rang::control::forceColor;
 	constexpr auto Reset = rang::style::reset;
