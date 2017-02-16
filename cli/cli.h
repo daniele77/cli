@@ -679,12 +679,14 @@ namespace cli
                 "This help message"
             )
         );
+#ifdef CLI_HISTORY_CMD
         global -> Add( std::make_unique< BasicCommand >(
                 "history",
                 [](CliSession& s){ s.ShowHistory(); },
                 "Show the history"
             )
         );
+#endif
     }
 
     inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
