@@ -60,5 +60,9 @@ namespace cli
 
 } // namespace
 
+#undef OS_LINUX
+#undef OS_WIN
+#undef OS_MAC
+
 #endif // KEYBOARD_H_
 
