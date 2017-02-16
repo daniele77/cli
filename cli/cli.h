@@ -455,6 +455,7 @@ namespace cli
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
         {
+            if ( cmdLine.size() != 1 ) return false;
             if ( cmdLine[ 0 ] == Name() )
             {
                 function( session.OutStream() );
