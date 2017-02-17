@@ -62,6 +62,14 @@ int main()
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
+
+    auto subSubMenu = make_unique< Menu >( "subsub" );
+        subSubMenu -> Add(
+            "hello",
+            [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
+            "Print hello world in the sub-submenu" );
+    subMenu -> Add( std::move(subSubMenu));
+
     rootMenu -> Add( std::move(subMenu) );
 
 

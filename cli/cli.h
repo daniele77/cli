@@ -344,8 +344,18 @@ namespace cli
         {
             if ( cmdLine[ 0 ] == Name() )
             {
-                session.Current( this );
-                return true;
+                if ( cmdLine.size() == 1 )
+                {
+                    session.Current( this );
+                    return true;
+                }
+                else
+                {
+                    // check also for subcommands
+                    std::vector<std::string > subCmdLine( cmdLine.begin()+1, cmdLine.end() );
+                    for ( auto& cmd: cmds )
+                        if ( cmd -> Exec( subCmdLine, session ) ) return true;
+                }
             }
             return false;
         }
