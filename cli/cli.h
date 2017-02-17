@@ -148,6 +148,7 @@ namespace cli
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
         void MainHelp( std::ostream& out );
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
+        // Returns the collection of completions relatives to global commands
         std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
     private:
         void Help( std::ostream& out );
@@ -165,9 +166,13 @@ namespace cli
         virtual ~Command() = default;
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
         virtual void Help( std::ostream& out ) const = 0;
-        virtual std::string GetCompletion(const std::string& line) const
+        // Returns the collection of completions relatives to this command.
+        // For simple commands, provides a base implementation that use the name of the command
+        // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
+        // and the subcommand recursively
+        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
         {
-            if ( name.compare(0, line.size(), line) == 0 ) return name;
+            if ( boost::algorithm::starts_with(name, line) ) return {name};
             else return {};
         }
     protected:
@@ -185,8 +190,8 @@ namespace cli
         std::for_each( cmds.begin(), cmds.end(),
             [&currentLine,&result](auto& cmd)
             {
-                auto c = cmd->GetCompletion(currentLine);
-                if ( !c.empty() ) result.push_back(c);
+                auto c = cmd->GetCompletionRecursive(currentLine);
+                result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
             }
         );
         return result;
@@ -390,10 +395,29 @@ namespace cli
             auto result = cli::GetCompletions(cmds, currentLine);
 			if (parent)
 			{
-				auto c = parent->GetCompletion(currentLine);
-				if (!c.empty()) result.push_back(c);
+				auto c = parent->GetCompletionRecursive(currentLine);
+				result.insert( result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
 			}
 			return result;
+        }
+
+        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
+        {
+            if ( boost::algorithm::starts_with( line, Name() ) )
+            {
+                auto rest = line;
+                rest.erase( 0, Name().size() );
+                boost::algorithm::trim_left(rest);
+                std::vector<std::string> result;
+                for ( auto& cmd: cmds )
+                {
+                    auto cs = cmd->GetCompletionRecursive( rest );
+                    for ( auto& c: cs )
+                        result.push_back( Name() + ' ' + c );
+                }
+                return result;
+            }
+            return Command::GetCompletionRecursive(line);
         }
 
     private:

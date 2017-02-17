@@ -62,6 +62,10 @@ int main()
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
+    subMenu -> Add(
+            "demo",
+            [](std::ostream& out){ out << "This is a sample!\n"; },
+            "Print a demo string" );
 
     auto subSubMenu = make_unique< Menu >( "subsub" );
         subSubMenu -> Add(
