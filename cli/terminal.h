@@ -59,9 +59,9 @@ public:
 
     void SetLine( const std::string& newLine )
     {
-		std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+		std::cout << beforeInput
 			      << std::string(position, '\b') << newLine
-			      << ColorProfile::Reset << std::flush;
+			      << afterInput << std::flush;
 
         // if newLine is shorter then currentLine, we have
         // to clear the rest of the string
@@ -117,9 +117,9 @@ private:
             case KeyType::right:
                 if ( position < currentLine.size() )
                 {
-                    std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+                    std::cout << beforeInput
                               << currentLine[position]
-                              << ColorProfile::Reset << std::flush;
+                              << afterInput << std::flush;
                     ++position;
                 }
                 break;
@@ -140,10 +140,10 @@ private:
                 else
                 {
                     // output the new char:
-					std::cout << ColorProfile::ForceColor << ColorProfile::InputColor << c;
+					std::cout << beforeInput << c;
                     // and the rest of the string:
                     std::cout << std::string( currentLine.begin()+position, currentLine.end() ) 
-						      << ColorProfile::Reset;
+						      << afterInput;
 
                     // go back to the original position
                     std::cout << std::string( currentLine.size()-position, '\b' ) << std::flush;
@@ -171,9 +171,9 @@ private:
             }
             case KeyType::end:
             {
-                std::cout << ColorProfile::ForceColor << ColorProfile::InputColor
+                std::cout << beforeInput
                           << std::string( currentLine.begin()+position, currentLine.end() )
-                          << ColorProfile::Reset << std::flush;
+                          << afterInput << std::flush;
                 position = currentLine.size();
                 break;
             }

@@ -27,11 +27,9 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#define CLI_COLOR
-
 #include "cli/server.h" 
-// TODO. NB: server.h include boost asio, so on win should be before cli.h that includes rang
-// consider to provide a global header file for the library
+// TODO. NB: server.h includes boost asio, so in Windows it should compare before cli.h that includes rang
+// (consider to provide a global header file for the library)
 #include "cli/cli.h"
 #include "cli/remotecli.h"
 #include "cli/pollkeyboardinput.h"
@@ -56,6 +54,14 @@ int main()
             "answer",
             [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
+    rootMenu -> Add(
+            "color",
+            [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },
+            "Enable colors in the cli" );
+    rootMenu -> Add(
+            "nocolor",
+            [](std::ostream& out){ out << "Colors OFF\n"; SetNoColor(); },
+            "Disable colors in the cli" );
 
     auto subMenu = make_unique< Menu >( "sub" );
     subMenu -> Add(

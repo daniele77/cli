@@ -34,27 +34,42 @@
 
 namespace cli
 {
-namespace ColorProfile
+
+bool& Color() { static bool color; return color; }
+
+inline void SetColor() { Color() = true; }
+inline void SetNoColor() { Color() = false; }
+
+enum BeforePrompt { beforePrompt };
+enum AfterPrompt { afterPrompt };
+enum BeforeInput { beforeInput };
+enum AfterInput { afterInput };
+
+inline std::ostream& operator<<(std::ostream& os, BeforePrompt)
 {
-#if defined(CLI_COLOR)
-	//constexpr auto PromptColor = rang::fgB::green;
-	constexpr auto PromptColor = rang::fg::green;
-	constexpr auto PromptStyle = rang::style::bold;
-	//constexpr auto InputColor = rang::fg::yellow;
-	//constexpr auto InputColor = rang::fg::magenta;
-	constexpr auto InputColor = rang::fgB::gray;
-	//constexpr auto InputColor = rang::fg::cyan;
-	constexpr auto ForceColor = rang::control::forceColor;
-	constexpr auto Reset = rang::style::reset;
-#else
-	constexpr auto PromptColor = rang::style::reset;
-	constexpr auto PromptStyle = rang::style::reset;
-	constexpr auto InputColor = rang::style::reset;
-	constexpr auto ForceColor = rang::control::forceColor;
-	constexpr auto Reset = rang::style::reset;
-#endif
+    if ( Color() ) { os << rang::control::forceColor << rang::fg::green << rang::style::bold; }
+    return os;
 }
-} // namespace
+
+inline std::ostream& operator<<(std::ostream& os, AfterPrompt)
+{
+    os << rang::style::reset;
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, BeforeInput)
+{
+    if ( Color() ) { os << rang::control::forceColor << rang::fgB::gray; }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, AfterInput)
+{
+    os << rang::style::reset;
+    return os;
+}
+
+} // namespace cli
 
 #endif // COLORPROFILE_H_
 
