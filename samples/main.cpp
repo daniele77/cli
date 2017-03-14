@@ -51,6 +51,10 @@ int main()
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
     rootMenu -> Add(
+            "hello_everysession",
+            [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
+            "Print hello everybody on all open sessions" );
+    rootMenu -> Add(
             "answer",
             [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );

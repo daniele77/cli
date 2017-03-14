@@ -131,8 +131,51 @@ namespace cli
     class Menu;
     class CliSession;
 
+
     class Cli
     {
+
+        // inner class to provide a global output stream
+        class OutStream
+        {
+        public:
+            template <typename T>
+            OutStream& operator << (const T& msg)
+            {
+                for (auto out: ostreams)
+                    *out << msg;
+                return *this;
+            }
+
+            // this is the type of std::cout
+            typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
+            // this is the function signature of std::endl
+            typedef CoutType& (*StandardEndLine)(CoutType&);
+
+            // takes << std::endl
+            OutStream& operator << (StandardEndLine manip)
+            {
+                for (auto out: ostreams)
+                    manip(*out);
+                return *this;
+            }
+
+        private:
+            friend class Cli;
+
+            void Register(std::ostream& o)
+            {
+                ostreams.push_back(&o);
+            }
+            void UnRegister(std::ostream& o)
+            {
+                ostreams.erase(std::remove(ostreams.begin(), ostreams.end(), &o), ostreams.end());
+            }
+
+            std::vector<std::ostream*> ostreams;
+        };
+        // end inner class
+
     public:
         Cli(
             std::unique_ptr< Menu >&& rootMenu,
@@ -150,6 +193,12 @@ namespace cli
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
         // Returns the collection of completions relatives to global commands
         std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
+
+        static void Register(std::ostream& o) { cout().Register(o); }
+        static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
+
+        static OutStream& cout() { static OutStream s; return s; }
+
     private:
         void Help( std::ostream& out );
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
@@ -208,7 +257,11 @@ namespace cli
             run( true ),
             out( _out ),
             history( historySize )
-        {}
+        {
+            cli.Register(out);
+        }
+
+        ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
         CliSession( const CliSession& ) = delete;
