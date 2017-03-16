@@ -36,7 +36,7 @@
 namespace cli
 {
 
-class Session : public std::enable_shared_from_this< Session >, public std::streambuf
+class Session : public std::enable_shared_from_this<Session>, public std::streambuf
 {
 public:
     virtual ~Session() = default;

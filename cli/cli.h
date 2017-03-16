@@ -36,6 +36,7 @@
 #include <memory>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
+#include "colorprofile.h"
 
 namespace cli
 {
@@ -130,8 +131,51 @@ namespace cli
     class Menu;
     class CliSession;
 
+
     class Cli
     {
+
+        // inner class to provide a global output stream
+        class OutStream
+        {
+        public:
+            template <typename T>
+            OutStream& operator << (const T& msg)
+            {
+                for (auto out: ostreams)
+                    *out << msg;
+                return *this;
+            }
+
+            // this is the type of std::cout
+            typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
+            // this is the function signature of std::endl
+            typedef CoutType& (*StandardEndLine)(CoutType&);
+
+            // takes << std::endl
+            OutStream& operator << (StandardEndLine manip)
+            {
+                for (auto out: ostreams)
+                    manip(*out);
+                return *this;
+            }
+
+        private:
+            friend class Cli;
+
+            void Register(std::ostream& o)
+            {
+                ostreams.push_back(&o);
+            }
+            void UnRegister(std::ostream& o)
+            {
+                ostreams.erase(std::remove(ostreams.begin(), ostreams.end(), &o), ostreams.end());
+            }
+
+            std::vector<std::ostream*> ostreams;
+        };
+        // end inner class
+
     public:
         Cli(
             std::unique_ptr< Menu >&& rootMenu,
@@ -147,6 +191,14 @@ namespace cli
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
         void MainHelp( std::ostream& out );
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
+        // Returns the collection of completions relatives to global commands
+        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
+
+        static void Register(std::ostream& o) { cout().Register(o); }
+        static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
+
+        static OutStream& cout() { static OutStream s; return s; }
+
     private:
         void Help( std::ostream& out );
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
@@ -159,22 +211,57 @@ namespace cli
     class Command
     {
     public:
+        explicit Command(const std::string& _name) : name(_name) {}
         virtual ~Command() = default;
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
-        virtual void Help( std::ostream& out ) = 0;
+        virtual void Help( std::ostream& out ) const = 0;
+        // Returns the collection of completions relatives to this command.
+        // For simple commands, provides a base implementation that use the name of the command
+        // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
+        // and the subcommand recursively
+        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
+        {
+            if ( boost::algorithm::starts_with(name, line) ) return {name};
+            else return {};
+        }
+    protected:
+        const std::string& Name() const { return name; }
+    private:
+        const std::string name;
     };
+
+    // ********************************************************************
+
+    // free utility function to get completions from a list of commands and the current line
+    std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
+    {
+        std::vector<std::string> result;
+        std::for_each( cmds.begin(), cmds.end(),
+            [&currentLine,&result](auto& cmd)
+            {
+                auto c = cmd->GetCompletionRecursive(currentLine);
+                result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+            }
+        );
+        return result;
+    }
 
     // ********************************************************************
 
     class CliSession
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out ) :
+        CliSession( Cli& _cli, std::ostream& _out, size_t historySize = 100 ) :
             cli( _cli ),
             current( cli.RootMenu() ),
             run( true ),
-            out( _out )
-        {}
+            out( _out ),
+            history( historySize )
+        {
+            cli.Register(out);
+        }
+
+        ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
         CliSession( const CliSession& ) = delete;
@@ -242,6 +329,8 @@ namespace cli
             return result;
         }
 
+        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
+
     private:
 
         template < typename F, typename R >
@@ -273,7 +362,7 @@ namespace cli
         using Cmds = std::vector< std::unique_ptr< Command > >;
         Cmds cmds;
         std::function< void(std::ostream&)> exitAction;
-        History history{ 5 };
+        History history;
     };
 
     // ********************************************************************
@@ -285,10 +374,10 @@ namespace cli
         Menu( const Menu& ) = delete;
         Menu& operator = ( const Menu& ) = delete;
 
-        Menu() : name(), parent( nullptr ), description() {}
+        Menu() : Command( {} ), parent( nullptr ), description() {}
 
         Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
-            name( _name ), parent( nullptr ), description( desc )
+            Command( _name ), parent( nullptr ), description( desc )
         {}
 
         template < typename F >
@@ -311,10 +400,20 @@ namespace cli
 
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine[ 0 ] == Name() )
             {
-                session.Current( this );
-                return true;
+                if ( cmdLine.size() == 1 )
+                {
+                    session.Current( this );
+                    return true;
+                }
+                else
+                {
+                    // check also for subcommands
+                    std::vector<std::string > subCmdLine( cmdLine.begin()+1, cmdLine.end() );
+                    for ( auto& cmd: cmds )
+                        if ( cmd -> Exec( subCmdLine, session ) ) return true;
+                }
             }
             return false;
         }
@@ -329,7 +428,7 @@ namespace cli
 
         std::string Prompt() const
         {
-            return name;
+            return Name();
         }
 
         void MainHelp( std::ostream& out )
@@ -339,9 +438,39 @@ namespace cli
             if ( parent ) parent -> Help( out );
         }
 
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << description << std::endl;
+            out << " - " << Name() << "\n\t" << description << std::endl;
+        }
+
+        std::vector<std::string> GetCompletions(const std::string& currentLine) const
+        {
+            auto result = cli::GetCompletions(cmds, currentLine);
+			if (parent)
+			{
+				auto c = parent->GetCompletionRecursive(currentLine);
+				result.insert( result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+			}
+			return result;
+        }
+
+        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
+        {
+            if ( boost::algorithm::starts_with( line, Name() ) )
+            {
+                auto rest = line;
+                rest.erase( 0, Name().size() );
+                boost::algorithm::trim_left(rest);
+                std::vector<std::string> result;
+                for ( auto& cmd: cmds )
+                {
+                    auto cs = cmd->GetCompletionRecursive( rest );
+                    for ( auto& c: cs )
+                        result.push_back( Name() + ' ' + c );
+                }
+                return result;
+            }
+            return Command::GetCompletionRecursive(line);
         }
 
     private:
@@ -361,7 +490,6 @@ namespace cli
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
 
-        const std::string name;
         Menu* parent;
         const std::string description;
         using Cmds = std::vector< std::unique_ptr< Command > >;
@@ -378,10 +506,10 @@ namespace cli
         BasicCommand& operator = ( const BasicCommand& ) = delete;
 
         BasicCommand( const std::string& _name, std::function< void(CliSession&) > f, const std::string& _help = "" ) :
-            name( _name ), func( f ), help( _help ) {}
+            Command( _name ), func( f ), help( _help ) {}
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine[ 0 ] == Name() )
             {
                 func( session );
                 return true;
@@ -389,12 +517,11 @@ namespace cli
 
             return false;
         }
-        virtual void Help( std::ostream& out ) override
+        virtual void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << help << std::endl;
+            out << " - " << Name() << "\n\t" << help << std::endl;
         }
     private:
-        const std::string name;
         std::function< void(CliSession&) > func;
         const std::string help;
     };
@@ -410,12 +537,13 @@ namespace cli
             const std::string& _name,
             std::function< void( std::ostream& )> _function,
             const std::string& desc = ""
-        ) : name( _name ), function( _function ), description( desc )
+        ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
         {
-            if ( cmdLine[ 0 ] == name )
+            if ( cmdLine.size() != 1 ) return false;
+            if ( cmdLine[ 0 ] == Name() )
             {
                 function( session.OutStream() );
                 return true;
@@ -423,12 +551,11 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out )
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name << "\n\t" << description << std::endl;
+            out << " - " << Name() << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( std::ostream& )> function;
         const std::string description;
     };
@@ -445,13 +572,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T, std::ostream& ) > _function,
             const std::string& desc = ""
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 2 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -467,14 +594,13 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T >::Name()
                 << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( T, std::ostream& )> function;
         const std::string description;
     };
@@ -491,13 +617,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, std::ostream& ) > _function,
             const std::string& desc = "2 parameter command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 3 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -514,15 +640,14 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( T1, T2, std::ostream& )> function;
         const std::string description;
     };
@@ -539,13 +664,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, T3, std::ostream& ) > _function,
             const std::string& desc = "3 parameters command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 4 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -563,16 +688,15 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
                 << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( T1, T2, T3, std::ostream& )> function;
         const std::string description;
     };
@@ -589,13 +713,13 @@ namespace cli
             const std::string& _name,
             std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
             const std::string& desc = "4 parameters command"
-            ) : name( _name ), function( _function ), description( desc )
+            ) : Command( _name ), function( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 5 ) return false;
-            if ( name == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
@@ -614,9 +738,9 @@ namespace cli
 
             return false;
         }
-        void Help( std::ostream& out ) override
+        void Help( std::ostream& out ) const override
         {
-            out << " - " << name
+            out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
@@ -624,7 +748,6 @@ namespace cli
                 << "\n\t" << description << std::endl;
         }
     private:
-        const std::string name;
         const std::function< void( T1, T2, T3, T4, std::ostream& )> function;
         const std::string description;
     };
@@ -644,12 +767,14 @@ namespace cli
                 "This help message"
             )
         );
+#ifdef CLI_HISTORY_CMD
         global -> Add( std::make_unique< BasicCommand >(
                 "history",
                 [](CliSession& s){ s.ShowHistory(); },
                 "Show the history"
             )
         );
+#endif
     }
 
     inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
@@ -666,6 +791,12 @@ namespace cli
     {
         global -> MainHelp( out );
     }
+
+    inline std::vector<std::string> Cli::GetCompletions( const std::string& currentLine ) const
+    {
+        return global->GetCompletions(currentLine);
+    }
+
 
     // CliSession implementation
 
@@ -707,7 +838,11 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
-        out << current -> Prompt() << "> " << std::flush;
+        out << beforePrompt
+            << current -> Prompt()
+            << afterPrompt
+            << "> "
+            << std::flush;
     }
 
     inline void CliSession::Help()
@@ -717,6 +852,16 @@ namespace cli
         for ( auto& cmd: cmds )
             cmd -> Help( out );
         current -> MainHelp( out );
+    }
+
+    inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
+    {
+        auto v1 = cli.GetCompletions(currentLine);
+        auto v2 = cli::GetCompletions(cmds, currentLine);
+        auto v3 = current -> GetCompletions(currentLine);
+        v1.insert( v1.end(), std::make_move_iterator(v2.begin()), std::make_move_iterator(v2.end()) );
+        v1.insert( v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()) );
+        return v1;
     }
 
     template < typename F, typename R >

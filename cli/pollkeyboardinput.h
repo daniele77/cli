@@ -42,6 +42,34 @@ namespace boost { namespace asio { class io_service; } }
 namespace cli
 {
 
+//
+
+inline std::string CommonPrefix(const std::vector<std::string>& v)
+{
+    assert(!v.empty());
+    std::string prefix;
+
+    // find the shorter string
+    auto smin = std::min_element(v.begin(), v.end(),
+                [] (const std::string& s1, const std::string& s2)
+                {
+                    return s1.size() < s2.size();
+                });
+
+    for (std::size_t i = 0; i < smin->size(); ++i)
+    {
+        // check if i-th element is equal in each input string
+        const char c = (*smin)[i];
+        for (auto& x: v)
+            if (x[i] != c) return prefix;
+        prefix += c;
+    }
+
+    return prefix;
+}
+
+//
+
 class PollKeyboardInput
 {
 public:
@@ -70,13 +98,30 @@ private:
                 terminal.SetLine( session.PreviousCmd() );
                 break;
             case Symbol::tab:
+                auto line = terminal.GetLine();
+                auto completions = session.GetCompletions(line);
+                if (completions.empty())
+                    break;
+                auto commonPrefix = CommonPrefix(completions);
+                if (commonPrefix.size() > line.size())
+                    terminal.SetLine(commonPrefix);
+                else
+                {
+                    session.OutStream() << '\n';
+                    std::string items;
+                    std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
+                    session.OutStream() << items << '\n';
+                    session.Prompt();
+                    terminal.ResetCursor();
+                    terminal.SetLine( line );
+                }
                 break;
         }
 
     }
 
     CliSession& session;
-    Terminal< Keyboard > terminal;
+    Terminal<Keyboard> terminal;
 };
 
 } // namespace

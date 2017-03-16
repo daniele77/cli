@@ -33,6 +33,7 @@
 #include <functional>
 #include <string>
 #include "keyboard.h"
+#include "colorprofile.h"
 
 // forward declaraction
 namespace boost { namespace asio { class io_service; } }
@@ -54,9 +55,13 @@ public:
         handler(h)
     {}
 
+    void ResetCursor() { position = 0; }
+
     void SetLine( const std::string& newLine )
     {
-        std::cout << std::string( position, '\b' ) << newLine << std::flush;
+		std::cout << beforeInput
+			      << std::string(position, '\b') << newLine
+			      << afterInput << std::flush;
 
         // if newLine is shorter then currentLine, we have
         // to clear the rest of the string
@@ -70,6 +75,8 @@ public:
         currentLine = newLine;
         position = currentLine.size();
     }
+
+    std::string GetLine() const { return currentLine; }
 
 private:
 
@@ -110,29 +117,33 @@ private:
             case KeyType::right:
                 if ( position < currentLine.size() )
                 {
-                    std::cout << currentLine[position] << std::flush;
+                    std::cout << beforeInput
+                              << currentLine[position]
+                              << afterInput << std::flush;
                     ++position;
                 }
                 break;
+			case KeyType::ret:
+				{
+					std::cout << std::endl;
+					auto cmd = currentLine;
+					currentLine.clear();
+					position = 0;
+					handler(std::make_pair(Symbol::command, cmd));
+				}
+				break;
             case KeyType::ascii:
             {
                 const char c = static_cast<char>(k.second);
-                if ( c == '\n' )
-                {
-                    std::cout << std::endl;
-                    auto cmd = currentLine;
-                    currentLine.clear();
-                    position = 0;
-                    handler( std::make_pair(Symbol::command, cmd) );
-                }
-                else if ( c == '\t' )
+                if ( c == '\t' )
                     handler( std::make_pair(Symbol::tab, std::string()) );
                 else
                 {
                     // output the new char:
-                    std::cout << c;
+					std::cout << beforeInput << c;
                     // and the rest of the string:
-                    std::cout << std::string( currentLine.begin()+position, currentLine.end() );
+                    std::cout << std::string( currentLine.begin()+position, currentLine.end() ) 
+						      << afterInput;
 
                     // go back to the original position
                     std::cout << std::string( currentLine.size()-position, '\b' ) << std::flush;
@@ -160,7 +171,9 @@ private:
             }
             case KeyType::end:
             {
-                std::cout << std::string( currentLine.begin()+position, currentLine.end() ) << std::flush;
+                std::cout << beforeInput
+                          << std::string( currentLine.begin()+position, currentLine.end() )
+                          << afterInput << std::flush;
                 position = currentLine.size();
                 break;
             }

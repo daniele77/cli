@@ -27,10 +27,13 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#include "cli/server.h" 
+// TODO. NB: server.h includes boost asio, so in Windows it should compare before cli.h that includes rang
+// (consider to provide a global header file for the library)
 #include "cli/cli.h"
 #include "cli/remotecli.h"
-#include "cli/server.h"
 #include "cli/pollkeyboardinput.h"
+//#include "cli/asyncinput.h"
 
 using namespace cli;
 using namespace std;
@@ -48,15 +51,39 @@ int main()
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
     rootMenu -> Add(
+            "hello_everysession",
+            [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
+            "Print hello everybody on all open sessions" );
+    rootMenu -> Add(
             "answer",
             [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
+    rootMenu -> Add(
+            "color",
+            [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },
+            "Enable colors in the cli" );
+    rootMenu -> Add(
+            "nocolor",
+            [](std::ostream& out){ out << "Colors OFF\n"; SetNoColor(); },
+            "Disable colors in the cli" );
 
     auto subMenu = make_unique< Menu >( "sub" );
     subMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
+    subMenu -> Add(
+            "demo",
+            [](std::ostream& out){ out << "This is a sample!\n"; },
+            "Print a demo string" );
+
+    auto subSubMenu = make_unique< Menu >( "subsub" );
+        subSubMenu -> Add(
+            "hello",
+            [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
+            "Print hello world in the sub-submenu" );
+    subMenu -> Add( std::move(subSubMenu));
+
     rootMenu -> Add( std::move(subMenu) );
 
 

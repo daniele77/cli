@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef LINUXKEYBOARD_H_
-#define LINUXKEYBOARD_H_
+#ifndef WINKEYBOARD_H_
+#define WINKEYBOARD_H_
 
 #include <functional>
 #include <string>
@@ -37,34 +37,27 @@
 #include <atomic>
 #include <boost/asio.hpp>
 
-#include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
-
+#include <conio.h>
 
 namespace cli
 {
 
 enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
 
-class LinuxKeyboard
+class WinKeyboard
 {
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    LinuxKeyboard( boost::asio::io_service& ios, Handler h ) :
+	WinKeyboard( boost::asio::io_service& ios, Handler h ) :
         ioService(ios), handler(h)
     {
-        ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
         servant -> detach();
     }
-    ~LinuxKeyboard()
+    ~WinKeyboard()
     {
         run = false;
-        ToStandardMode();
     }
 
 private:
@@ -80,71 +73,34 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        while ( !KbHit() ) {}
-        int ch = getchar();
-        switch( ch )
+		int c = _getch();
+        switch( c )
         {
-            case 127: return std::make_pair(KeyType::backspace,' '); break;
-            case 10: return std::make_pair(KeyType::ret,' '); break;
-            case 27: // symbol
-                ch = getchar();
-                if ( ch == 91 ) // arrow keys
-                {
-                    ch = getchar();
-                    switch( ch )
-                    {
-                        case 51:
-                            ch = getchar();
-                            if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
-                            else return std::make_pair(KeyType::ignored,' ');
-                            break;
-                        case 65: return std::make_pair(KeyType::up,' '); break;
-                        case 66: return std::make_pair(KeyType::down,' '); break;
-                        case 68: return std::make_pair(KeyType::left,' '); break;
-                        case 67: return std::make_pair(KeyType::right,' '); break;
-                        case 70: return std::make_pair(KeyType::end,' '); break;
-                        case 72: return std::make_pair(KeyType::home,' '); break;
-                    }
-                }
-                break;
-            default: // ascii
+			case 224: // symbol
+			{
+				c = _getch();
+				switch (c)
+				{
+					case 72: return std::make_pair(KeyType::up, ' '); break;
+					case 80: return std::make_pair(KeyType::down, ' '); break;
+					case 75: return std::make_pair(KeyType::left, ' '); break;
+					case 77: return std::make_pair(KeyType::right, ' '); break;
+					case 71: return std::make_pair(KeyType::home, ' '); break;
+					case 79: return std::make_pair(KeyType::end, ' '); break;
+					case 83: return std::make_pair(KeyType::canc, ' '); break;
+				}
+			}
+			case 8: return std::make_pair(KeyType::backspace, c); break;
+			case 13: return std::make_pair(KeyType::ret, c); break;
+            default: // hopefully ascii
             {
-                const char c = static_cast<char>(ch);
-                return std::make_pair(KeyType::ascii,c);
+                const char ch = static_cast<char>(c);
+                return std::make_pair(KeyType::ascii,ch);
             }
         }
         return std::make_pair(KeyType::ignored,' ');
     }
 
-    void ToManualMode()
-    {
-        tcgetattr( STDIN_FILENO, &oldt );
-        newt = oldt;
-        newt.c_lflag &= ~( ICANON | ECHO );
-        tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-    }
-    void ToStandardMode()
-    {
-        tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-    }
-
-    static int KbHit()
-    {
-      struct timeval tv;
-      fd_set rdfs;
-
-      tv.tv_sec = 1;
-      tv.tv_usec = 0;
-
-      FD_ZERO(&rdfs);
-      FD_SET (STDIN_FILENO, &rdfs);
-
-      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs);
-    }
-
-    termios oldt;
-    termios newt;
     boost::asio::io_service& ioService;
     Handler handler;
     std::atomic<bool> run{ true };
@@ -153,5 +109,5 @@ private:
 
 } // namespace
 
-#endif // LINUXKEYBOARD_H_
+#endif // WINKEYBOARD_H_
 
