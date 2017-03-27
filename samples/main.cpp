@@ -27,13 +27,14 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#include <cli/inputhandler.h>
 #include "cli/server.h" 
 // TODO. NB: server.h includes boost asio, so in Windows it should compare before cli.h that includes rang
 // (consider to provide a global header file for the library)
 #include "cli/cli.h"
 #include "cli/remotecli.h"
-#include "cli/pollkeyboardinput.h"
-//#include "cli/asyncinput.h"
+#include "cli/keyboard.h"
+#include "cli/clilocalsession.h"
 
 using namespace cli;
 using namespace std;
@@ -91,19 +92,19 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
+    // TODO: incorporate CliSession inside CliLocalSession
     CliSession session( cli, std::cout );
     session.ExitAction( [&ios](auto& out) // session exit action
             {
                 out << "Closing App...\n";
                 ios.stop();
             } );
-
-    //AsyncInput ac( ios, session );
-    PollKeyboardInput ac(ios, session);
+    CliLocalSession ls(ios, session);
 
     // setup server
 
-    CliServer server( ios, 5000, cli );
+    //CliServer server( ios, 5000, cli );
+    CliTelnetServer server(ios, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
     ios.run();

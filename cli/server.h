@@ -88,24 +88,26 @@ protected:
             });
     }
 
-    std::ostream& OutStream() { return outStream; }
+    virtual std::ostream& OutStream() { return outStream; }
 
     virtual void OnConnect() = 0;
     virtual void OnDisconnect() = 0;
     virtual void OnError() = 0;
     virtual void OnDataReceived( const std::string& data ) = 0;
 
+    virtual std::string Encode(const std::string& data) const { return data; }
+
 private:
 
     // std::streambuf
     std::streamsize xsputn( const char* s, std::streamsize n ) override
     {
-        Send( std::string( s, s+n ) );
+        Send(Encode(std::string(s, s+n)));
         return n;
     }
     int overflow( int c ) override
     {
-        Send( std::string( 1, static_cast< char >( c ) ) );
+        Send(Encode(std::string(1, static_cast< char >(c))));
         return c;
     }
 

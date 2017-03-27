@@ -189,7 +189,7 @@ namespace cli
         void ExitAction( std::function< void(std::ostream&)> action );
         Menu* RootMenu() { return rootMenu.get(); }
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
-        void MainHelp( std::ostream& out );
+        void MainHelp( std::ostream& out ) const;
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
         // Returns the collection of completions relatives to global commands
         std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
@@ -200,7 +200,7 @@ namespace cli
         static OutStream& cout() { static OutStream s; return s; }
 
     private:
-        void Help( std::ostream& out );
+        void Help( std::ostream& out ) const;
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
         std::unique_ptr< Menu > global;
         std::function< void(std::ostream&) > exitAction;
@@ -254,7 +254,6 @@ namespace cli
         CliSession( Cli& _cli, std::ostream& _out, size_t historySize = 100 ) :
             cli( _cli ),
             current( cli.RootMenu() ),
-            run( true ),
             out( _out ),
             history( historySize )
         {
@@ -271,17 +270,6 @@ namespace cli
 
         void Prompt();
 
-        void Run()
-        {
-            std::string cmd;
-            while ( run )
-            {
-                Prompt();
-                std::getline( std::cin, cmd );
-                if ( ! Feed( cmd ) ) break;
-            }
-        }
-
         void Current( Menu* menu )
         {
             current = menu;
@@ -289,24 +277,11 @@ namespace cli
 
         std::ostream& OutStream() { return out; }
 
-        void Help();
-
-        void Add( std::unique_ptr< Command >&& cmd )
-        {
-            cmds.push_back( std::move(cmd) );
-        }
-
-        template < typename F >
-        void Add( const std::string& name, F f, const std::string& help = "" )
-        {
-            // dispatch to private Add methods
-            Add( name, help, f, &F::operator() );
-        }
+        void Help() const;
 
         void Exit()
         {
-            run = false;
-            if ( exitAction ) exitAction( out );
+            if (exitAction) exitAction(out);
         }
 
         void ExitAction( std::function< void(std::ostream&)> action )
@@ -329,38 +304,13 @@ namespace cli
             return result;
         }
 
-        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
+        std::vector<std::string> GetCompletions(const std::string& currentLine) const;
 
     private:
 
-        template < typename F, typename R >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
-
-        template < typename F, typename R, typename A1 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, std::ostream& out) const );
-
-        template < typename F, typename R, typename A1, typename A2 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, std::ostream& out) const );
-
-        template < typename F, typename R, typename A1, typename A2, typename A3 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, std::ostream& out) const );
-
-        template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
-
-        bool ScanCmds( const std::vector< std::string >& cmdLine )
-        {
-            for ( auto& cmd: cmds )
-                if ( cmd -> Exec( cmdLine, *this ) ) return true;
-            return false;
-        }
-
         Cli& cli;
         Menu* current;
-        bool run;
         std::ostream& out;
-        using Cmds = std::vector< std::unique_ptr< Command > >;
-        Cmds cmds;
         std::function< void(std::ostream&)> exitAction;
         History history;
     };
@@ -440,7 +390,7 @@ namespace cli
 
         void Help( std::ostream& out ) const override
         {
-            out << " - " << Name() << "\n\t" << description << std::endl;
+            out << " - " << Name() << "\n\t" << description << "\n";
         }
 
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
@@ -519,7 +469,7 @@ namespace cli
         }
         virtual void Help( std::ostream& out ) const override
         {
-            out << " - " << Name() << "\n\t" << help << std::endl;
+            out << " - " << Name() << "\n\t" << help << "\n";
         }
     private:
         std::function< void(CliSession&) > func;
@@ -553,7 +503,7 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << Name() << "\n\t" << description << std::endl;
+            out << " - " << Name() << "\n\t" << description << "\n";
         }
     private:
         const std::function< void( std::ostream& )> function;
@@ -598,7 +548,7 @@ namespace cli
         {
             out << " - " << Name()
                 << " " << TypeDesc< T >::Name()
-                << "\n\t" << description << std::endl;
+                << "\n\t" << description << "\n";
         }
     private:
         const std::function< void( T, std::ostream& )> function;
@@ -645,7 +595,7 @@ namespace cli
             out << " - " << Name()
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
-                << "\n\t" << description << std::endl;
+                << "\n\t" << description << "\n";
         }
     private:
         const std::function< void( T1, T2, std::ostream& )> function;
@@ -694,7 +644,7 @@ namespace cli
                 << " " << TypeDesc< T1 >::Name()
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
-                << "\n\t" << description << std::endl;
+                << "\n\t" << description << "\n";
         }
     private:
         const std::function< void( T1, T2, T3, std::ostream& )> function;
@@ -745,7 +695,7 @@ namespace cli
                 << " " << TypeDesc< T2 >::Name()
                 << " " << TypeDesc< T3 >::Name()
                 << " " << TypeDesc< T4 >::Name()
-                << "\n\t" << description << std::endl;
+                << "\n\t" << description << "\n";
         }
     private:
         const std::function< void( T1, T2, T3, T4, std::ostream& )> function;
@@ -765,6 +715,16 @@ namespace cli
                 "help",
                 [](CliSession& s){ s.Help(); },
                 "This help message"
+            )
+        );
+        global -> Add( std::make_unique< BasicCommand >(
+                "exit",
+                [this](CliSession& s)
+                {
+                    ExitAction(s.OutStream());
+                    s.Exit();
+                },
+                "Quit the session"
             )
         );
 #ifdef CLI_HISTORY_CMD
@@ -787,7 +747,7 @@ namespace cli
         return global -> ScanCmds( cmdLine, session );
     }
 
-    inline void Cli::MainHelp( std::ostream& out )
+    inline void Cli::MainHelp( std::ostream& out ) const
     {
         global -> MainHelp( out );
     }
@@ -805,7 +765,7 @@ namespace cli
         history.ResetCurrent(); // TODO here or in the caller?
 
         std::vector< std::string > strs;
-        boost::split( strs, cmd, boost::is_any_of( " \t\r\n" ), boost::token_compress_on );
+        boost::split( strs, cmd, boost::is_any_of( " \t\n" ), boost::token_compress_on );
         // remove null entries from the vector:
         strs.erase(
             std::remove_if(
@@ -815,23 +775,18 @@ namespace cli
             ),
             strs.end()
         );
-        if ( strs.size() == 0 ) return true; // just hit enter
+        if ( strs.empty() ) return true; // just hit enter
+
         // global cmds check
         bool found = cli.ScanCmds( strs, *this );
-        if ( !found ) found = ScanCmds( strs );
-        // if the user gave the exit command:
-        if ( ! run )
-        {
-            cli.ExitAction( out );
-            return false;
-        }
+
         // root menu recursive cmds check
         if ( !found ) found = current -> ScanCmds( strs, *this );
 
         if ( found ) // insert into history
             history.Add( std::move(strs) ); // last use of strs
         else // error msg if not found
-            out << "Command unknown: " << cmd << std::endl;
+            out << "Command unknown: " << cmd << "\n";
 
         return true;
     }
@@ -845,53 +800,19 @@ namespace cli
             << std::flush;
     }
 
-    inline void CliSession::Help()
+    inline void CliSession::Help() const
     {
-        out << "Commands available:" << std::endl;
+        out << "Commands available:\n";
         cli.MainHelp( out );
-        for ( auto& cmd: cmds )
-            cmd -> Help( out );
         current -> MainHelp( out );
     }
 
     inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
     {
         auto v1 = cli.GetCompletions(currentLine);
-        auto v2 = cli::GetCompletions(cmds, currentLine);
         auto v3 = current -> GetCompletions(currentLine);
-        v1.insert( v1.end(), std::make_move_iterator(v2.begin()), std::make_move_iterator(v2.end()) );
         v1.insert( v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()) );
         return v1;
-    }
-
-    template < typename F, typename R >
-    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
-    {
-        cmds.push_back( std::make_unique< FuncCmd >( name, f, help ) );
-    }
-
-    template < typename F, typename R, typename A1 >
-    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
-    {
-        cmds.push_back( std::make_unique< FuncCmd1< A1 > >( name, f, help ) );
-    }
-
-    template < typename F, typename R, typename A1, typename A2 >
-    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
-    {
-        cmds.push_back( std::make_unique< FuncCmd2< A1, A2 > >( name, f, help ) );
-    }
-
-    template < typename F, typename R, typename A1, typename A2, typename A3 >
-    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
-    {
-        cmds.push_back( std::make_unique< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
-    }
-
-    template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
-    void CliSession::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
-    {
-        cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
     }
 
     // Menu implementation

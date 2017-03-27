@@ -30,8 +30,6 @@
 #ifndef LINUXKEYBOARD_H_
 #define LINUXKEYBOARD_H_
 
-#include <functional>
-#include <string>
 #include <thread>
 #include <memory>
 #include <atomic>
@@ -43,19 +41,17 @@
 #include <sys/types.h>
 #include <sys/time.h>
 
+#include "inputdevice.h"
+
 
 namespace cli
 {
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
-
-class LinuxKeyboard
+class LinuxKeyboard : public InputDevice
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
-
-    LinuxKeyboard( boost::asio::io_service& ios, Handler h ) :
-        ioService(ios), handler(h)
+    explicit LinuxKeyboard(boost::asio::io_service& ios) :
+        InputDevice(ios)
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
@@ -74,7 +70,7 @@ private:
         while ( run )
         {
             auto k = Get();
-            ioService.post( [this,k](){ handler(k); } );
+            Notify(k);
         }
     }
 
@@ -145,10 +141,9 @@ private:
 
     termios oldt;
     termios newt;
-    boost::asio::io_service& ioService;
     Handler handler;
     std::atomic<bool> run{ true };
-    std::unique_ptr< std::thread > servant;
+    std::unique_ptr<std::thread> servant;
 };
 
 } // namespace

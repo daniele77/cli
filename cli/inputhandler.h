@@ -27,17 +27,14 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef POLLKEYBOARDINPUT_H_
-#define POLLKEYBOARDINPUT_H_
+#ifndef INPUTHANDLER_H_
+#define INPUTHANDLER_H_
 
 #include <functional>
 #include <string>
 #include "terminal.h"
-#include "keyboard.h"
+#include "inputdevice.h"
 #include "cli.h" // CliSession
-
-// forward declaraction
-namespace boost { namespace asio { class io_service; } }
 
 namespace cli
 {
@@ -70,23 +67,30 @@ inline std::string CommonPrefix(const std::vector<std::string>& v)
 
 //
 
-class PollKeyboardInput
+class InputHandler
 {
 public:
-    PollKeyboardInput(boost::asio::io_service& ios, CliSession& _session) :
-        session( _session ),
-        terminal( ios, [this](auto cmd){ this->NewCommand(cmd); } )
+    InputHandler(CliSession& _session, InputDevice& kb) :
+        session(_session),
+        terminal(session.OutStream())
     {
-        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
-        session.Prompt();
+        kb.Register( [this](auto key){ this->Keypressed(key); } );
     }
 
 private:
 
-    void NewCommand( std::pair< Symbol, std::string > s )
+    void Keypressed(std::pair<KeyType, char> k)
+    {
+        const std::pair<Symbol,std::string> s = terminal.Keypressed(k);
+        NewCommand(s);
+    }
+
+    void NewCommand(const std::pair< Symbol, std::string >& s)
     {
         switch ( s.first )
         {
+            case Symbol::nothing:
+                break;
             case Symbol::command:
                 if ( session.Feed( s.second ) )
                     session.Prompt();
@@ -100,31 +104,40 @@ private:
             case Symbol::tab:
                 auto line = terminal.GetLine();
                 auto completions = session.GetCompletions(line);
+
                 if (completions.empty())
                     break;
+
+                if (completions.size() == 1)
+                {
+                    terminal.SetLine(completions[0]+' ');
+                    break;
+                }
+
                 auto commonPrefix = CommonPrefix(completions);
                 if (commonPrefix.size() > line.size())
-                    terminal.SetLine(commonPrefix);
-                else
                 {
-                    session.OutStream() << '\n';
-                    std::string items;
-                    std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
-                    session.OutStream() << items << '\n';
-                    session.Prompt();
-                    terminal.ResetCursor();
-                    terminal.SetLine( line );
+                    terminal.SetLine(commonPrefix);
+                    break;
                 }
+
+                session.OutStream() << '\n';
+                std::string items;
+                std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
+                session.OutStream() << items << '\n';
+                session.Prompt();
+                terminal.ResetCursor();
+                terminal.SetLine( line );
                 break;
         }
 
     }
 
     CliSession& session;
-    Terminal<Keyboard> terminal;
+    Terminal terminal;
 };
 
-} // namespace
+} // namespace cli
 
-#endif // POLLKEYBOARDINPUT_H_
+#endif // INPUTHANDLER_H_
 

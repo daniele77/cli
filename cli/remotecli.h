@@ -30,13 +30,15 @@
 #ifndef REMOTECLI_H_
 #define REMOTECLI_H_
 
+#include <cli/inputhandler.h>
 #include <memory>
-#include "cli/cli.h"
-#include "cli/server.h"
+#include "cli.h"
+#include "server.h"
+#include "inputdevice.h"
 
 namespace cli
 {
-
+#if 0
 class TcpCliSession : public Session
 {
 public:
@@ -172,16 +174,29 @@ private:
     std::function< void(std::ostream&)> exitAction;
 };
 
+#endif
+
 // *******************************************************************************
 
 class TelnetSession : public Session
 {
 public:
     TelnetSession(boost::asio::ip::tcp::socket socket) :
-        Session( std::move( socket ) )
+        Session(std::move(socket))
     {}
 
 protected:
+
+    virtual std::string Encode(const std::string& data) const override
+    {
+        std::string result;
+        for (char c: data)
+        {
+            if (c == '\n') result += '\r';
+            result += c;
+        }
+        return result;
+    }
 
     virtual void OnConnect() override
     {
@@ -190,7 +205,7 @@ protected:
         // and the std::string ctor that takes the size,
         // so that it's not null-terminated
         //std::string msg{ "\x0FF\x0FD\x027", 3 };
-        waitAck = true;
+        //waitAck = true;
         //std::string iacDoSuppressGoAhead{ "\x0FF\x0FD\x003", 3 };
         //this -> OutStream() << iacDoSuppressGoAhead << std::flush;
 
@@ -360,10 +375,10 @@ private:
         switch(state)
         {
             case State::data:
-                std::cout << "data: " << static_cast<int>(c) << std::endl;
+                Output(c);
                 break;
             case State::sub:
-                std::cout << "sub: " << static_cast<int>(c) << std::endl;
+                Sub(c);
                 break;
             case State::wait_will:
                 Will(c);
@@ -456,7 +471,10 @@ private:
     void Wont(char c) { std::cout << "wont " << static_cast<int>(c) << std::endl; }
     void Do(char c) { std::cout << "do " << static_cast<int>(c) << std::endl; }
     void Dont(char c) { std::cout << "dont " << static_cast<int>(c) << std::endl; }
-
+    void Sub(char c) { std::cout << "sub: " << static_cast<int>(c) << std::endl; }
+protected:
+    virtual void Output(char c) { std::cout << "data: " << static_cast<int>(c) << std::endl; }
+private:
     enum class State { data, sub, wait_will, wait_wont, wait_do, wait_dont };
     State state = State::data;
     bool escape = false;
@@ -497,7 +515,7 @@ private:
     }
 */
     std::string buffer;
-    bool waitAck = false;
+    //bool waitAck = false;
 };
 
 class TelnetServer : public Server
@@ -512,7 +530,125 @@ public:
     }
 };
 
-} // namespace
+//////////////
+
+class CliTelnetSession : public TelnetSession, public InputDevice
+{
+public:
+
+    CliTelnetSession(boost::asio::ip::tcp::socket socket, Cli& cli, std::function< void(std::ostream&)> exitAction) :
+        TelnetSession(std::move(socket)),
+        InputDevice(socket.get_io_service()),
+        cliSession(cli, this->OutStream()),
+        poll(cliSession, *this)
+    {
+        cliSession.ExitAction([this, exitAction](std::ostream& out){ exitAction(out), Disconnect(); } );
+        //cliSession.Add(std::make_unique<FuncCmd>("exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session"));
+    }
+protected:
+
+    virtual void OnConnect() override
+    {
+        TelnetSession::OnConnect();
+        cliSession.Prompt();
+    }
+
+    void Output(char c) override
+    {
+        switch(step)
+        {
+            case Step::_1:
+                switch( c )
+                {
+                    case 127: Notify(std::make_pair(KeyType::backspace,' ')); break;
+                    //case 10: Notify(std::make_pair(KeyType::ret,' ')); break;
+                    case 27: step = Step::_2; break;  // symbol
+                    case 13: step = Step::wait_0; break;  // wait for 0 (ENTER key)
+                    default: // ascii
+                    {
+                        const char ch = static_cast<char>(c);
+                        Notify(std::make_pair(KeyType::ascii,ch));
+                    }
+                }
+                break;
+
+            case Step::_2: // got 27 last time
+                if ( c == 91 )
+                {
+                    step = Step::_3;
+                    break;  // arrow keys
+                }
+                else
+                {
+                    step = Step::_1;
+                    Notify(std::make_pair(KeyType::ignored,' '));
+                    break; // unknown
+                }
+                break;
+
+            case Step::_3: // got 27 and 91
+                switch( c )
+                {
+                    case 51: step = Step::_4; break;  // not arrow keys
+                    case 65: step = Step::_1; Notify(std::make_pair(KeyType::up,' ')); break;
+                    case 66: step = Step::_1; Notify(std::make_pair(KeyType::down,' ')); break;
+                    case 68: step = Step::_1; Notify(std::make_pair(KeyType::left,' ')); break;
+                    case 67: step = Step::_1; Notify(std::make_pair(KeyType::right,' ')); break;
+                    case 70: step = Step::_1; Notify(std::make_pair(KeyType::end,' ')); break;
+                    case 72: step = Step::_1; Notify(std::make_pair(KeyType::home,' ')); break;
+                }
+                break;
+
+            case Step::_4:
+                if ( c == 126 ) Notify(std::make_pair(KeyType::canc,' '));
+                else Notify(std::make_pair(KeyType::ignored,' '));
+
+                step = Step::_1;
+
+                break;
+
+            case Step::wait_0:
+                if ( c == 0 /* linux */ || c == 10 /* win */ ) Notify(std::make_pair(KeyType::ret,' '));
+                else Notify(std::make_pair(KeyType::ignored,' '));
+
+                step = Step::_1;
+
+                break;
+
+        }
+    }
+
+private:
+
+    enum class Step { _1, _2, _3, _4, wait_0 };
+    Step step = Step::_1;
+    CliSession cliSession;
+    InputHandler poll;
+};
+
+
+class CliTelnetServer : public Server
+{
+public:
+    CliTelnetServer(boost::asio::io_service& ios, short port, Cli& _cli) :
+        Server(ios, port),
+        cli(_cli)
+    {}
+    void ExitAction( std::function< void(std::ostream&)> action )
+    {
+        exitAction = action;
+    }
+    virtual std::shared_ptr<Session> CreateSession(boost::asio::ip::tcp::socket socket) override
+    {
+        return std::make_shared<CliTelnetSession>(std::move(socket), cli, exitAction);
+    }
+private:
+    Cli& cli;
+    std::function< void(std::ostream&)> exitAction;
+};
+
+
+} // namespace cli
 
 #endif // REMOTECLI_H_
 

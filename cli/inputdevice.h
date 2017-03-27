@@ -27,94 +27,43 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef WINKEYBOARD_H_
-#define WINKEYBOARD_H_
+#ifndef INPUTDEVICE_H_
+#define INPUTDEVICE_H_
 
 #include <functional>
 #include <string>
-#include <thread>
-#include <memory>
-#include <atomic>
 #include <boost/asio.hpp>
-
-#include <conio.h>
-
-#include "inputdevice.h"
 
 namespace cli
 {
 
 enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
 
-class WinKeyboard
+class InputDevice
 {
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    explicit WinKeyboard(boost::asio::io_service& ios) :
-        ioService(ios)
-    {
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
-    }
-    ~WinKeyboard()
-    {
-        run = false;
-    }
+    explicit InputDevice(boost::asio::io_service& ios) : ioService(ios) {}
+    virtual ~InputDevice() = default;
+
     template <typename H>
-    void Register(H&& h)
+    void Register(H&& h) { handler = std::forward<H>(h); }
+
+protected:
+
+    void Notify(std::pair<KeyType,char> k)
     {
-        handler = std::forward<H>(h);
+        ioService.post( [this,k](){ if (handler) handler(k); } );
     }
 
 private:
 
-    void Read()
-    {
-        while ( run )
-        {
-            auto k = Get();
-            ioService.post( [this,k](){ if (handler) handler(k); } );
-        }
-    }
-
-    std::pair<KeyType,char> Get()
-    {
-		int c = _getch();
-        switch( c )
-        {
-			case 224: // symbol
-			{
-				c = _getch();
-				switch (c)
-				{
-					case 72: return std::make_pair(KeyType::up, ' '); break;
-					case 80: return std::make_pair(KeyType::down, ' '); break;
-					case 75: return std::make_pair(KeyType::left, ' '); break;
-					case 77: return std::make_pair(KeyType::right, ' '); break;
-					case 71: return std::make_pair(KeyType::home, ' '); break;
-					case 79: return std::make_pair(KeyType::end, ' '); break;
-					case 83: return std::make_pair(KeyType::canc, ' '); break;
-				}
-			}
-			case 8: return std::make_pair(KeyType::backspace, c); break;
-			case 13: return std::make_pair(KeyType::ret, c); break;
-            default: // hopefully ascii
-            {
-                const char ch = static_cast<char>(c);
-                return std::make_pair(KeyType::ascii,ch);
-            }
-        }
-        return std::make_pair(KeyType::ignored,' ');
-    }
-
     boost::asio::io_service& ioService;
     Handler handler;
-    std::atomic<bool> run{ true };
-    std::unique_ptr< std::thread > servant;
 };
 
-} // namespace
+} // namespace cli
 
-#endif // WINKEYBOARD_H_
+#endif // INPUTDEVICE_H_
 
