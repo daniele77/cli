@@ -27,11 +27,12 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include <cli/inputhandler.h>
 #include "cli/server.h" 
-// TODO. NB: server.h includes boost asio, so in Windows it should compare before cli.h that includes rang
+// TODO. NB: server.h includes boost asio, so in Windows it should compare before cli.h
+// and inputhandler.h that include rang
 // (consider to provide a global header file for the library)
 #include "cli/cli.h"
+#include <cli/inputhandler.h>
 #include "cli/remotecli.h"
 #include "cli/keyboard.h"
 #include "cli/clilocalsession.h"

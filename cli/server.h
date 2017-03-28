@@ -32,6 +32,7 @@
 
 #include <memory>
 #include <boost/asio.hpp>
+#include <queue>
 
 namespace cli
 {
@@ -74,18 +75,14 @@ protected:
           });
     }
 
-    virtual void Send( const std::string& msg )
+    virtual void Send(const std::string& msg)
     {
-        auto self( shared_from_this() );
-        sendBuffer = msg;
-        boost::asio::async_write( socket, boost::asio::buffer( sendBuffer ),
-            [this, self]( boost::system::error_code ec, std::size_t /*length*/ )
-            {
-                if ( ( ec == boost::asio::error::eof ) || ( ec == boost::asio::error::connection_reset ) )
-                    OnDisconnect();
-                else if ( ec )
-                    OnError();
-            });
+        boost::system::error_code ec;
+        boost::asio::write(socket, boost::asio::buffer(msg), ec);
+        if ((ec == boost::asio::error::eof) || (ec == boost::asio::error::connection_reset))
+            OnDisconnect();
+        else if (ec)
+            OnError();
     }
 
     virtual std::ostream& OutStream() { return outStream; }
@@ -114,7 +111,6 @@ private:
     boost::asio::ip::tcp::socket socket;
     enum { max_length = 1024 };
     char data[ max_length ];
-    std::string sendBuffer;
     std::ostream outStream;
 };
 

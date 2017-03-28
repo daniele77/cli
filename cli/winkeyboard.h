@@ -44,15 +44,11 @@
 namespace cli
 {
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
-
-class WinKeyboard
+class WinKeyboard : public InputDevice
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
-
     explicit WinKeyboard(boost::asio::io_service& ios) :
-        ioService(ios)
+        InputDevice(ios)
     {
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
         servant -> detach();
@@ -60,11 +56,6 @@ public:
     ~WinKeyboard()
     {
         run = false;
-    }
-    template <typename H>
-    void Register(H&& h)
-    {
-        handler = std::forward<H>(h);
     }
 
 private:
@@ -74,7 +65,7 @@ private:
         while ( run )
         {
             auto k = Get();
-            ioService.post( [this,k](){ if (handler) handler(k); } );
+            Notify(k);
         }
     }
 
@@ -108,8 +99,6 @@ private:
         return std::make_pair(KeyType::ignored,' ');
     }
 
-    boost::asio::io_service& ioService;
-    Handler handler;
     std::atomic<bool> run{ true };
     std::unique_ptr< std::thread > servant;
 };

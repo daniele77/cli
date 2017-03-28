@@ -141,7 +141,6 @@ private:
 
     termios oldt;
     termios newt;
-    Handler handler;
     std::atomic<bool> run{ true };
     std::unique_ptr<std::thread> servant;
 };
