@@ -251,7 +251,7 @@ namespace cli
     class CliSession
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out, size_t historySize = 100 ) :
+        CliSession( Cli& _cli, std::ostream& _out, std::size_t historySize = 100 ) :
             cli( _cli ),
             current( cli.RootMenu() ),
             out( _out ),

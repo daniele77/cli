@@ -104,7 +104,6 @@ int main()
 
     // setup server
 
-    //CliServer server( ios, 5000, cli );
     CliTelnetServer server(ios, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
