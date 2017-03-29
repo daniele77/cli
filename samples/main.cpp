@@ -93,14 +93,14 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-    // TODO: incorporate CliSession inside CliLocalSession
-    CliSession session( cli, std::cout );
-    session.ExitAction( [&ios](auto& out) // session exit action
-            {
-                out << "Closing App...\n";
-                ios.stop();
-            } );
-    CliLocalSession ls(ios, session);
+    CliLocalSession localSession(cli, ios, std::cout, 200);
+    localSession.ExitAction(
+        [&ios](auto& out) // session exit action
+        {
+            out << "Closing App...\n";
+            ios.stop();
+        }
+    );
 
     // setup server
 

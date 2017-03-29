@@ -543,7 +543,6 @@ public:
         poll(cliSession, *this)
     {
         cliSession.ExitAction([this, exitAction](std::ostream& out){ exitAction(out), Disconnect(); } );
-        //cliSession.Add(std::make_unique<FuncCmd>("exit", [this](std::ostream&){ cliSession.Exit(); }, "Terminate this session"));
     }
 protected:
 
