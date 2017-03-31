@@ -38,5 +38,6 @@ Release
 *.opensdf
 *.vcxproj.filters
 *.sdf
-
+*.user
+*.db
 
