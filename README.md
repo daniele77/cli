@@ -1,8 +1,10 @@
 # cli
-A cross-platform lightweight C++14 library for interactive command line interfaces (Cisco style)
+A cross-platform header only C++14 library for interactive command line interfaces (Cisco style)
 
 ## Features
+* Header only
 * Cross-platform (linux and windows)
+* Menus and submenus
 * Remote sessions (telnet)
 * History (navigation with arrow keys)
 * Autocompletion (with TAB key)

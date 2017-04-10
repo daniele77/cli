@@ -467,13 +467,55 @@ private:
         }
     }
 
-    void Will(char c) { std::cout << "will " << static_cast<int>(c) << std::endl; }
-    void Wont(char c) { std::cout << "wont " << static_cast<int>(c) << std::endl; }
-    void Do(char c) { std::cout << "do " << static_cast<int>(c) << std::endl; }
-    void Dont(char c) { std::cout << "dont " << static_cast<int>(c) << std::endl; }
-    void Sub(char c) { std::cout << "sub: " << static_cast<int>(c) << std::endl; }
+    void Will(char c) 
+    { 
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "will " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
+    void Wont(char c)
+    { 
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "wont " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
+    void Do(char c)
+    { 
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "do " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
+    void Dont(char c) 
+    {
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "dont " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
+    void Sub(char c) 
+    { 
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "sub: " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
 protected:
-    virtual void Output(char c) { std::cout << "data: " << static_cast<int>(c) << std::endl; }
+    virtual void Output(char c)
+    {
+        #ifdef CLI_TELNET_TRACE
+        std::cout << "data: " << static_cast<int>(c) << std::endl;
+        #else
+        (void)c;
+        #endif
+    }
 private:
     enum class State { data, sub, wait_will, wait_wont, wait_do, wait_dont };
     State state = State::data;
