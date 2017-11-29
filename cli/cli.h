@@ -233,7 +233,7 @@ namespace cli
     // ********************************************************************
 
     // free utility function to get completions from a list of commands and the current line
-    std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
+    inline std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
     {
         std::vector<std::string> result;
         std::for_each( cmds.begin(), cmds.end(),

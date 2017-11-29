@@ -35,7 +35,7 @@
 namespace cli
 {
 
-bool& Color() { static bool color; return color; }
+inline bool& Color() { static bool color; return color; }
 
 inline void SetColor() { Color() = true; }
 inline void SetNoColor() { Color() = false; }
