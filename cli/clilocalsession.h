@@ -30,12 +30,10 @@
 #ifndef CLILOCALSESSION_H_
 #define CLILOCALSESSION_H_
 
+#include <boost/asio.hpp>
 #include "keyboard.h"
 #include "inputhandler.h"
 #include "cli.h" // CliSession
-
-// forward declaration
-namespace boost { namespace asio { class io_service; } }
 
 namespace cli
 {

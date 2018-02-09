@@ -490,7 +490,7 @@ namespace cli
         ) : Command( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
             if ( cmdLine.size() != 1 ) return false;
             if ( cmdLine[ 0 ] == Name() )
