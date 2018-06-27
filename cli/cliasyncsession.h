@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016, 2018 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,43 +27,75 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLILOCALSESSION_H_
-#define CLILOCALSESSION_H_
+#ifndef CLIASYNCSESSION_H_
+#define CLIASYNCSESSION_H_
 
+#include <string>
 #include <boost/asio.hpp>
-#include "keyboard.h"
-#include "inputhandler.h"
 #include "cli.h" // CliSession
 
 namespace cli
 {
 
-class CliLocalTerminalSession
+class CliAsyncSession
 {
 public:
-
-    CliLocalTerminalSession(Cli& _cli, boost::asio::io_service& ios, std::ostream& _out, std::size_t historySize = 100) :
-        session(_cli, _out, historySize),
-        kb(ios),
-        ih(session, kb)
+    CliAsyncSession( boost::asio::io_service& ios, Cli& cli ) :
+        session(cli, std::cout, 1),
+        input( ios, ::dup( STDIN_FILENO ) )        
     {
-        session.Prompt();
+        Read();
     }
-
+    ~CliAsyncSession()
+    {
+        input.close();
+    }
     void ExitAction(std::function< void(std::ostream&)> action)
     {
         session.ExitAction(action);
     }
 
 private:
+
+    void Read()
+    {
+        session.Prompt();
+        // Read a line of input entered by the user.
+        boost::asio::async_read_until(
+            input,
+            inputBuffer,
+            '\n',
+            std::bind( &CliAsyncSession::NewLine, this,
+                       std::placeholders::_1,
+                       std::placeholders::_2 )
+        );
+    }
+
+    void NewLine( const boost::system::error_code& error, std::size_t length )
+    {
+        if ( !error || error == boost::asio::error::not_found )
+        {
+            auto bufs = inputBuffer.data();
+            std::size_t size = length;
+            if ( !error ) --size; // tolgo il \n
+            std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
+            inputBuffer.consume( length );
+
+            session.Feed( s );
+            Read();
+        }
+        else
+        {
+            input.close();
+        }
+    }
+
     CliSession session;
-    Keyboard kb;
-    InputHandler ih;
+    boost::asio::streambuf inputBuffer;
+    boost::asio::posix::stream_descriptor input;
 };
 
-using CliLocalSession = CliLocalTerminalSession;
+} // namespace
 
-} // namespace cli
-
-#endif // CLILOCALSESSION_H_
+#endif // CLIASYNCSESSION_H_
 

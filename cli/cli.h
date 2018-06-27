@@ -266,7 +266,7 @@ namespace cli
         CliSession( const CliSession& ) = delete;
         CliSession& operator = ( const CliSession& ) = delete;
 
-        bool Feed( const std::string& cmd );
+        void Feed( const std::string& cmd );
 
         void Prompt();
 
@@ -760,7 +760,7 @@ namespace cli
 
     // CliSession implementation
 
-    inline bool CliSession::Feed( const std::string& cmd )
+    inline void CliSession::Feed( const std::string& cmd )
     {
         history.ResetCurrent(); // TODO here or in the caller?
 
@@ -775,7 +775,7 @@ namespace cli
             ),
             strs.end()
         );
-        if ( strs.empty() ) return true; // just hit enter
+        if ( strs.empty() ) return; // just hit enter
 
         // global cmds check
         bool found = cli.ScanCmds( strs, *this );
@@ -788,7 +788,7 @@ namespace cli
         else // error msg if not found
             out << "Command unknown: " << cmd << "\n";
 
-        return true;
+        return;
     }
 
     inline void CliSession::Prompt()

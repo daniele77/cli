@@ -92,8 +92,8 @@ private:
             case Symbol::nothing:
                 break;
             case Symbol::command:
-                if ( session.Feed( s.second ) )
-                    session.Prompt();
+                session.Feed( s.second );
+                session.Prompt();
                 break;
             case Symbol::down:
                 terminal.SetLine( session.NextCmd() );

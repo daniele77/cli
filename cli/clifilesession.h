@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2018 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,72 +27,49 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef ASYNCINPUT_H_
-#define ASYNCINPUT_H_
+#ifndef CLIFILESESSION_H_
+#define CLIFILESESSION_H_
 
 #include <string>
-#include <boost/asio.hpp>
+#include <iostream>
 #include "cli.h" // CliSession
 
 namespace cli
 {
 
-class AsyncInput
+class CliFileSession
 {
 public:
-    AsyncInput( boost::asio::io_service& ios, CliSession& _session ) :
-        session( _session ),
-        input( ios, ::dup( STDIN_FILENO ) )
+    CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
+        session(cli, out, 1),
+        exit(false),
+        in(_in)
     {
-        session.Add( "exit", [this](std::ostream&){ session.Exit(); }, "Quit the application" );
-        Read();
+        session.ExitAction(
+            [this](std::ostream&)
+            {
+                exit = true;
+            }
+        );
     }
-    ~AsyncInput()
+    void Start()
     {
-        input.close();
+        while( !exit)
+        {
+            session.Prompt();
+            std::string line;
+            std::getline(in, line);
+            session.Feed( line );
+        }
     }
 
 private:
-
-    void Read()
-    {
-        session.Prompt();
-        // Read a line of input entered by the user.
-        boost::asio::async_read_until(
-            input,
-            inputBuffer,
-            '\n',
-            std::bind( &AsyncInput::NewLine, this,
-                       std::placeholders::_1,
-                       std::placeholders::_2 )
-        );
-    }
-
-    void NewLine( const boost::system::error_code& error, std::size_t length )
-    {
-        if ( !error || error == boost::asio::error::not_found )
-        {
-            auto bufs = inputBuffer.data();
-            std::size_t size = length;
-            if ( !error ) --size; // tolgo il \n
-            std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
-            inputBuffer.consume( length );
-
-
-            if ( session.Feed( s ) ) Read();
-        }
-        else
-        {
-            input.close();
-        }
-    }
-
-    CliSession& session;
-    boost::asio::streambuf inputBuffer;
-    boost::asio::posix::stream_descriptor input;
+    CliSession session;
+    bool exit;
+    std::istream& in;
 };
 
 } // namespace
 
-#endif // ASYNCINPUT_H_
+#endif // CLIFILESESSION_H_
 

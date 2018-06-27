@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2018 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,12 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/remotecli.h"
-// TODO. NB: remotecli.h includes boost asio, so in Windows it should appear before cli.h
-// and inputhandler.h that include rang
-// (consider to provide a global header file for the library)
 #include "cli/cli.h"
-#include "cli/clilocalsession.h"
+#include "cli/cliasyncsession.h"
 
 using namespace cli;
 using namespace std;
@@ -40,7 +36,7 @@ using namespace std;
 
 int main()
 {
-    boost::asio::io_service ios;
+    //boost::asio::io_service ios;
 
     // setup cli
 
@@ -90,20 +86,15 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-    CliLocalSession localSession(cli, ios, std::cout, 200);
-    localSession.ExitAction(
+    boost::asio::io_service ios;    
+    CliAsyncSession session(ios, cli);
+    session.ExitAction(
         [&ios](auto& out) // session exit action
         {
             out << "Closing App...\n";
             ios.stop();
         }
-    );
-
-    // setup server
-
-    CliTelnetServer server(ios, 5000, cli);
-    // exit action for all the connections
-    server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
+    );    
     ios.run();
 
     return 0;
