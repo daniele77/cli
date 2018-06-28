@@ -61,7 +61,7 @@ Set the environment variable BOOST. Then, from a visual studio console, use the 
 ### Visual Studio solution
 
 Set the environment variable BOOST. Then, open the file
-`cli/samples/cli_samples/cli_samples.sln`
+`cli/samples/samples.sln`
 
 ## License
 
