@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/cli.h"
 #include "cli/cliasyncsession.h"
+#include "cli/cli.h"
 
 using namespace cli;
 using namespace std;

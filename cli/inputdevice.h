@@ -44,7 +44,7 @@ class InputDevice
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    explicit InputDevice(boost::asio::io_service& ios) : ioService(ios) {}
+    InputDevice(boost::asio::io_service& ios) : ioService(ios) {}
     virtual ~InputDevice() = default;
 
     template <typename H>

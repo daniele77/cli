@@ -33,7 +33,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <deque>
 #include <memory>
+#include <functional>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "colorprofile.h"
@@ -200,7 +202,6 @@ namespace cli
         static OutStream& cout() { static OutStream s; return s; }
 
     private:
-        void Help( std::ostream& out ) const;
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
         std::unique_ptr< Menu > global;
         std::function< void(std::ostream&) > exitAction;
