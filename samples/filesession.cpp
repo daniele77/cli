@@ -37,8 +37,6 @@ using namespace std;
 
 int main()
 {
-    //boost::asio::io_service ios;
-
     // setup cli
 
     auto rootMenu = make_unique< Menu >( "cli" );
