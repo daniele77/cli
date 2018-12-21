@@ -47,11 +47,10 @@ namespace cli
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(boost::asio::io_service& ios) :
-        InputDevice(ios)
+    explicit WinKeyboard(boost::asio::io_service &ios) : InputDevice(ios)
     {
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
+        servant = std::make_unique<std::thread>([this]() { Read(); });
+        servant->detach();
     }
     ~WinKeyboard()
     {
@@ -59,51 +58,67 @@ public:
     }
 
 private:
-
     void Read()
     {
-        while ( run )
+        while (run)
         {
             auto k = Get();
             Notify(k);
         }
     }
 
-    std::pair<KeyType,char> Get()
+    std::pair<KeyType, char> Get()
     {
-		int c = _getch();
-        switch( c )
+        int c = _getch();
+        switch (c)
         {
-			case 224: // symbol
-			{
-				c = _getch();
-				switch (c)
-				{
-					case 72: return std::make_pair(KeyType::up, ' '); break;
-					case 80: return std::make_pair(KeyType::down, ' '); break;
-					case 75: return std::make_pair(KeyType::left, ' '); break;
-					case 77: return std::make_pair(KeyType::right, ' '); break;
-					case 71: return std::make_pair(KeyType::home, ' '); break;
-					case 79: return std::make_pair(KeyType::end, ' '); break;
-					case 83: return std::make_pair(KeyType::canc, ' '); break;
-				}
-			}
-			case 8: return std::make_pair(KeyType::backspace, c); break;
-			case 13: return std::make_pair(KeyType::ret, c); break;
+            case 224: // symbol
+            {
+                c = _getch();
+                switch (c)
+                {
+                case 72:
+                    return std::make_pair(KeyType::up, ' ');
+                    break;
+                case 80:
+                    return std::make_pair(KeyType::down, ' ');
+                    break;
+                case 75:
+                    return std::make_pair(KeyType::left, ' ');
+                    break;
+                case 77:
+                    return std::make_pair(KeyType::right, ' ');
+                    break;
+                case 71:
+                    return std::make_pair(KeyType::home, ' ');
+                    break;
+                case 79:
+                    return std::make_pair(KeyType::end, ' ');
+                    break;
+                case 83:
+                    return std::make_pair(KeyType::canc, ' ');
+                    break;
+                }
+            }
+            case 8:
+                return std::make_pair(KeyType::backspace, c);
+                break;
+            case 13:
+                return std::make_pair(KeyType::ret, c);
+                break;
             default: // hopefully ascii
             {
                 const char ch = static_cast<char>(c);
-                return std::make_pair(KeyType::ascii,ch);
+                return std::make_pair(KeyType::ascii, ch);
             }
         }
-        return std::make_pair(KeyType::ignored,' ');
+        return std::make_pair(KeyType::ignored, ' ');
     }
 
-    std::atomic<bool> run{ true };
-    std::unique_ptr< std::thread > servant;
+    std::atomic<bool> run{true};
+    std::unique_ptr<std::thread> servant;
 };
 
 } // namespace
 
 #endif // WINKEYBOARD_H_
-
