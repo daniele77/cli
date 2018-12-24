@@ -772,7 +772,7 @@ namespace cli
             std::remove_if(
                 strs.begin(),
                 strs.end(),
-                std::bind( &std::string::empty, std::placeholders::_1 )
+                [](const std::string& s){ return s.empty(); }
             ),
             strs.end()
         );
@@ -851,4 +851,3 @@ namespace cli
 } // namespace
 
 #endif
-
