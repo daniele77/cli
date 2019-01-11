@@ -2,9 +2,9 @@
 
 A cross-platform header only C++14 library for interactive command line interfaces (Cisco style)
 
-![demo_telnet_session](https://user-images.githubusercontent.com/5451767/51045883-f5048c00-15c4-11e9-8b76-829a66abbfd0.gif)
+![demo_local_session](https://user-images.githubusercontent.com/5451767/51046611-d1dadc00-15c6-11e9-8a0d-2c66efc83290.gif)
 
-![demo_local_session](https://user-images.githubusercontent.com/5451767/51045884-f5048c00-15c4-11e9-87cf-f67a3875279f.gif)
+![demo_telnet_session](https://user-images.githubusercontent.com/5451767/51046612-d1dadc00-15c6-11e9-83c2-beadb3593348.gif)
 
 ## Features
 
