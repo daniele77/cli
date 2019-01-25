@@ -574,24 +574,24 @@ public:
 
 //////////////
 
-class CliTelnetSession : public TelnetSession, public InputDevice
+class CliTelnetSession : public TelnetSession, public InputDevice, public CliSession
 {
 public:
 
     CliTelnetSession(boost::asio::ip::tcp::socket socket, Cli& cli, std::function< void(std::ostream&)> exitAction, std::size_t historySize ) :
         TelnetSession(std::move(socket)),
         InputDevice(socket.get_io_service()),
-        cliSession(cli, this->OutStream(), historySize ),
-        poll(cliSession, *this)
+        CliSession(cli, TelnetSession::OutStream(), historySize),
+        poll(*this, *this)
     {
-        cliSession.ExitAction([this, exitAction](std::ostream& out){ exitAction(out), Disconnect(); } );
+        ExitAction([this, exitAction](std::ostream& out){ exitAction(out), Disconnect(); } );
     }
 protected:
 
     virtual void OnConnect() override
     {
         TelnetSession::OnConnect();
-        cliSession.Prompt();
+        Prompt();
     }
 
     void Output(char c) override
@@ -663,7 +663,6 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    CliSession cliSession;
     InputHandler poll;
 };
 
