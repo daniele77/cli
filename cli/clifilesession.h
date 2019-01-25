@@ -54,15 +54,25 @@ public:
     }
     void Start()
     {
+<<<<<<< HEAD
         while(!exit)
+=======
+        while( !( exit || in.eof() ))
+>>>>>>> origin/master
         {
             session.Prompt();
             std::string line;
             std::getline(in, line);
+<<<<<<< HEAD
             if (in.eof())
                 session.Exit();
             else
                 session.Feed(line);
+=======
+            if(in.eof())
+              line = "exit";
+            session.Feed( line );
+>>>>>>> origin/master
         }
     }
 
