@@ -54,11 +54,13 @@ public:
     }
     void Start()
     {
-        while( !exit)
+        while( !( exit || in.eof() ))
         {
             session.Prompt();
             std::string line;
             std::getline(in, line);
+            if(in.eof())
+              line = "exit";
             session.Feed( line );
         }
     }
