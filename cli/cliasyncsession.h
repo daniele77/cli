@@ -77,7 +77,7 @@ private:
         {
             auto bufs = inputBuffer.data();
             std::size_t size = length;
-            if ( !error ) --size; // tolgo il \n
+            if ( !error ) --size; // remove \n
             std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
             inputBuffer.consume( length );
 
