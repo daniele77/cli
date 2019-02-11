@@ -37,15 +37,15 @@
 namespace cli
 {
 
-class CliFileSession
+class CliFileSession : public CliSession
 {
 public:
     CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
-        session(cli, out, 1),
+        CliSession(cli, out, 1),
         exit(false),
         in(_in)
     {
-        session.ExitAction(
+        ExitAction(
             [this](std::ostream&)
             {
                 exit = true;
@@ -54,19 +54,19 @@ public:
     }
     void Start()
     {
-        while( !( exit || in.eof() ))
+        while(!exit)
         {
-            session.Prompt();
+            Prompt();
             std::string line;
             std::getline(in, line);
-            if(in.eof())
-              line = "exit";
-            session.Feed( line );
+            if (in.eof())
+                Exit();
+            else
+                Feed(line);
         }
     }
 
 private:
-    CliSession session;
     bool exit;
     std::istream& in;
 };

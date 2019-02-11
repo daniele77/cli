@@ -1,5 +1,3 @@
-doc/html
-
 # Compiled Object files
 *.slo
 *.lo
@@ -43,3 +41,6 @@ Release
 *.user
 *.db
 .svn
+
+# Doxygen
+doc/doxy/html

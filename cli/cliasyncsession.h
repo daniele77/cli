@@ -37,11 +37,11 @@
 namespace cli
 {
 
-class CliAsyncSession
+class CliAsyncSession : public CliSession
 {
 public:
     CliAsyncSession( boost::asio::io_service& ios, Cli& cli ) :
-        session(cli, std::cout, 1),
+        CliSession(cli, std::cout, 1),
         input( ios, ::dup( STDIN_FILENO ) )        
     {
         Read();
@@ -50,16 +50,12 @@ public:
     {
         input.close();
     }
-    void ExitAction(std::function< void(std::ostream&)> action)
-    {
-        session.ExitAction(action);
-    }
 
 private:
 
     void Read()
     {
-        session.Prompt();
+        Prompt();
         // Read a line of input entered by the user.
         boost::asio::async_read_until(
             input,
@@ -77,11 +73,11 @@ private:
         {
             auto bufs = inputBuffer.data();
             std::size_t size = length;
-            if ( !error ) --size; // tolgo il \n
+            if ( !error ) --size; // remove \n
             std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
             inputBuffer.consume( length );
 
-            session.Feed( s );
+            Feed( s );
             Read();
         }
         else
@@ -90,7 +86,6 @@ private:
         }
     }
 
-    CliSession session;
     boost::asio::streambuf inputBuffer;
     boost::asio::posix::stream_descriptor input;
 };

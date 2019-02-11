@@ -190,11 +190,7 @@ namespace cli
 
         void ExitAction( std::function< void(std::ostream&)> action );
         Menu* RootMenu() { return rootMenu.get(); }
-        bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session );
-        void MainHelp( std::ostream& out ) const;
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
-        // Returns the collection of completions relatives to global commands
-        std::vector<std::string> GetCompletions( const std::string& currentLine ) const;
 
         static void Register(std::ostream& o) { cout().Register(o); }
         static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
@@ -203,7 +199,6 @@ namespace cli
 
     private:
         std::unique_ptr< Menu > rootMenu; // just to keep it alive
-        std::unique_ptr< Menu > global;
         std::function< void(std::ostream&) > exitAction;
     };
 
@@ -252,15 +247,7 @@ namespace cli
     class CliSession
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out, std::size_t historySize = 100 ) :
-            cli( _cli ),
-            current( cli.RootMenu() ),
-            out( _out ),
-            history( historySize )
-        {
-            cli.Register(out);
-        }
-
+        CliSession( Cli& _cli, std::ostream& _out, std::size_t historySize = 100 );
         ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
@@ -283,6 +270,7 @@ namespace cli
         void Exit()
         {
             if (exitAction) exitAction(out);
+            cli.ExitAction(out);
         }
 
         void ExitAction( std::function< void(std::ostream&)> action )
@@ -311,6 +299,7 @@ namespace cli
 
         Cli& cli;
         Menu* current;
+        std::unique_ptr< Menu > globalScopeMenu;
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction;
         History history;
@@ -448,34 +437,6 @@ namespace cli
     };
 
     // ********************************************************************
-
-    class BasicCommand : public Command
-    {
-    public:
-        // disable value semantics
-        BasicCommand( const BasicCommand& ) = delete;
-        BasicCommand& operator = ( const BasicCommand& ) = delete;
-
-        BasicCommand( const std::string& _name, std::function< void(CliSession&) > f, const std::string& _help = "" ) :
-            Command( _name ), func( f ), help( _help ) {}
-        virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine[ 0 ] == Name() )
-            {
-                func( session );
-                return true;
-            }
-
-            return false;
-        }
-        virtual void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name() << "\n\t" << help << "\n";
-        }
-    private:
-        std::function< void(CliSession&) > func;
-        const std::string help;
-    };
 
     class FuncCmd : public Command
     {
@@ -709,33 +670,8 @@ namespace cli
 
     inline Cli::Cli( std::unique_ptr< Menu >&& _rootMenu, std::function< void( std::ostream& )> _exitAction ) :
         rootMenu( std::move(_rootMenu) ),
-        global( std::make_unique< Menu >() ),
         exitAction( _exitAction )
     {
-        global -> Add( std::make_unique< BasicCommand >(
-                "help",
-                [](CliSession& s){ s.Help(); },
-                "This help message"
-            )
-        );
-        global -> Add( std::make_unique< BasicCommand >(
-                "exit",
-                [this](CliSession& s)
-                {
-                    ExitAction(s.OutStream());
-                    s.Exit();
-                },
-                "Quit the session"
-            )
-        );
-#ifdef CLI_HISTORY_CMD
-        global -> Add( std::make_unique< BasicCommand >(
-                "history",
-                [](CliSession& s){ s.ShowHistory(); },
-                "Show the history"
-            )
-        );
-#endif
     }
 
     inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
@@ -743,23 +679,34 @@ namespace cli
         exitAction = action;
     }
 
-    inline bool Cli::ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
-    {
-        return global -> ScanCmds( cmdLine, session );
-    }
-
-    inline void Cli::MainHelp( std::ostream& out ) const
-    {
-        global -> MainHelp( out );
-    }
-
-    inline std::vector<std::string> Cli::GetCompletions( const std::string& currentLine ) const
-    {
-        return global->GetCompletions(currentLine);
-    }
-
-
     // CliSession implementation
+
+    inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
+            cli(_cli),
+            current(cli.RootMenu()),
+            globalScopeMenu(std::make_unique< Menu >()),
+            out(_out),
+            history(historySize)
+        {
+            cli.Register(out);
+            globalScopeMenu->Add(
+                "help",
+                [this](std::ostream&){ Help(); },
+                "This help message"
+            );
+            globalScopeMenu->Add(
+                "exit",
+                [this](std::ostream&){ Exit(); },
+                "Quit the session"
+            );
+#ifdef CLI_HISTORY_CMD
+            globalScopeMenu->Add(
+                "history",
+                [this](std::ostream&){ ShowHistory(); },
+                "Show the history"
+            );
+#endif
+        }
 
     inline void CliSession::Feed( const std::string& cmd )
     {
@@ -779,7 +726,7 @@ namespace cli
         if ( strs.empty() ) return; // just hit enter
 
         // global cmds check
-        bool found = cli.ScanCmds( strs, *this );
+        bool found = globalScopeMenu->ScanCmds(strs, *this);
 
         // root menu recursive cmds check
         if ( !found ) found = current -> ScanCmds( strs, *this );
@@ -804,13 +751,13 @@ namespace cli
     inline void CliSession::Help() const
     {
         out << "Commands available:\n";
-        cli.MainHelp( out );
+        globalScopeMenu->MainHelp(out);
         current -> MainHelp( out );
     }
 
     inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
     {
-        auto v1 = cli.GetCompletions(currentLine);
+        auto v1 = globalScopeMenu->GetCompletions(currentLine);
         auto v3 = current -> GetCompletions(currentLine);
         v1.insert( v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()) );
         return v1;

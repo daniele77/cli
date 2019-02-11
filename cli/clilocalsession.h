@@ -38,25 +38,19 @@
 namespace cli
 {
 
-class CliLocalTerminalSession
+class CliLocalTerminalSession : public CliSession
 {
 public:
 
     CliLocalTerminalSession(Cli& _cli, boost::asio::io_service& ios, std::ostream& _out, std::size_t historySize = 100) :
-        session(_cli, _out, historySize),
+        CliSession(_cli, _out, historySize),
         kb(ios),
-        ih(session, kb)
+        ih(*this, kb)
     {
-        session.Prompt();
-    }
-
-    void ExitAction(std::function< void(std::ostream&)> action)
-    {
-        session.ExitAction(action);
+        Prompt();
     }
 
 private:
-    CliSession session;
     Keyboard kb;
     InputHandler ih;
 };
