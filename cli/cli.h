@@ -33,12 +33,12 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <deque>
 #include <memory>
 #include <functional>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "colorprofile.h"
+#include "history.h"
 
 namespace cli
 {
@@ -59,73 +59,6 @@ namespace cli
     template <> struct TypeDesc< long double > { static const char* Name() { return "<long double>"; } };
     template <> struct TypeDesc< bool > { static const char* Name() { return "<bool>"; } };
     template <> struct TypeDesc< std::string > { static const char* Name() { return "<string>"; } };
-
-    // ********************************************************************
-
-    class History
-    {
-    public:
-
-        using Item = std::vector<std::string>;
-
-        explicit History(std::size_t size) : maxSize(size) {}
-
-        template <typename T>
-        void Add(T&& item)
-        {
-            buffer.push_front(std::forward<T>(item));
-            if (buffer.size() > maxSize) buffer.pop_back();
-        }
-
-        void Show(std::ostream& out) const
-        {
-            out << '\n';
-            for ( auto& item: buffer )
-                out << ToString(item) << '\n';
-            out << '\n' << std::flush;
-        }
-
-        void ResetCurrent()
-        {
-            currentIndex = 0;
-        }
-
-        void ToPreviousEntry()
-        {
-            if ( currentIndex == buffer.size()-1 )
-                currentIndex = 0;
-            else
-                ++currentIndex;
-        }
-
-        void ToNextEntry()
-        {
-            if ( currentIndex == 0 )
-                currentIndex = buffer.size()-1;
-            else
-                --currentIndex;
-        }
-
-        std::string GetCurrent() const
-        {
-            if (buffer.empty()) return std::string();
-            return ToString( buffer[ currentIndex ] );
-        }
-
-    private:
-
-        static std::string ToString(const Item& item)
-        {
-            std::string result;
-            std::for_each(item.begin(), item.end(), [&](const std::string &piece){ result += piece + ' '; });
-            return result;
-        }
-
-        using Buffer = std::deque<Item>;
-        Buffer buffer;
-        const std::size_t maxSize;
-        std::size_t currentIndex = 0; // 0 = last entry, buffer.size()-1 = oldest entry
-    };
 
     // ********************************************************************
 
@@ -180,16 +113,21 @@ namespace cli
 
     public:
         Cli(
-            std::unique_ptr< Menu >&& rootMenu,
-            std::function< void(std::ostream&) > exitAction = std::function< void(std::ostream&) >()
-        );
+            std::unique_ptr< Menu >&& _rootMenu,
+            std::function< void( std::ostream& )> _exitAction = std::function< void(std::ostream&) >()
+        ) :
+            rootMenu( std::move(_rootMenu) ),
+            exitAction( _exitAction )
+        {
+        }
+
 
         // disable value semantics
         Cli( const Cli& ) = delete;
         Cli& operator = ( const Cli& ) = delete;
 
-        void ExitAction( std::function< void(std::ostream&)> action );
         Menu* RootMenu() { return rootMenu.get(); }
+        void ExitAction( std::function< void(std::ostream&)> action ) { exitAction = action; }
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
 
         static void Register(std::ostream& o) { cout().Register(o); }
@@ -280,17 +218,14 @@ namespace cli
 
         void ShowHistory() const { history.Show(out); }
 
-        std::string PreviousCmd()
+        std::string PreviousCmd(const std::string& line)
         {
-            auto result = history.GetCurrent();
-            history.ToPreviousEntry();
-            return result;
+            return history.Previous(line);
         }
 
-        std::string NextCmd() {
-            auto result = history.GetCurrent();
-            history.ToNextEntry();
-            return result;
+        std::string NextCmd()
+        {
+            return history.Next();
         }
 
         std::vector<std::string> GetCompletions(const std::string& currentLine) const;
@@ -302,7 +237,7 @@ namespace cli
         std::unique_ptr< Menu > globalScopeMenu;
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction;
-        History history;
+        detail::History history;
     };
 
     // ********************************************************************
@@ -666,19 +601,6 @@ namespace cli
 
     // ********************************************************************
 
-    // Cli implementation
-
-    inline Cli::Cli( std::unique_ptr< Menu >&& _rootMenu, std::function< void( std::ostream& )> _exitAction ) :
-        rootMenu( std::move(_rootMenu) ),
-        exitAction( _exitAction )
-    {
-    }
-
-    inline void Cli::ExitAction( std::function< void(std::ostream&)> action )
-    {
-        exitAction = action;
-    }
-
     // CliSession implementation
 
     inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
@@ -710,8 +632,6 @@ namespace cli
 
     inline void CliSession::Feed( const std::string& cmd )
     {
-        history.ResetCurrent(); // TODO here or in the caller?
-
         std::vector< std::string > strs;
         boost::split( strs, cmd, boost::is_any_of( " \t\n" ), boost::token_compress_on );
         // remove null entries from the vector:
@@ -729,11 +649,10 @@ namespace cli
         bool found = globalScopeMenu->ScanCmds(strs, *this);
 
         // root menu recursive cmds check
-        if ( !found ) found = current -> ScanCmds( strs, *this );
+        if ( !found ) found = current -> ScanCmds( std::move(strs), *this ); // last use of strs
 
-        if ( found ) // insert into history
-            history.Add( std::move(strs) ); // last use of strs
-        else // error msg if not found
+        history.NewCommand( cmd ); // add anyway to history
+        if ( !found ) // error msg if not found
             out << "Command unknown: " << cmd << "\n";
 
         return;
