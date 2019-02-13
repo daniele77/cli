@@ -87,21 +87,31 @@ private:
 
     void NewCommand(const std::pair< Symbol, std::string >& s)
     {
-        switch ( s.first )
+        switch (s.first)
         {
             case Symbol::nothing:
+            {
                 break;
+            }
             case Symbol::command:
-                session.Feed( s.second );
+            {
+                session.Feed(s.second);
                 session.Prompt();
                 break;
+            }
             case Symbol::down:
-                terminal.SetLine( session.NextCmd() );
+            {
+                terminal.SetLine(session.NextCmd());
                 break;
+            }
             case Symbol::up:
-                terminal.SetLine( session.PreviousCmd() );
+            {
+                auto line = terminal.GetLine();
+                terminal.SetLine(session.PreviousCmd(line));
                 break;
+            }
             case Symbol::tab:
+            {
                 auto line = terminal.GetLine();
                 auto completions = session.GetCompletions(line);
 
@@ -129,6 +139,7 @@ private:
                 terminal.ResetCursor();
                 terminal.SetLine( line );
                 break;
+            }
         }
 
     }
