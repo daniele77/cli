@@ -144,7 +144,7 @@ private:
     boost::asio::ip::tcp::socket socket;
 };
 
-} // namespace
+} // namespace cli
 
 #endif
 

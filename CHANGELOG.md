@@ -1,8 +1,8 @@
 # Changelog
 
-Current Version: 1.0-alpha
+Current Version: 1.0
 
-## [Unreleased]
+## [1.0.0] - 2019-02-16
 
 - Fix Clang 3.6 - 7.0 undefined reference bug
 - Fix infinite loop on EoF
