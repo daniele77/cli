@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Boost REQUIRED COMPONENTS system)
+find_dependency(Threads REQUIRED)
+
+if(NOT TARGET cli::cli)
+    include(${CMAKE_CURRENT_LIST_DIR}/cliTargets.cmake)
+endif()

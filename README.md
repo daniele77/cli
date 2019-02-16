@@ -34,38 +34,17 @@ compiling your source code.
 
 ## Compilation of the samples
 
-You can find some examples in the directory "samples".
-Each .cpp file corresponds to an executable. You can compile each sample by including
-cli and boost header files and linking boost system (and pthread on linux).
+This project uses Cmake and does not build the samples by default.
+In order to build them you can just run
 
-In the directory samples you can also find:
+    mkdir build
+    cd build
+    cmake .. -DCLI_BuildSamples=ON 
+    make all
 
-* a GNU make file (Makefile)
-* a Windows nmake file (makefile.win)
-* a Visual Studio solution
+## Installation
 
-You can specify boost library path in the following ways:
-
-### GNU Make
-
-    make CXXFLAGS="-isystem <boost_include>" LDFLAGS="-L<boost_lib>"
-
-example:
-
-    make CXXFLAGS="-isystem /opt/boost_1_66_0/install/x86/include" LDFLAGS="-L/opt/boost_1_66_0/install/x86/lib"
-
-(if you want to use clang instead of gcc, you can set the variable CXX=clang++)
-
-### Windows nmake
-
-Set the environment variable BOOST. Then, from a visual studio console, use the command:
-
-    nmake /f makefile.win
-
-### Visual Studio solution
-
-Set the environment variable BOOST. Then, open the file
-`cli/samples/samples.sln`
+    sudo make install
 
 ## License
 

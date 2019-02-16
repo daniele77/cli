@@ -94,12 +94,12 @@ private:
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
-                        case 65: return std::make_pair(KeyType::up,' '); break;
-                        case 66: return std::make_pair(KeyType::down,' '); break;
-                        case 68: return std::make_pair(KeyType::left,' '); break;
-                        case 67: return std::make_pair(KeyType::right,' '); break;
-                        case 70: return std::make_pair(KeyType::end,' '); break;
-                        case 72: return std::make_pair(KeyType::home,' '); break;
+                        case 65: return std::make_pair(KeyType::up,' ');
+                        case 66: return std::make_pair(KeyType::down,' ');
+                        case 68: return std::make_pair(KeyType::left,' ');
+                        case 67: return std::make_pair(KeyType::right,' ');
+                        case 70: return std::make_pair(KeyType::end,' ');
+                        case 72: return std::make_pair(KeyType::home,' ');
                     }
                 }
                 break;
