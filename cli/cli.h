@@ -35,8 +35,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
+// #include <boost/lexical_cast.hpp>
+// #include <boost/algorithm/string.hpp>
 #include "colorprofile.h"
 #include "history.h"
 
