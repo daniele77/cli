@@ -35,8 +35,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
-// #include <boost/lexical_cast.hpp>
-// #include <boost/algorithm/string.hpp>
+#include "dbj/lexical_cast.h"
+#include "dbj/algorithm_string.h"
 #include "colorprofile.h"
 #include "history.h"
 
@@ -155,7 +155,7 @@ namespace cli
         // and the subcommand recursively
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
         {
-            if ( boost::algorithm::starts_with(name, line) ) return {name};
+            if ( dbj::algorithm::starts_with(name, line) ) return {name};
             else return {};
         }
     protected:
@@ -331,11 +331,11 @@ namespace cli
 
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
-            if ( boost::algorithm::starts_with( line, Name() ) )
+            if ( dbj::algorithm::starts_with( line, Name() ) )
             {
                 auto rest = line;
                 rest.erase( 0, Name().size() );
-                boost::algorithm::trim_left(rest);
+               dbj::algorithm::trim_left(rest);
                 std::vector<std::string> result;
                 for ( auto& cmd: cmds )
                 {
@@ -429,10 +429,11 @@ namespace cli
             {
                 try
                 {
-                    T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
+                    // T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
+                    T arg = dbj::stoi( cmdLine[ 1 ] );
                     function( arg, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -474,11 +475,11 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
+                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
                     function( arg1, arg2, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -521,12 +522,12 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
+                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
+                    T3 arg3 = dbj::lexical_cast<T3>( cmdLine[ 3 ] );
                     function( arg1, arg2, arg3, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -570,13 +571,13 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
-                    T4 arg4 = boost::lexical_cast<T4>( cmdLine[ 4 ] );
+                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
+                    T3 arg3 = dbj::lexical_cast<T3>( cmdLine[ 3 ] );
+                    T4 arg4 = dbj::lexical_cast<T4>( cmdLine[ 4 ] );
                     function( arg1, arg2, arg3, arg4, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -632,8 +633,13 @@ namespace cli
 
     inline void CliSession::Feed( const std::string& cmd )
     {
+		/*
         std::vector< std::string > strs;
-        boost::split( strs, cmd, boost::is_any_of( " \t\n" ), boost::token_compress_on );
+        dbj::split( strs, cmd, dbj::is_any_of( " \t\n" ), dbj::token_compress_on );
+
+		replaced the above with bellow:
+		*/
+		std::vector<std::string> strs = dbj::algorithm::fast_string_split(cmd, " \t\n");
         // remove null entries from the vector:
         strs.erase(
             std::remove_if(
