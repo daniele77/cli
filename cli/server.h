@@ -37,10 +37,10 @@
 namespace cli
 {
 
-class Session : public std::enable_shared_from_this<Session>, public std::streambuf
+class session_type : public std::enable_shared_from_this<session_type>, public std::streambuf
 {
 public:
-    virtual ~Session() = default;
+    virtual ~session_type() = default;
     virtual void Start()
     {
         OnConnect();
@@ -49,7 +49,7 @@ public:
 
 protected:
 
-    Session( boost::asio::ip::tcp::socket socket ) : socket( std::move( socket ) ), outStream( this ) {}
+    session_type( boost::asio::ip::tcp::socket socket ) : socket( std::move( socket ) ), outStream( this ) {}
 
     virtual void Disconnect()
     {
@@ -115,22 +115,22 @@ private:
 };
 
 
-class Server
+class server_type
 {
 public:
     // disable value semantics
-    Server( const Server& ) = delete;
-    Server& operator = ( const Server& ) = delete;
+    server_type( const server_type& ) = delete;
+    server_type& operator = ( const server_type& ) = delete;
 
-    Server( boost::asio::io_service& ios, short port ) :
+    server_type( boost::asio::io_service& ios, short port ) :
         acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::tcp::v4(), port ) ),
         socket( ios )
     {
         Accept();
     }
-    virtual ~Server() = default;
-    // returns shared_ptr instead of unique_ptr because Session needs to use enable_shared_from_this
-    virtual std::shared_ptr< Session > CreateSession( boost::asio::ip::tcp::socket socket ) = 0;
+    virtual ~server_type() = default;
+    // returns shared_ptr instead of unique_ptr because session_type needs to use enable_shared_from_this
+    virtual std::shared_ptr< session_type > CreateSession( boost::asio::ip::tcp::socket socket ) = 0;
 private:
     void Accept()
     {

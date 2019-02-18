@@ -33,17 +33,17 @@
 #include <boost/asio.hpp>
 #include "keyboard.h"
 #include "inputhandler.h"
-#include "cli.h" // CliSession
+#include "cli.h" // cli_session_type
 
 namespace cli
 {
 
-class CliLocalTerminalSession : public CliSession
+class cli_local_terminal_session : public cli_session_type
 {
 public:
 
-    CliLocalTerminalSession(Cli& _cli, boost::asio::io_service& ios, std::ostream& _out, std::size_t historySize = 100) :
-        CliSession(_cli, _out, historySize),
+    cli_local_terminal_session(cli_type& _cli, boost::asio::io_service& ios, std::ostream& _out, std::size_t historySize = 100) :
+        cli_session_type(_cli, _out, historySize),
         kb(ios),
         ih(*this, kb)
     {
@@ -52,10 +52,10 @@ public:
 
 private:
     Keyboard kb;
-    InputHandler ih;
+    input_handler ih;
 };
 
-using CliLocalSession = CliLocalTerminalSession;
+using cli_local_session = cli_local_terminal_session;
 
 } // namespace cli
 

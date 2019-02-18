@@ -34,14 +34,14 @@
 #include <string>
 #include "terminal.h"
 #include "inputdevice.h"
-#include "cli.h" // CliSession
+#include "cli.h" // cli_session_type
 
 namespace cli
 {
 
 //
 
-inline std::string CommonPrefix(const std::vector<std::string>& v)
+inline std::string CommonPrefix(const string_vector& v)
 {
     assert(!v.empty());
     std::string prefix;
@@ -67,12 +67,12 @@ inline std::string CommonPrefix(const std::vector<std::string>& v)
 
 //
 
-class InputHandler
+class input_handler
 {
 public:
-    InputHandler(CliSession& _session, InputDevice& kb) :
+    input_handler(cli_session_type& _session, input_device& kb) :
         session(_session),
-        terminal(session.OutStream())
+        terminal(session.out_stream())
     {
         kb.Register( [this](auto key){ this->Keypressed(key); } );
     }
@@ -131,10 +131,10 @@ private:
                     break;
                 }
 
-                session.OutStream() << '\n';
+                session.out_stream() << '\n';
                 std::string items;
                 std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
-                session.OutStream() << items << '\n';
+                session.out_stream() << items << '\n';
                 session.Prompt();
                 terminal.ResetCursor();
                 terminal.SetLine( line );
@@ -144,8 +144,8 @@ private:
 
     }
 
-    CliSession& session;
-    Terminal terminal;
+    cli_session_type& session;
+    terminal terminal;
 };
 
 } // namespace cli

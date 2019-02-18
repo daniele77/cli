@@ -33,17 +33,17 @@
 #include <string>
 #include <iostream>
 #include <stdexcept> // std::invalid_argument
-#include "cli.h" // CliSession
+#include "cli.h" // cli_session_type
 
 namespace cli
 {
 
-class CliFileSession : public CliSession
+class cli_file_session : public cli_session_type
 {
 public:
 	/// @throw std::invalid_argument if @c _in or @c out are invalid streams
-    CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
-        CliSession(cli, out, 1),
+    cli_file_session(cli_type& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
+        cli_session_type(cli, out, 1),
         exit(false),
         in(_in)
     {

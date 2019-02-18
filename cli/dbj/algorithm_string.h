@@ -9,6 +9,7 @@ namespace dbj {
 		// NOTE: wherever possible I am using std::string_view
 
 		using namespace std;
+		using string_vector = vector<string>;
 
 		// synopsis: 
 		// dbj::algorithm::starts_with(name, line)
@@ -43,12 +44,12 @@ namespace dbj {
 		// strings, but works on pointers rather than iterators
 		// code by JFT
 		// DBJ: changed argument types to be string_view, not string
-		std::vector<std::string> fast_string_split(
+		string_vector fast_string_split(
 			const std::string_view & str, 
 			const std::string_view & delims = " \t\v\n\r\f"
 		)
 		{
-			std::vector<std::string> output;
+			string_vector output;
 			//output.reserve(str.size() / 2);
 
 			for (auto first = str.data(), second = str.data(), last = first + str.size(); second != last && first != last; first = second + 1) {
