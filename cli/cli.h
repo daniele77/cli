@@ -476,8 +476,8 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
+                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
                     function( arg1, arg2, session.out_stream() );
                 }
                 catch ( dbj::bad_lexical_cast & )
@@ -523,9 +523,9 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = dbj::lexical_cast<T3>( cmdLine[ 3 ] );
+                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
+                    T3 arg3 = dbj::stoi( cmdLine[ 3 ] );
                     function( arg1, arg2, arg3, session.out_stream() );
                 }
                 catch ( dbj::bad_lexical_cast & )
@@ -572,10 +572,10 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = dbj::lexical_cast<T3>( cmdLine[ 3 ] );
-                    T4 arg4 = dbj::lexical_cast<T4>( cmdLine[ 4 ] );
+                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
+                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
+                    T3 arg3 = dbj::stoi( cmdLine[ 3 ] );
+                    T4 arg4 = dbj::stoi( cmdLine[ 4 ] );
                     function( arg1, arg2, arg3, arg4, session.out_stream() );
                 }
                 catch ( dbj::bad_lexical_cast & )

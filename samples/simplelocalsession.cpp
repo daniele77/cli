@@ -48,6 +48,10 @@ int main()
             [](std::ostream&){ cli_type::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
     rootMenu -> Add(
+            "plus",
+            [](int x, int y, int z, int w, std::ostream& out){ out << "The answer is: " << (x + y + z + w )<< "\n"; },
+            "Print the answer to Life, the Universe and Everything " );
+    rootMenu -> Add(
             "answer",
             [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
