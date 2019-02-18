@@ -34,12 +34,12 @@
 // (consider to provide a global header file for the library)
 #include "cli/cli.h"
 
-using namespace cli;
-using namespace std;
-
-
 int main()
 {
+
+	using namespace cli;
+	using namespace std;
+
     boost::asio::io_service ios;
 
     // setup cli

@@ -30,6 +30,8 @@
 #ifndef CLILOCALSESSION_H_
 #define CLILOCALSESSION_H_
 
+// dbj added
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #include <boost/asio.hpp>
 #include "keyboard.h"
 #include "inputhandler.h"
