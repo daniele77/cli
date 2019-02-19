@@ -156,7 +156,7 @@ namespace cli
         // and the subcommand recursively
         virtual string_vector GetCompletionRecursive(const std::string& line) const
         {
-            if ( dbj::algorithm::starts_with(name, line) ) return {name};
+            if ( ::dbj::algorithm::starts_with(name, line) ) return {name};
             else return {};
         }
     protected:
@@ -340,11 +340,11 @@ namespace cli
 
         virtual string_vector GetCompletionRecursive(const std::string& line) const override
         {
-            if ( dbj::algorithm::starts_with( line, Name() ) )
+            if ( ::dbj::algorithm::starts_with( line, Name() ) )
             {
                 auto rest = line;
                 rest.erase( 0, Name().size() );
-               dbj::algorithm::trim_left(rest);
+               ::dbj::algorithm::trim_left(rest);
                 string_vector result;
                 for ( auto& cmd: cmds )
                 {
@@ -470,10 +470,10 @@ namespace cli
                 try
                 {
                     // T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
-                    T arg = dbj::stoi( cmdLine[ 1 ] );
+					T arg = ::dbj::transformer<T>{}(cmdLine[1]);
                     function( arg, session.out_stream() );
                 }
-                catch ( dbj::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -515,11 +515,11 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
-                    function( arg1, arg2, session.out_stream() );
+					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+					T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+					function( arg1, arg2, session.out_stream() );
                 }
-                catch ( dbj::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -562,12 +562,12 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
-                    T3 arg3 = dbj::stoi( cmdLine[ 3 ] );
+					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+                    T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+                    T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
                     function( arg1, arg2, arg3, session.out_stream() );
                 }
-                catch ( dbj::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -611,13 +611,13 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = dbj::stoi( cmdLine[ 1 ] );
-                    T2 arg2 = dbj::stoi( cmdLine[ 2 ] );
-                    T3 arg3 = dbj::stoi( cmdLine[ 3 ] );
-                    T4 arg4 = dbj::stoi( cmdLine[ 4 ] );
+                    T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+                    T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+                    T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
+                    T4 arg4 = ::dbj::transformer<T4>{}(cmdLine[4]);
                     function( arg1, arg2, arg3, arg4, session.out_stream() );
                 }
-                catch ( dbj::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -677,11 +677,11 @@ namespace cli
     {
 		/*
         std::vector< std::string > strs;
-        dbj::split( strs, cmd, dbj::is_any_of( " \t\n" ), dbj::token_compress_on );
+        ::dbj::split( strs, cmd, ::dbj::is_any_of( " \t\n" ), ::dbj::token_compress_on );
 
 		replaced the above with bellow:
 		*/
-		string_vector strs = dbj::algorithm::fast_string_split(cmd, " \t\n");
+		string_vector strs = ::dbj::algorithm::fast_string_split(cmd, " \t\n");
         // remove null entries from the vector:
         strs.erase(
             std::remove_if(

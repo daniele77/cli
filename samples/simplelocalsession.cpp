@@ -30,31 +30,41 @@
 #include "cli/cli.h"
 #include "cli/clifilesession.h"
 
-using namespace cli;
-using namespace std;
-
-
 int main()
 {
-    // setup cli
+	using namespace cli;
+	using namespace std;
+	// setup cli
 
     auto rootMenu = make_unique< menu_type >( "cli" );
     rootMenu -> Add(
-            "hello",
-            [](std::ostream& out){ out << "Hello, world\n"; },
-            "Print hello world" );
+            "word",
+            [](std::string str_val , std::ostream& out){ out << std::boolalpha << "string value is: \"" << str_val << "\" \n"; },
+            "The string argument type is accepted. Only one word currently, with no spaces/");
+    rootMenu -> Add(
+            "char",
+            [](char char_val , std::ostream& out){ out << std::boolalpha << "char value is: " << char_val << " \n"; },
+            "The char argument type is accepted. No single quotes, just type one char.");
+	rootMenu-> Add(
+		    "bool",
+            [](bool bool_val , std::ostream& out){ out << std::boolalpha << "The truth is: " << bool_val << " \n"; },
+            "For the bool argument accepted values are: 0. 1, true, false, T or F,  otherwise bool false" );
     rootMenu -> Add(
             "hello_everysession",
             [](std::ostream&){ cli_type::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
     rootMenu -> Add(
-            "plus",
-            [](int x, int y, int z, int w, std::ostream& out){ out << "The answer is: " << (x + y + z + w )<< "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+            "plus2",
+            [](int x, double  y, std::ostream& out){ out << "The answer is: " << (x + y )<< "\n"; },
+            "Apply + to 2 arguments" );
     rootMenu -> Add(
-            "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+            "plus3",
+            [](int x, double  y, short z, std::ostream& out){ out << "The answer is: " << (x + y + z )<< "\n"; },
+            "Apply + to 3 arguments" );
+    rootMenu -> Add(
+            "plus4",
+            [](int x, double  y, short z, long w, std::ostream& out){ out << "The answer is: " << (x + y + z + w )<< "\n"; },
+            "Apply + to 4 arguments" );
     rootMenu -> Add(
             "color",
             [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },
