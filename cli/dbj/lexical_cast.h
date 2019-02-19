@@ -1,7 +1,6 @@
 #pragma once
 
 #include <exception>
-#include <sstream>
 #include <string>
 
 #if __cplusplus < 201703
@@ -23,9 +22,7 @@ namespace dbj
 	};
 
 	namespace  inner {
-		// std::stoiX() are all locale aware and replace nicely 
-		// boost::lexical_cast<T>
-
+		
 		inline int svtoi(string_view  text)
 		{
 			try {
