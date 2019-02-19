@@ -31,6 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\server.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\terminal.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\winkeyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)string_veiw.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\cli\dbj\readme.md" />

@@ -1,12 +1,19 @@
 #pragma once
 
-#include <string_view>
+#if __cplusplus < 201703
+#include "string_veiw.hpp"
+#endif
+
 #include <algorithm>
 
 namespace dbj {
 	namespace algorithm {
 
-		// NOTE: wherever possible I am using std::string_view
+#if __cplusplus < 201703
+		using bpstd::string_view ; // back-port std project
+#endif
+
+		// NOTE: wherever possible I am using string_view
 
 		using namespace std;
 		using string_vector = vector<string>;
@@ -23,7 +30,10 @@ namespace dbj {
 				);
 		}
 
-		inline char const * white_space = " \t\n\r\f\v";
+		namespace {
+			// anonymous ns makes this static in essence
+			char const * white_space = " \t\n\r\f\v";
+		}
 
 		inline string trim_left(string_view text, char const * t = white_space) {
 			text.remove_prefix(text.find_first_not_of(t));
@@ -45,8 +55,8 @@ namespace dbj {
 		// code by JFT
 		// DBJ: changed argument types to be string_view, not string
 		string_vector fast_string_split(
-			const std::string_view & str, 
-			const std::string_view & delims = " \t\v\n\r\f"
+			const string_view & str, 
+			const string_view & delims = " \t\v\n\r\f"
 		)
 		{
 			string_vector output;

@@ -243,6 +243,14 @@ namespace cli
 
     // ********************************************************************
 
+
+	class func_cmd;
+	template<typename A1> class func_cmd_1 ;
+	template<typename A1, typename A2> class func_cmd_2;
+	template<typename A1, typename A2, typename A3> class func_cmd_3;
+	template<typename A1, typename A2, typename A3, typename A4> class func_cmd_4 ;
+
+
     class menu_type : public command_type
     {
     public:
@@ -350,7 +358,7 @@ namespace cli
         }
 
     private:
-
+/*
         template < typename F, typename R >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
 
@@ -365,8 +373,39 @@ namespace cli
 
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
+		*/
 
-        menu_type* parent;
+		template < typename F, typename R >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_1< A1 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_2< A1, A2 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2, typename A3 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, A3, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_3< A1, A2, A3 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, A3, A4, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_4< A1, A2, A3, A4> >(name, f, help));
+		}
+
+		menu_type* parent;
         const std::string description;
         using Cmds = std::vector< std::unique_ptr< command_type > >;
         Cmds cmds;
@@ -692,7 +731,7 @@ namespace cli
     }
 
     // menu_type implementation
-
+/*
     template < typename F, typename R >
     void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
     {
@@ -722,7 +761,7 @@ namespace cli
     {
         cmds.push_back( std::make_unique< func_cmd_4< A1, A2, A3, A4> >( name, f, help ) );
     }
-
+*/ 
 } // namespace
 
 #endif

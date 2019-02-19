@@ -12,6 +12,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\lexical_cast.h">
       <Filter>dbj</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)string_veiw.hpp">
+      <Filter>dbj</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\cli\dbj\readme.md">
