@@ -146,13 +146,24 @@ namespace dbj {
 
 		// dangerously low, bit it works
 		inline void
-			fill(smarty_ref bref_, size_t N = 0, char val_ = char{}) noexcept
+			fill(
+				std::unique_ptr<char[]> & buff_,
+				size_t N = 0, 
+				char val_ = char{}
+			) noexcept
 		{
-			smarty & buff_ = bref_;
-			if (!N) N = ::dbj::buf::length(bref_);
+			if (!N) N = ::dbj::buf::length(buff_);
 			void *p = (void *)buff_.get();
 			::std::memset(p, val_, N);
 		}
+
+		inline std::ostream & operator << (
+			std::ostream & os, 
+			std::unique_ptr<char[]> const & smarty_)
+		{
+			return os << smarty_.get();
+		}
+
 
 		/*
 		--------------------------------------------------------------------------------
@@ -273,6 +284,11 @@ namespace dbj {
 					target_.data_.get());
 
 				return std::error_code{}; // OK
+			}
+
+			friend std::ostream & operator << (std::ostream & os, char_buffer const & cb_ ) 
+			{
+				return os << cb_.data_.get();
 			}
 
 #pragma endregion // char_buffer friend utilities
