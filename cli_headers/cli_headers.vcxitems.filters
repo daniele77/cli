@@ -12,7 +12,29 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\lexical_cast.h">
       <Filter>dbj</Filter>
     </ClInclude>
-    <ClInclude Include="D:\GitHub\cli\cli_headers\..\cli\dbj\string_veiw.h">
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cli.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cliasyncsession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clifilesession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clilocalsession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\colorprofile.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\string_veiw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\history.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\inputdevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\inputhandler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\keyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\linuxkeyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\rang.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\remotecli.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\server.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\terminal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\winkeyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_buffer.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_insider.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\LICENCE.h">
       <Filter>dbj</Filter>
     </ClInclude>
   </ItemGroup>

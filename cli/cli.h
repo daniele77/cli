@@ -39,6 +39,7 @@
 #include <functional>
 #include "dbj/lexical_cast.h"
 #include "dbj/algorithm_string.h"
+#include "dbj/dbj_buffer.h"
 #include "colorprofile.h"
 #include "history.h"
 
@@ -115,7 +116,8 @@ namespace cli
     public:
         cli_type(
             std::unique_ptr< menu_type >&& _rootMenu,
-            std::function< void( std::ostream& )> _exitAction = std::function< void(std::ostream&) >()
+            std::function< void( std::ostream& )> _exitAction 
+			= std::function< void(std::ostream&) >()
         ) :
             rootMenu( std::move(_rootMenu) ),
             exitAction( _exitAction )
@@ -151,8 +153,10 @@ namespace cli
         virtual bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) = 0;
         virtual void Help( std::ostream& out ) const = 0;
         // Returns the collection of completions relatives to this command.
-        // For simple commands, provides a base implementation that use the name of the command
-        // for aggregate commands (i.e., menu_type), the function is redefined to give the menu command
+        // For simple commands, provides a base implementation that use 
+		// the name of the command
+        // for aggregate commands (i.e., menu_type), the function is redefined 
+		// to give the menu command
         // and the subcommand recursively
         virtual string_vector GetCompletionRecursive(const std::string& line) const
         {
@@ -167,9 +171,13 @@ namespace cli
 
     // ********************************************************************
 
-    // free utility function to get completions from a list of commands and the current line
-    inline string_vector GetCompletions(const std::vector< std::unique_ptr< command_type > >& cmds, const std::string& currentLine)
-    {
+    // free utility function to get completions from a list of commands 
+	// and the current line
+	/*
+    inline string_vector GetCompletions(
+		const std::vector< std::unique_ptr< command_type > >& cmds, 
+		const std::string& currentLine
+	)    {
         string_vector result;
         std::for_each( cmds.begin(), cmds.end(),
             [&currentLine,&result](auto& cmd)
@@ -180,6 +188,29 @@ namespace cli
         );
         return result;
     }
+	After dbj refactoring:
+	*/
+
+	using pointer_to_command = std::unique_ptr< command_type >;
+	using pointer_to_command_list = std::vector< pointer_to_command > ;
+
+	inline string_vector GetCompletions(
+		pointer_to_command_list const & cmds,
+		std::string currentLine
+	) {
+		string_vector result;
+		std::for_each(
+			cmds.begin(), cmds.end(),
+			[&currentLine, &result](auto& cmd)
+			{
+			auto c = cmd->GetCompletionRecursive(currentLine);
+			result.insert(result.end(), 
+				std::make_move_iterator(c.begin()), std::make_move_iterator(c.end())
+			);
+			}
+		);
+		return result;
+	}
 
     // ********************************************************************
 
