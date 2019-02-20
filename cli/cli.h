@@ -205,8 +205,9 @@ namespace cli
 
         void Help() const;
 
-        void Exit()
+        virtual void Exit()
         {
+            exiting = true;
             if (exitAction) exitAction(out);
             cli.ExitAction(out);
         }
@@ -238,6 +239,7 @@ namespace cli
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction;
         detail::History history;
+        bool exiting;
     };
 
     // ********************************************************************
@@ -608,7 +610,8 @@ namespace cli
             current(cli.RootMenu()),
             globalScopeMenu(std::make_unique< Menu >()),
             out(_out),
-            history(historySize)
+            history(historySize),
+            exiting(false)
         {
             cli.Register(out);
             globalScopeMenu->Add(
@@ -660,6 +663,7 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
+        if (exiting) return;
         out << beforePrompt
             << current -> Prompt()
             << afterPrompt

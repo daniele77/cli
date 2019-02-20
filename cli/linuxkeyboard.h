@@ -50,22 +50,24 @@ namespace cli
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(boost::asio::io_service& ios) :
-        InputDevice(ios)
+    explicit LinuxKeyboard(boost::asio::io_service& ios, int shutdownPipe) :
+        InputDevice(ios),
+        shutdownPipe(shutdownPipe)
     {
         ToManualMode();
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
     }
     ~LinuxKeyboard()
     {
         run = false;
         ToStandardMode();
+        if (servant.joinable()) {
+            servant.join();
+        }
     }
 
 private:
 
-    void Read()
+    void Read() noexcept
     {
         while ( run )
         {
@@ -76,7 +78,15 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        while ( !KbHit() ) {}
+        int result;
+        do {
+            result = KbHit();
+        } while (result == 0);
+
+        if (result == -1) {
+            return std::make_pair(KeyType::ignored,' ');
+        }
+
         int ch = getchar();
         switch( ch )
         {
@@ -124,8 +134,12 @@ private:
         tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
     }
 
-    static int KbHit()
+    int KbHit()
     {
+      if (shutdownPipe == -1) {
+        return -1;
+      }
+
       struct timeval tv;
       fd_set rdfs;
 
@@ -134,15 +148,26 @@ private:
 
       FD_ZERO(&rdfs);
       FD_SET (STDIN_FILENO, &rdfs);
+      FD_SET (shutdownPipe, &rdfs);
 
-      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs);
+      select(shutdownPipe+1, &rdfs, NULL, NULL, &tv);
+
+      if (FD_ISSET(shutdownPipe, &rdfs)) {
+        close(shutdownPipe);
+        shutdownPipe = -1;
+        return -1;
+      }
+
+      return FD_ISSET(STDIN_FILENO, &rdfs) ? 1 : 0;
     }
 
+    int shutdownPipe;
     termios oldt;
     termios newt;
     std::atomic<bool> run{ true };
-    std::unique_ptr<std::thread> servant;
+    std::thread servant{ [this]() noexcept {
+        Read();
+    }};
 };
 
 } // namespace

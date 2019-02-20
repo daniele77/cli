@@ -31,18 +31,24 @@
 #define KEYBOARD_H_
 
 #if defined(__unix__) || defined(__unix) || defined(__linux__)
-#define OS_LINUX
+    #ifndef CLI_OS_LINUX
+    #define CLI_OS_LINUX
+    #endif
 #elif defined(WIN32) || defined(_WIN32) || defined(_WIN64)
-#define OS_WIN
+    #ifndef CLI_OS_WIN
+    #define CLI_OS_WIN
+    #endif
 #elif defined(__APPLE__) || defined(__MACH__)
-#define OS_MAC
+    #ifndef CLI_OS_MAC
+    #define CLI_OS_MAC
+    #endif
 #else
-#error Unknown Platform
+    #error Unknown Platform
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
     #include "linuxkeyboard.h"
-#elif defined(OS_WIN)
+#elif defined(CLI_OS_WIN)
 	#include "winkeyboard.h"
 #else
     #error "Platform not supported (yet)."
@@ -50,19 +56,15 @@
 
 namespace cli
 {
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
     using Keyboard = LinuxKeyboard;
-#elif defined(OS_WIN)
+#elif defined(CLI_OS_WIN)
 	using Keyboard = WinKeyboard;
 #else
     #error "Platform not supported (yet)."
 #endif
 
 } // namespace
-
-#undef OS_LINUX
-#undef OS_WIN
-#undef OS_MAC
 
 #endif // KEYBOARD_H_
 
