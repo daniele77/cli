@@ -79,7 +79,15 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        while ( !KbHit() ) {}
+        int result;
+        do {
+            result = KbHit();
+        } while (result == 0);
+
+        if (result == -1) {
+            return std::make_pair(KeyType::ignored,' ');
+        }
+
         int ch = getchar();
         switch( ch )
         {
@@ -127,8 +135,12 @@ private:
         tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
     }
 
-    static int KbHit()
+    int KbHit()
     {
+      if (shutdownPipe == -1) {
+        return -1;
+      }
+
       struct timeval tv;
       fd_set rdfs;
 
@@ -140,7 +152,14 @@ private:
       FD_SET (shutdownPipe, &rdfs);
 
       select(shutdownPipe+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs) || FD_ISSET(shutdownPipe, &rdfs);
+
+      if (FD_ISSET(shutdownPipe, &rdfs)) {
+        close(shutdownPipe);
+        shutdownPipe = -1;
+        return -1;
+      }
+
+      return FD_ISSET(STDIN_FILENO, &rdfs) ? 1 : 0;
     }
 
     int shutdownPipe;

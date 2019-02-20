@@ -43,8 +43,8 @@ class CliLocalTerminalSession : public CliSession
 private:
     int makeShutdownPipe()
     {
-#if defined(OS_LINUX) || defined(OS_MAC)
-        int fds[2]
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
+		int fds[2];
         if (pipe(fds) == 0) {
             // We store the write end
             shutdownPipe = fds[1];
@@ -65,18 +65,20 @@ public:
         Prompt();
     }
 
-    virtual Exit()
+    virtual void Exit()
     {
         CliSession::Exit();
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
         write(shutdownPipe, " ", 1);
+		close(shutdownPipe);
+		shutdownPipe = -1;
 #endif
     }
 
 private:
     Keyboard kb;
     InputHandler ih;
-#if defined(OS_LINUX) || defined(OS_MAC)
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
     int shutdownPipe;
 #endif
 };
