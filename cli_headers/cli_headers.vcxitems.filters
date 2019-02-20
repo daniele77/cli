@@ -36,6 +36,7 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_algo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\type_trans.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_buf.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\cli\dbj\readme.md">

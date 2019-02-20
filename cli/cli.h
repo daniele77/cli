@@ -39,7 +39,7 @@
 #include <functional>
 #include "dbj/type_trans.h"
 #include "dbj/dbj_algo.h"
-#include "dbj/dbj_buffer.h"
+#include "dbj/dbj_buf.h"
 #include "dbj/dbj_format.h"
 #include "colorprofile.h"
 #include "history.h"
