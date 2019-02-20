@@ -27,7 +27,10 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#if defined(__linux__) || defined(__APPLE__)
 #include "cli/cliasyncsession.h"
+#endif
+
 #include "cli/cli.h"
 
 using namespace cli;
@@ -84,7 +87,8 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-    boost::asio::io_service ios;    
+#if defined(__linux__) || defined(__APPLE__)
+    boost::asio::io_service ios;
     CliAsyncSession session(ios, cli);
     session.ExitAction(
         [&ios](auto& out) // session exit action
@@ -92,8 +96,11 @@ int main()
             out << "Closing App...\n";
             ios.stop();
         }
-    );    
+    );
     ios.run();
+#else
+    std::cout << "Async session is not supported on this platform.\n";
+#endif
 
     return 0;
 }
