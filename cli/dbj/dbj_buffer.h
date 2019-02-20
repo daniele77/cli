@@ -239,8 +239,10 @@ namespace dbj {
 
 					// construct from native charr array
 					// i.e. the string literal
-					template <typename T = char, size_t N >
-					buffer ( T (& charr )[N] ) noexcept
+					template < typename T, size_t N ,
+						std::enable_if_t< std::is_same_v<T, char> , int> = 0
+					>
+					buffer ( const T (& charr )[N] ) noexcept
 					{
 						assign (charr, charr + N );
 					}
