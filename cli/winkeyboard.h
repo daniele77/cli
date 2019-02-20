@@ -47,7 +47,7 @@ namespace cli
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(boost::asio::io_service &ios) : InputDevice(ios),
+    explicit WinKeyboard(boost::asio::io_service &ios, int) : InputDevice(ios),
         servant{ [this](){ Read(); } }
     {
 

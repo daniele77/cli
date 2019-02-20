@@ -205,13 +205,11 @@ namespace cli
 
         void Help() const;
 
-        void Exit()
+        virtual void Exit()
         {
             exiting = true;
             if (exitAction) exitAction(out);
             cli.ExitAction(out);
-            // Close stdin to abort getchar() and allow the keyboard listener to destroy
-            fclose(stdin);
         }
 
         void ExitAction( std::function< void(std::ostream&)> action )

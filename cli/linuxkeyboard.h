@@ -50,8 +50,9 @@ namespace cli
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(boost::asio::io_service& ios) :
+    explicit LinuxKeyboard(boost::asio::io_service& ios, int shutdownPipe) :
         InputDevice(ios),
+        shutdownPipe(shutdownPipe),
         servant{ [this](){ Read(); } }
     {
         ToManualMode();
@@ -136,11 +137,13 @@ private:
 
       FD_ZERO(&rdfs);
       FD_SET (STDIN_FILENO, &rdfs);
+      FD_SET (shutdownPipe, &rdfs);
 
-      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs);
+      select(shutdownPipe+1, &rdfs, NULL, NULL, &tv);
+      return FD_ISSET(STDIN_FILENO, &rdfs) || FD_ISSET(shutdownPipe, &rdfs);
     }
 
+    int shutdownPipe;
     termios oldt;
     termios newt;
     std::atomic<bool> run{ true };
