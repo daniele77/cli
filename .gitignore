@@ -44,3 +44,7 @@ Release
 
 # Doxygen
 doc/doxy/html
+
+samples/*
+samples/!*/
+samples/!*.*
