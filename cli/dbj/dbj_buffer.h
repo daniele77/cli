@@ -261,7 +261,7 @@ namespace dbj {
 					}
 
 					void reset(inside_1_and_max new_size_) const {
-						data_.release();
+						(void)data_.release();
 						this->size_ = new_size_;
 						this->data_ = make_buff  (new_size_);
 					}
@@ -288,9 +288,10 @@ namespace dbj {
 					const iterator begin() const noexcept { return data_.get(); }
 					const iterator end()   const noexcept { return data_.get() + size_; }
 		
-					void fill(char val_) const noexcept
+					buffer const & fill(char val_) const noexcept
 					{
 						::dbj::buf::fill( this->data_, val_, this->size());
+						return *this;
 					}
 		
 					// to avoid "never releasing assign pointer" syndrome
@@ -389,7 +390,7 @@ namespace {
 		// 2
 		{
 			buffer		 buff_1 = buffer(0xF);
-			buff_1.fill( '*' );
+			TU( buff_1.fill( '*' )) ;
 			TU(buff_1);
 			buffer		 buff_2 = buff_1;
 			TU(buff_1 == buff_2);

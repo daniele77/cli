@@ -49,7 +49,8 @@ public:
 
 protected:
 
-    session_type( boost::asio::ip::tcp::socket socket ) : socket( std::move( socket ) ), outStream( this ) {}
+    session_type( boost::asio::ip::tcp::socket socket ) 
+		: socket( std::move( socket ) ), outStream( this ) {}
 
     virtual void Disconnect()
     {

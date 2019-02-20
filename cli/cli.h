@@ -40,6 +40,7 @@
 #include "dbj/lexical_cast.h"
 #include "dbj/algorithm_string.h"
 #include "dbj/dbj_buffer.h"
+#include "dbj/dbj_format.h"
 #include "colorprofile.h"
 #include "history.h"
 
@@ -455,7 +456,7 @@ namespace cli
             const std::string& _name,
             std::function< void( std::ostream& )> _function,
             const std::string& desc = ""
-        ) : command_type( _name ), function( _function ), description( desc )
+        ) : command_type( _name ), function_( _function ), description( desc )
         {
         }
         bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
@@ -463,10 +464,9 @@ namespace cli
             if ( cmdLine.size() != 1 ) return false;
             if ( cmdLine[ 0 ] == Name() )
             {
-                function( session.out_stream() );
+                this->function_( session.out_stream() );
                 return true;
             }
-
             return false;
         }
         void Help( std::ostream& out ) const override
@@ -474,7 +474,7 @@ namespace cli
             out << " - " << Name() << "\n\t" << description << "\n";
         }
     private:
-        const std::function< void( std::ostream& )> function;
+        const std::function< void( std::ostream& )> function_;
         const std::string description;
     };
 
@@ -502,7 +502,7 @@ namespace cli
                 {
                     // T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
 					T arg = ::dbj::transformer<T>{}(cmdLine[1]);
-                    function( arg, session.out_stream() );
+                    this->function( arg, session.out_stream() );
                 }
                 catch ( ::dbj::bad_lexical_cast & )
                 {
@@ -548,7 +548,7 @@ namespace cli
                 {
 					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
 					T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
-					function( arg1, arg2, session.out_stream() );
+					this->function( arg1, arg2, session.out_stream() );
                 }
                 catch ( ::dbj::bad_lexical_cast & )
                 {
@@ -596,7 +596,7 @@ namespace cli
 					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
                     T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
                     T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
-                    function( arg1, arg2, arg3, session.out_stream() );
+                    this->function( arg1, arg2, arg3, session.out_stream() );
                 }
                 catch ( ::dbj::bad_lexical_cast & )
                 {
@@ -646,7 +646,7 @@ namespace cli
                     T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
                     T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
                     T4 arg4 = ::dbj::transformer<T4>{}(cmdLine[4]);
-                    function( arg1, arg2, arg3, arg4, session.out_stream() );
+                    this->function( arg1, arg2, arg3, arg4, session.out_stream() );
                 }
                 catch ( ::dbj::bad_lexical_cast & )
                 {
