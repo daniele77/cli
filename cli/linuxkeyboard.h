@@ -51,16 +51,18 @@ class LinuxKeyboard : public InputDevice
 {
 public:
     explicit LinuxKeyboard(boost::asio::io_service& ios) :
-        InputDevice(ios)
+        InputDevice(ios),
+        servant{ [this](){ Read(); } }
     {
         ToManualMode();
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
     }
     ~LinuxKeyboard()
     {
         run = false;
         ToStandardMode();
+        if (servant.joinable()) {
+            servant.join();
+        }
     }
 
 private:
@@ -142,7 +144,7 @@ private:
     termios oldt;
     termios newt;
     std::atomic<bool> run{ true };
-    std::unique_ptr<std::thread> servant;
+    std::thread servant;
 };
 
 } // namespace
