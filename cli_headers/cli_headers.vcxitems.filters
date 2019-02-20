@@ -6,12 +6,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\algorithm_string.h">
-      <Filter>dbj</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\lexical_cast.h">
-      <Filter>dbj</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cli.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cliasyncsession.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clifilesession.h" />
@@ -35,6 +29,15 @@
       <Filter>dbj</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\LICENCE.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_format.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\GitHub\cli\cli_headers\..\cli\dbj\type_trans.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\GitHub\cli\cli_headers\..\cli\dbj\dbj_algo.h">
       <Filter>dbj</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,23 +1,47 @@
 
-### Replacements for external lib's
+### Replacements for external lib's and other dramatic changes
 
-In the code 'boost' is replaced with 'dbj'stuff. 
-Instead of global inclusion path is local.
+In the original CLI code, I have done various changes.
 
-Example. Instead of:
+For example: beside 'boos asio', all the other  'boost' dependancies are cut and replaced with 'dbj' stuff, to be found in this folder. 
+
+My aim is to improve the resilience and performance by replacing std::string wherever possoible with string_view, and especially with 
+light and fast buffers based on `std::unique_ptr<char[]n>`.
+
+In `cli.h` , instead of global inclusions path is now local.
+
+Thus,  instead of:
 
     #include <boost/lexical_cast.hpp>   
     #include <boost/algorithm/string.hpp>
 
 I have done this:
 
-    #include "dbj/lexical_cast.h"
-    #include "dbj/algorithm_string.h"
+    // transformation from cli string
+    // to various types as required
+    #include "dbj/type_trans.h"
 
-#### Note: 
+    // curently string related
+    // algoithms previously used
+    // from boost
+    #include "dbj/dbj_algo.h"
 
-> Inside is mainly very simple stuff. 
-> Thus it is irrelevent who is the author.
+    // simple and fast buffering 
+    // based on std::unique_ptr<char[]>_
+    // for details please review the tests
+    // inside
+    #include "dbj/dbj_buffer.h"
+
+    // formated output into the dbj buffers
+    // please review the test inside
+    #include "dbj/dbj_format.h"
+
+#### Notes 
+
 > Where applicable I have placed the links to the source.
 
-The key aim is to have self contained lib. 
+>GPLv3 licence for this part is in the file LICENCE.h
+
+>string_view.h implementation is enitrely external. Please respect authors copyright.
+
+The key aim is to have self contained, light and fast CLI. 

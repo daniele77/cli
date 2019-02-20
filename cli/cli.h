@@ -37,8 +37,8 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include "dbj/lexical_cast.h"
-#include "dbj/algorithm_string.h"
+#include "dbj/type_trans.h"
+#include "dbj/dbj_algo.h"
 #include "dbj/dbj_buffer.h"
 #include "dbj/dbj_format.h"
 #include "colorprofile.h"

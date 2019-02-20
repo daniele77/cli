@@ -19,10 +19,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clifilesession.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clilocalsession.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\colorprofile.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\algorithm_string.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_algo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_format.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_insider.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\lexical_cast.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\type_trans.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\LICENCE.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\string_veiw.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\history.h" />

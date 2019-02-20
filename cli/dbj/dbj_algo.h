@@ -1,4 +1,5 @@
 #pragma once
+#include "LICENCE.h"
 
 #if __cplusplus < 201703
 #include "string_veiw.h"

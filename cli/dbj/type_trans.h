@@ -1,5 +1,5 @@
 #pragma once
-
+#include "LICENCE.h"
 #include <exception>
 #include <string>
 
