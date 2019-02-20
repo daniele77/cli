@@ -34,12 +34,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_format.h">
       <Filter>dbj</Filter>
     </ClInclude>
-    <ClInclude Include="D:\GitHub\cli\cli_headers\..\cli\dbj\type_trans.h">
-      <Filter>dbj</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\GitHub\cli\cli_headers\..\cli\dbj\dbj_algo.h">
-      <Filter>dbj</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_algo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\type_trans.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\cli\dbj\readme.md">
