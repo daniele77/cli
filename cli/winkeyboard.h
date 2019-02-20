@@ -47,8 +47,7 @@ namespace cli
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(boost::asio::io_service &ios, int) : InputDevice(ios),
-        servant{ [this](){ Read(); } }
+    explicit WinKeyboard(boost::asio::io_service &ios, int) : InputDevice(ios)
     {
 
     }
@@ -61,7 +60,7 @@ public:
     }
 
 private:
-    void Read()
+    void Read() noexcept
     {
         while (run)
         {
@@ -119,7 +118,9 @@ private:
     }
 
     std::atomic<bool> run{true};
-    std::thread servant;
+    std::thread servant{ [this]() noexcept {
+        Read();
+    }};
 };
 
 } // namespace

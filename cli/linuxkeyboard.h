@@ -52,8 +52,7 @@ class LinuxKeyboard : public InputDevice
 public:
     explicit LinuxKeyboard(boost::asio::io_service& ios, int shutdownPipe) :
         InputDevice(ios),
-        shutdownPipe(shutdownPipe),
-        servant{ [this](){ Read(); } }
+        shutdownPipe(shutdownPipe)
     {
         ToManualMode();
     }
@@ -68,7 +67,7 @@ public:
 
 private:
 
-    void Read()
+    void Read() noexcept
     {
         while ( run )
         {
@@ -166,7 +165,9 @@ private:
     termios oldt;
     termios newt;
     std::atomic<bool> run{ true };
-    std::thread servant;
+    std::thread servant{ [this]() noexcept {
+        Read();
+    }};
 };
 
 } // namespace
