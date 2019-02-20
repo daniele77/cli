@@ -44,15 +44,15 @@
 namespace cli
 {
 
-class WinKeyboard : public InputDevice
+class win_keyboard : public input_device
 {
 public:
-    explicit WinKeyboard(boost::asio::io_service &ios) : InputDevice(ios)
+    explicit win_keyboard(boost::asio::io_service &ios) : input_device(ios)
     {
         servant = std::make_unique<std::thread>([this]() { Read(); });
         servant->detach();
     }
-    ~WinKeyboard()
+    ~win_keyboard()
     {
         run = false;
     }

@@ -51,9 +51,9 @@
 namespace cli
 {
 #if defined(OS_LINUX) || defined(OS_MAC)
-    using Keyboard = LinuxKeyboard;
+    using Keyboard = linux_keyboard;
 #elif defined(OS_WIN)
-	using Keyboard = WinKeyboard;
+	using Keyboard = win_keyboard;
 #else
     #error "Platform not supported (yet)."
 #endif

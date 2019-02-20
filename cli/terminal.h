@@ -46,10 +46,10 @@ enum class Symbol
     tab
 };
 
-class Terminal
+class terminal
 {
   public:
-    Terminal(std::ostream &_out) : out(_out) {}
+    terminal(std::ostream &_out) : out(_out) {}
 
     void ResetCursor() { position = 0; }
 

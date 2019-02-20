@@ -32,21 +32,21 @@
 
 #include <string>
 #include <boost/asio.hpp>
-#include "cli.h" // CliSession
+#include "cli.h" // cli_session_type
 
 namespace cli
 {
 
-class CliAsyncSession : public CliSession
+class cli_async_session : public cli_session_type
 {
 public:
-    CliAsyncSession( boost::asio::io_service& ios, Cli& cli ) :
-        CliSession(cli, std::cout, 1),
+    cli_async_session( boost::asio::io_service& ios, Cli& cli ) :
+        cli_session_type(cli, std::cout, 1),
         input( ios, ::dup( STDIN_FILENO ) )        
     {
         Read();
     }
-    ~CliAsyncSession()
+    ~cli_async_session()
     {
         input.close();
     }

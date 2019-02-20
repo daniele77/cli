@@ -39,13 +39,13 @@ namespace cli
 
 enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
 
-class InputDevice
+class input_device
 {
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    InputDevice(boost::asio::io_service& ios) : ioService(ios) {}
-    virtual ~InputDevice() = default;
+    input_device(boost::asio::io_service& ios) : ioService(ios) {}
+    virtual ~input_device() = default;
 
     template <typename H>
     void Register(H&& h) { handler = std::forward<H>(h); }

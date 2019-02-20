@@ -27,6 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#pragma once 
+
 #ifndef CLI_H_
 #define CLI_H_
 
@@ -35,47 +37,48 @@
 #include <vector>
 #include <memory>
 #include <functional>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
+#include "dbj/type_trans.h"
+#include "dbj/dbj_algo.h"
+#include "dbj/dbj_buf.h"
+#include "dbj/dbj_format.h"
 #include "colorprofile.h"
 #include "history.h"
 
 namespace cli
 {
+	using namespace ::std;
+	using string_vector = vector<string>;
 
     // ********************************************************************
-
-    template < typename T > struct TypeDesc {};
-    template <> struct TypeDesc< char > { static const char* Name() { return "<char>"; } };
-    template <> struct TypeDesc< unsigned char > { static const char* Name() { return "<unsigned char>"; } };
-    template <> struct TypeDesc< short > { static const char* Name() { return "<short>"; } };
-    template <> struct TypeDesc< unsigned short > { static const char* Name() { return "<unsigned short>"; } };
-    template <> struct TypeDesc< int > { static const char* Name() { return "<int>"; } };
-    template <> struct TypeDesc< unsigned int > { static const char* Name() { return "<unsigned int>"; } };
-    template <> struct TypeDesc< long > { static const char* Name() { return "<long>"; } };
-    template <> struct TypeDesc< unsigned long > { static const char* Name() { return "<unsigned long>"; } };
-    template <> struct TypeDesc< float > { static const char* Name() { return "<float>"; } };
-    template <> struct TypeDesc< double > { static const char* Name() { return "<double>"; } };
-    template <> struct TypeDesc< long double > { static const char* Name() { return "<long double>"; } };
-    template <> struct TypeDesc< bool > { static const char* Name() { return "<bool>"; } };
-    template <> struct TypeDesc< std::string > { static const char* Name() { return "<string>"; } };
-
+    template < typename T > struct type_descriptor {};
+    template <> struct type_descriptor< char > { static const char* Name() { return "<char>"; } };
+    template <> struct type_descriptor< unsigned char > { static const char* Name() { return "<unsigned char>"; } };
+    template <> struct type_descriptor< short > { static const char* Name() { return "<short>"; } };
+    template <> struct type_descriptor< unsigned short > { static const char* Name() { return "<unsigned short>"; } };
+    template <> struct type_descriptor< int > { static const char* Name() { return "<int>"; } };
+    template <> struct type_descriptor< unsigned int > { static const char* Name() { return "<unsigned int>"; } };
+    template <> struct type_descriptor< long > { static const char* Name() { return "<long>"; } };
+    template <> struct type_descriptor< unsigned long > { static const char* Name() { return "<unsigned long>"; } };
+    template <> struct type_descriptor< float > { static const char* Name() { return "<float>"; } };
+    template <> struct type_descriptor< double > { static const char* Name() { return "<double>"; } };
+    template <> struct type_descriptor< long double > { static const char* Name() { return "<long double>"; } };
+    template <> struct type_descriptor< bool > { static const char* Name() { return "<bool>"; } };
+    template <> struct type_descriptor< std::string > { static const char* Name() { return "<string>"; } };
     // ********************************************************************
 
-    // forward declarations
-    class Menu;
-    class CliSession;
+// forward declarations
+    class menu_type;
+    class cli_session_type;
 
-
-    class Cli
+    class cli_type
     {
 
         // inner class to provide a global output stream
-        class OutStream
+        class out_stream
         {
         public:
             template <typename T>
-            OutStream& operator << (const T& msg)
+            out_stream& operator << (const T& msg)
             {
                 for (auto out: ostreams)
                     *out << msg;
@@ -88,7 +91,7 @@ namespace cli
             typedef CoutType& (*StandardEndLine)(CoutType&);
 
             // takes << std::endl
-            OutStream& operator << (StandardEndLine manip)
+            out_stream& operator << (StandardEndLine manip)
             {
                 for (auto out: ostreams)
                     manip(*out);
@@ -96,7 +99,7 @@ namespace cli
             }
 
         private:
-            friend class Cli;
+            friend class cli_type;
 
             void Register(std::ostream& o)
             {
@@ -112,9 +115,10 @@ namespace cli
         // end inner class
 
     public:
-        Cli(
-            std::unique_ptr< Menu >&& _rootMenu,
-            std::function< void( std::ostream& )> _exitAction = std::function< void(std::ostream&) >()
+        cli_type(
+            std::unique_ptr< menu_type >&& _rootMenu,
+            std::function< void( std::ostream& )> _exitAction 
+			= std::function< void(std::ostream&) >()
         ) :
             rootMenu( std::move(_rootMenu) ),
             exitAction( _exitAction )
@@ -123,39 +127,41 @@ namespace cli
 
 
         // disable value semantics
-        Cli( const Cli& ) = delete;
-        Cli& operator = ( const Cli& ) = delete;
+        cli_type( const cli_type& ) = delete;
+        cli_type& operator = ( const cli_type& ) = delete;
 
-        Menu* RootMenu() { return rootMenu.get(); }
+        menu_type* RootMenu() { return rootMenu.get(); }
         void ExitAction( std::function< void(std::ostream&)> action ) { exitAction = action; }
         void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
 
         static void Register(std::ostream& o) { cout().Register(o); }
         static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
-        static OutStream& cout() { static OutStream s; return s; }
+        static out_stream& cout() { static out_stream s; return s; }
 
     private:
-        std::unique_ptr< Menu > rootMenu; // just to keep it alive
+        std::unique_ptr< menu_type > rootMenu; // just to keep it alive
         std::function< void(std::ostream&) > exitAction;
     };
 
     // ********************************************************************
 
-    class Command
+    class command_type
     {
     public:
-        explicit Command(const std::string& _name) : name(_name) {}
-        virtual ~Command() = default;
-        virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
+        explicit command_type(const std::string& _name) : name(_name) {}
+        virtual ~command_type() = default;
+        virtual bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) = 0;
         virtual void Help( std::ostream& out ) const = 0;
         // Returns the collection of completions relatives to this command.
-        // For simple commands, provides a base implementation that use the name of the command
-        // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
+        // For simple commands, provides a base implementation that use 
+		// the name of the command
+        // for aggregate commands (i.e., menu_type), the function is redefined 
+		// to give the menu command
         // and the subcommand recursively
-        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
+        virtual string_vector GetCompletionRecursive(const std::string& line) const
         {
-            if ( boost::algorithm::starts_with(name, line) ) return {name};
+            if ( ::dbj::algorithm::starts_with(name, line) ) return {name};
             else return {};
         }
     protected:
@@ -166,10 +172,14 @@ namespace cli
 
     // ********************************************************************
 
-    // free utility function to get completions from a list of commands and the current line
-    inline std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
-    {
-        std::vector<std::string> result;
+    // free utility function to get completions from a list of commands 
+	// and the current line
+	/*
+    inline string_vector GetCompletions(
+		const std::vector< std::unique_ptr< command_type > >& cmds, 
+		const std::string& currentLine
+	)    {
+        string_vector result;
         std::for_each( cmds.begin(), cmds.end(),
             [&currentLine,&result](auto& cmd)
             {
@@ -179,29 +189,52 @@ namespace cli
         );
         return result;
     }
+	After dbj refactoring:
+	*/
+
+	using pointer_to_command = std::unique_ptr< command_type >;
+	using pointer_to_command_list = std::vector< pointer_to_command > ;
+
+	inline string_vector GetCompletions(
+		pointer_to_command_list const & cmds,
+		std::string currentLine
+	) {
+		string_vector result;
+		std::for_each(
+			cmds.begin(), cmds.end(),
+			[&currentLine, &result](auto& cmd)
+			{
+			auto c = cmd->GetCompletionRecursive(currentLine);
+			result.insert(result.end(), 
+				std::make_move_iterator(c.begin()), std::make_move_iterator(c.end())
+			);
+			}
+		);
+		return result;
+	}
 
     // ********************************************************************
 
-    class CliSession
+    class cli_session_type
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out, std::size_t historySize = 100 );
-        ~CliSession() { cli.UnRegister(out); }
+        cli_session_type( cli_type& _cli, std::ostream& _out, std::size_t historySize = 100 );
+        ~cli_session_type() { cli.UnRegister(out); }
 
         // disable value semantics
-        CliSession( const CliSession& ) = delete;
-        CliSession& operator = ( const CliSession& ) = delete;
+        cli_session_type( const cli_session_type& ) = delete;
+        cli_session_type& operator = ( const cli_session_type& ) = delete;
 
         void Feed( const std::string& cmd );
 
         void Prompt();
 
-        void Current( Menu* menu )
+        void Current( menu_type* menu )
         {
             current = menu;
         }
 
-        std::ostream& OutStream() { return out; }
+        std::ostream& out_stream() { return out; }
 
         void Help() const;
 
@@ -228,13 +261,13 @@ namespace cli
             return history.Next();
         }
 
-        std::vector<std::string> GetCompletions(const std::string& currentLine) const;
+        string_vector GetCompletions(const std::string& currentLine) const;
 
     private:
 
-        Cli& cli;
-        Menu* current;
-        std::unique_ptr< Menu > globalScopeMenu;
+        cli_type& cli;
+        menu_type* current;
+        std::unique_ptr< menu_type > globalScopeMenu;
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction;
         detail::History history;
@@ -242,17 +275,25 @@ namespace cli
 
     // ********************************************************************
 
-    class Menu : public Command
+
+	class func_cmd;
+	template<typename A1> class func_cmd_1 ;
+	template<typename A1, typename A2> class func_cmd_2;
+	template<typename A1, typename A2, typename A3> class func_cmd_3;
+	template<typename A1, typename A2, typename A3, typename A4> class func_cmd_4 ;
+
+
+    class menu_type : public command_type
     {
     public:
         // disable value semantics
-        Menu( const Menu& ) = delete;
-        Menu& operator = ( const Menu& ) = delete;
+        menu_type( const menu_type& ) = delete;
+        menu_type& operator = ( const menu_type& ) = delete;
 
-        Menu() : Command( {} ), parent( nullptr ), description() {}
+        menu_type() : command_type( {} ), parent( nullptr ), description() {}
 
-        Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
-            Command( _name ), parent( nullptr ), description( desc )
+        menu_type( const std::string& _name, const std::string& desc = "(menu)" ) :
+            command_type( _name ), parent( nullptr ), description( desc )
         {}
 
         template < typename F >
@@ -262,18 +303,18 @@ namespace cli
             Add( name, help, f, &F::operator() );
         }
 
-        void Add( std::unique_ptr< Command >&& cmd )
+        void Add( std::unique_ptr< command_type >&& cmd )
         {
             cmds.push_back( std::move(cmd) );
         }
 
-        void Add( std::unique_ptr< Menu >&& menu )
+        void Add( std::unique_ptr< menu_type >&& menu )
         {
             menu -> parent = this;
             cmds.push_back( std::move(menu) );
         }
 
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine[ 0 ] == Name() )
             {
@@ -293,7 +334,7 @@ namespace cli
             return false;
         }
 
-        bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool ScanCmds( const std::vector< std::string >& cmdLine, cli_session_type& session )
         {
             for ( auto& cmd: cmds )
                 if ( cmd -> Exec( cmdLine, session ) ) return true;
@@ -318,7 +359,7 @@ namespace cli
             out << " - " << Name() << "\n\t" << description << "\n";
         }
 
-        std::vector<std::string> GetCompletions(const std::string& currentLine) const
+        string_vector GetCompletions(const std::string& currentLine) const
         {
             auto result = cli::GetCompletions(cmds, currentLine);
 			if (parent)
@@ -329,14 +370,14 @@ namespace cli
 			return result;
         }
 
-        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
+        virtual string_vector GetCompletionRecursive(const std::string& line) const override
         {
-            if ( boost::algorithm::starts_with( line, Name() ) )
+            if ( ::dbj::algorithm::starts_with( line, Name() ) )
             {
                 auto rest = line;
                 rest.erase( 0, Name().size() );
-                boost::algorithm::trim_left(rest);
-                std::vector<std::string> result;
+               ::dbj::algorithm::trim_left(rest);
+                string_vector result;
                 for ( auto& cmd: cmds )
                 {
                     auto cs = cmd->GetCompletionRecursive( rest );
@@ -345,11 +386,11 @@ namespace cli
                 }
                 return result;
             }
-            return Command::GetCompletionRecursive(line);
+            return command_type::GetCompletionRecursive(line);
         }
 
     private:
-
+/*
         template < typename F, typename R >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
 
@@ -364,38 +405,68 @@ namespace cli
 
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
+		*/
 
-        Menu* parent;
+		template < typename F, typename R >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_1< A1 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_2< A1, A2 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2, typename A3 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, A3, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_3< A1, A2, A3 > >(name, f, help));
+		}
+
+		template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
+		void Add(const std::string& name, const std::string& help, F& f, R(F::*)(A1, A2, A3, A4, std::ostream& out) const)
+		{
+			cmds.push_back(std::make_unique< func_cmd_4< A1, A2, A3, A4> >(name, f, help));
+		}
+
+		menu_type* parent;
         const std::string description;
-        using Cmds = std::vector< std::unique_ptr< Command > >;
+        using Cmds = std::vector< std::unique_ptr< command_type > >;
         Cmds cmds;
     };
 
     // ********************************************************************
 
-    class FuncCmd : public Command
+    class func_cmd : public command_type
     {
     public:
         // disable value semantics
-        FuncCmd( const FuncCmd& ) = delete;
-        FuncCmd& operator = ( const FuncCmd& ) = delete;
+        func_cmd( const func_cmd& ) = delete;
+        func_cmd& operator = ( const func_cmd& ) = delete;
 
-        FuncCmd(
+        func_cmd(
             const std::string& _name,
             std::function< void( std::ostream& )> _function,
             const std::string& desc = ""
-        ) : Command( _name ), function( _function ), description( desc )
+        ) : command_type( _name ), function_( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine.size() != 1 ) return false;
             if ( cmdLine[ 0 ] == Name() )
             {
-                function( session.OutStream() );
+                this->function_( session.out_stream() );
                 return true;
             }
-
             return false;
         }
         void Help( std::ostream& out ) const override
@@ -403,36 +474,37 @@ namespace cli
             out << " - " << Name() << "\n\t" << description << "\n";
         }
     private:
-        const std::function< void( std::ostream& )> function;
+        const std::function< void( std::ostream& )> function_;
         const std::string description;
     };
 
     template < typename T >
-    class FuncCmd1 : public Command
+    class func_cmd_1 : public command_type
     {
     public:
         // disable value semantics
-        FuncCmd1( const FuncCmd1& ) = delete;
-        FuncCmd1& operator = ( const FuncCmd1& ) = delete;
+        func_cmd_1( const func_cmd_1& ) = delete;
+        func_cmd_1& operator = ( const func_cmd_1& ) = delete;
 
-        FuncCmd1(
+        func_cmd_1(
             const std::string& _name,
             std::function< void( T, std::ostream& ) > _function,
             const std::string& desc = ""
-            ) : Command( _name ), function( _function ), description( desc )
+            ) : command_type( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine.size() != 2 ) return false;
             if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
-                    T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
-                    function( arg, session.OutStream() );
+                    // T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
+					T arg = ::dbj::transformer<T>{}(cmdLine[1]);
+                    this->function( arg, session.out_stream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -444,7 +516,7 @@ namespace cli
         void Help( std::ostream& out ) const override
         {
             out << " - " << Name()
-                << " " << TypeDesc< T >::Name()
+                << " " << type_descriptor< T >::Name()
                 << "\n\t" << description << "\n";
         }
     private:
@@ -453,32 +525,32 @@ namespace cli
     };
 
     template < typename T1, typename T2 >
-    class FuncCmd2 : public Command
+    class func_cmd_2 : public command_type
     {
     public:
         // disable value semantics
-        FuncCmd2( const FuncCmd2& ) = delete;
-        FuncCmd2& operator = ( const FuncCmd2& ) = delete;
+        func_cmd_2( const func_cmd_2& ) = delete;
+        func_cmd_2& operator = ( const func_cmd_2& ) = delete;
 
-        FuncCmd2(
+        func_cmd_2(
             const std::string& _name,
             std::function< void( T1, T2, std::ostream& ) > _function,
             const std::string& desc = "2 parameter command"
-            ) : Command( _name ), function( _function ), description( desc )
+            ) : command_type( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine.size() != 3 ) return false;
             if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    function( arg1, arg2, session.OutStream() );
+					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+					T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+					this->function( arg1, arg2, session.out_stream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -490,8 +562,8 @@ namespace cli
         void Help( std::ostream& out ) const override
         {
             out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
+                << " " << type_descriptor< T1 >::Name()
+                << " " << type_descriptor< T2 >::Name()
                 << "\n\t" << description << "\n";
         }
     private:
@@ -500,33 +572,33 @@ namespace cli
     };
 
     template < typename T1, typename T2, typename T3 >
-    class FuncCmd3 : public Command
+    class func_cmd_3 : public command_type
     {
     public:
         // disable value semantics
-        FuncCmd3( const FuncCmd3& ) = delete;
-        FuncCmd3& operator = ( const FuncCmd3& ) = delete;
+        func_cmd_3( const func_cmd_3& ) = delete;
+        func_cmd_3& operator = ( const func_cmd_3& ) = delete;
 
-        FuncCmd3(
+        func_cmd_3(
             const std::string& _name,
             std::function< void( T1, T2, T3, std::ostream& ) > _function,
             const std::string& desc = "3 parameters command"
-            ) : Command( _name ), function( _function ), description( desc )
+            ) : command_type( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine.size() != 4 ) return false;
             if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
-                    function( arg1, arg2, arg3, session.OutStream() );
+					T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+                    T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+                    T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
+                    this->function( arg1, arg2, arg3, session.out_stream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -538,9 +610,9 @@ namespace cli
         void Help( std::ostream& out ) const override
         {
             out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
-                << " " << TypeDesc< T3 >::Name()
+                << " " << type_descriptor< T1 >::Name()
+                << " " << type_descriptor< T2 >::Name()
+                << " " << type_descriptor< T3 >::Name()
                 << "\n\t" << description << "\n";
         }
     private:
@@ -549,34 +621,34 @@ namespace cli
     };
 
     template < typename T1, typename T2, typename T3, typename T4 >
-    class FuncCmd4 : public Command
+    class func_cmd_4 : public command_type
     {
     public:
         // disable value semantics
-        FuncCmd4( const FuncCmd4& ) = delete;
-        FuncCmd4& operator = ( const FuncCmd4& ) = delete;
+        func_cmd_4( const func_cmd_4& ) = delete;
+        func_cmd_4& operator = ( const func_cmd_4& ) = delete;
 
-        FuncCmd4(
+        func_cmd_4(
             const std::string& _name,
             std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
             const std::string& desc = "4 parameters command"
-            ) : Command( _name ), function( _function ), description( desc )
+            ) : command_type( _name ), function( _function ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec( const std::vector< std::string >& cmdLine, cli_session_type& session ) override
         {
             if ( cmdLine.size() != 5 ) return false;
             if ( Name() == cmdLine[ 0 ] )
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
-                    T4 arg4 = boost::lexical_cast<T4>( cmdLine[ 4 ] );
-                    function( arg1, arg2, arg3, arg4, session.OutStream() );
+                    T1 arg1 = ::dbj::transformer<T1>{}(cmdLine[1]);
+                    T2 arg2 = ::dbj::transformer<T2>{}(cmdLine[2]);
+                    T3 arg3 = ::dbj::transformer<T3>{}(cmdLine[3]);
+                    T4 arg4 = ::dbj::transformer<T4>{}(cmdLine[4]);
+                    this->function( arg1, arg2, arg3, arg4, session.out_stream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch ( ::dbj::bad_lexical_cast & )
                 {
                     return false;
                 }
@@ -588,10 +660,10 @@ namespace cli
         void Help( std::ostream& out ) const override
         {
             out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
-                << " " << TypeDesc< T3 >::Name()
-                << " " << TypeDesc< T4 >::Name()
+                << " " << type_descriptor< T1 >::Name()
+                << " " << type_descriptor< T2 >::Name()
+                << " " << type_descriptor< T3 >::Name()
+                << " " << type_descriptor< T4 >::Name()
                 << "\n\t" << description << "\n";
         }
     private:
@@ -601,12 +673,14 @@ namespace cli
 
     // ********************************************************************
 
-    // CliSession implementation
+    // cli_session_type implementation
 
-    inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
+	// DBJ: why is this not in-line implementation?
+
+    inline cli_session_type::cli_session_type(cli_type& _cli, std::ostream& _out, std::size_t historySize) :
             cli(_cli),
             current(cli.RootMenu()),
-            globalScopeMenu(std::make_unique< Menu >()),
+            globalScopeMenu(std::make_unique< menu_type >()),
             out(_out),
             history(historySize)
         {
@@ -630,10 +704,15 @@ namespace cli
 #endif
         }
 
-    inline void CliSession::Feed( const std::string& cmd )
+    inline void cli_session_type::Feed( const std::string& cmd )
     {
+		/*
         std::vector< std::string > strs;
-        boost::split( strs, cmd, boost::is_any_of( " \t\n" ), boost::token_compress_on );
+        ::dbj::split( strs, cmd, ::dbj::is_any_of( " \t\n" ), ::dbj::token_compress_on );
+
+		replaced the above with bellow:
+		*/
+		string_vector strs = ::dbj::algorithm::fast_string_split(cmd, " \t\n");
         // remove null entries from the vector:
         strs.erase(
             std::remove_if(
@@ -653,12 +732,12 @@ namespace cli
 
         history.NewCommand( cmd ); // add anyway to history
         if ( !found ) // error msg if not found
-            out << "Command unknown: " << cmd << "\n";
+            out << "command_type unknown: " << cmd << "\n";
 
         return;
     }
 
-    inline void CliSession::Prompt()
+    inline void cli_session_type::Prompt()
     {
         out << beforePrompt
             << current -> Prompt()
@@ -667,14 +746,14 @@ namespace cli
             << std::flush;
     }
 
-    inline void CliSession::Help() const
+    inline void cli_session_type::Help() const
     {
         out << "Commands available:\n";
         globalScopeMenu->MainHelp(out);
         current -> MainHelp( out );
     }
 
-    inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
+    inline string_vector cli_session_type::GetCompletions( const std::string& currentLine ) const
     {
         auto v1 = globalScopeMenu->GetCompletions(currentLine);
         auto v3 = current -> GetCompletions(currentLine);
@@ -682,38 +761,38 @@ namespace cli
         return v1;
     }
 
-    // Menu implementation
-
+    // menu_type implementation
+/*
     template < typename F, typename R >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
+    void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd >( name, f, help ) );
+        cmds.push_back( std::make_unique< func_cmd >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
+    void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd1< A1 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< func_cmd_1< A1 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
+    void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd2< A1, A2 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< func_cmd_2< A1, A2 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
+    void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
+        cmds.push_back( std::make_unique< func_cmd_3< A1, A2, A3 > >( name, f, help ) );
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
+    void menu_type::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
+        cmds.push_back( std::make_unique< func_cmd_4< A1, A2, A3, A4> >( name, f, help ) );
     }
-
+*/ 
 } // namespace
 
 #endif

@@ -32,6 +32,7 @@
 
 #include <deque>
 #include <string>
+#include <cassert>
 
 namespace cli
 {

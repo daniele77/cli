@@ -34,24 +34,24 @@
 // (consider to provide a global header file for the library)
 #include "cli/cli.h"
 
-using namespace cli;
-using namespace std;
-
-
 int main()
 {
+
+	using namespace cli;
+	using namespace std;
+
     boost::asio::io_service ios;
 
     // setup cli
 
-    auto rootMenu = make_unique< Menu >( "cli" );
+    auto rootMenu = make_unique< menu_type >( "cli" );
     rootMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
     rootMenu -> Add(
             "hello_everysession",
-            [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
+            [](std::ostream&){ cli_type::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
     rootMenu -> Add(
             "answer",
@@ -66,7 +66,7 @@ int main()
             [](std::ostream& out){ out << "Colors OFF\n"; SetNoColor(); },
             "Disable colors in the cli" );
 
-    auto subMenu = make_unique< Menu >( "sub" );
+    auto subMenu = make_unique< menu_type >( "sub" );
     subMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
@@ -76,7 +76,7 @@ int main()
             [](std::ostream& out){ out << "This is a sample!\n"; },
             "Print a demo string" );
 
-    auto subSubMenu = make_unique< Menu >( "subsub" );
+    auto subSubMenu = make_unique< menu_type >( "subsub" );
         subSubMenu -> Add(
             "hello",
             [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
@@ -86,11 +86,11 @@ int main()
     rootMenu -> Add( std::move(subMenu) );
 
 
-    Cli cli( std::move(rootMenu) );
+    cli_type cli( std::move(rootMenu) );
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-    CliLocalTerminalSession localSession(cli, ios, std::cout, 200);
+    cli_local_terminal_session localSession(cli, ios, std::cout, 200);
     localSession.ExitAction(
         [&ios](auto& out) // session exit action
         {
@@ -101,7 +101,7 @@ int main()
 
     // setup server
 
-    CliTelnetServer server(ios, 5000, cli);
+    cli_telnet_server server(ios, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
     ios.run();

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="dbj">
+      <UniqueIdentifier>{097811fe-0af7-4215-b886-7fd7fdb40385}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cli.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\cliasyncsession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clifilesession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\clilocalsession.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\colorprofile.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\string_veiw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\history.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\inputdevice.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\inputhandler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\keyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\linuxkeyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\rang.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\remotecli.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\server.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\terminal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\winkeyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_buffer.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_insider.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\LICENCE.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_format.h">
+      <Filter>dbj</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_algo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\type_trans.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\cli\dbj\dbj_buf.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\cli\dbj\readme.md">
+      <Filter>dbj</Filter>
+    </None>
+  </ItemGroup>
+</Project>

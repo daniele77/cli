@@ -47,17 +47,17 @@
 namespace cli
 {
 
-class LinuxKeyboard : public InputDevice
+class linux_keyboard : public input_device
 {
 public:
-    explicit LinuxKeyboard(boost::asio::io_service& ios) :
-        InputDevice(ios)
+    explicit linux_keyboard(boost::asio::io_service& ios) :
+        input_device(ios)
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
         servant -> detach();
     }
-    ~LinuxKeyboard()
+    ~linux_keyboard()
     {
         run = false;
         ToStandardMode();

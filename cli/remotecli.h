@@ -41,11 +41,11 @@ namespace cli
 
 // *******************************************************************************
 
-class TelnetSession : public Session
+class telnet_session : public session_type
 {
 public:
-    TelnetSession(boost::asio::ip::tcp::socket socket) :
-        Session(std::move(socket))
+    telnet_session(boost::asio::ip::tcp::socket socket) :
+        session_type(std::move(socket))
     {}
 
 protected:
@@ -423,28 +423,28 @@ private:
     //bool waitAck = false;
 };
 
-class TelnetServer : public Server
+class telnet_server : public server_type
 {
 public:
-    TelnetServer(boost::asio::io_service& ios, short port) :
-        Server(ios, port)
+    telnet_server(boost::asio::io_service& ios, short port) :
+        server_type(ios, port)
     {}
-    virtual std::shared_ptr< Session > CreateSession(boost::asio::ip::tcp::socket socket) override
+    virtual std::shared_ptr< session_type > CreateSession(boost::asio::ip::tcp::socket socket) override
     {
-        return std::make_shared<TelnetSession>(std::move(socket));
+        return std::make_shared<telnet_session>(std::move(socket));
     }
 };
 
 //////////////
 
-class CliTelnetSession : public TelnetSession, public InputDevice, public CliSession
+class cli_telnet_session : public telnet_session, public input_device, public cli_session_type
 {
 public:
 
-    CliTelnetSession(boost::asio::ip::tcp::socket socket, Cli& cli, std::function< void(std::ostream&)> exitAction, std::size_t historySize ) :
-        TelnetSession(std::move(socket)),
-        InputDevice(socket.get_io_service()),
-        CliSession(cli, TelnetSession::OutStream(), historySize),
+    cli_telnet_session(boost::asio::ip::tcp::socket socket, cli_type & cli, std::function< void(std::ostream&)> exitAction, std::size_t historySize ) :
+        telnet_session(std::move(socket)),
+        input_device(socket.get_io_service()),
+        cli_session_type(cli, telnet_session::OutStream(), historySize),
         poll(*this, *this)
     {
         ExitAction([this, exitAction](std::ostream& out){ exitAction(out), Disconnect(); } );
@@ -453,7 +453,7 @@ protected:
 
     virtual void OnConnect() override
     {
-        TelnetSession::OnConnect();
+        telnet_session::OnConnect();
         Prompt();
     }
 
@@ -526,15 +526,15 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    InputHandler poll;
+    input_handler poll;
 };
 
 
-class CliTelnetServer : public Server
+class cli_telnet_server : public server_type
 {
 public:
-    CliTelnetServer(boost::asio::io_service& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
-        Server(ios, port),
+    cli_telnet_server(boost::asio::io_service& ios, short port, cli_type& _cli, std::size_t _historySize=100 ) :
+        server_type(ios, port),
         cli(_cli),
         historySize(_historySize)
     {}
@@ -542,12 +542,12 @@ public:
     {
         exitAction = action;
     }
-    virtual std::shared_ptr<Session> CreateSession(boost::asio::ip::tcp::socket socket) override
+    virtual std::shared_ptr<session_type> CreateSession(boost::asio::ip::tcp::socket socket) override
     {
-        return std::make_shared<CliTelnetSession>(std::move(socket), cli, exitAction, historySize);
+        return std::make_shared<cli_telnet_session>(std::move(socket), cli, exitAction, historySize);
     }
 private:
-    Cli& cli;
+    cli_type& cli;
     std::function< void(std::ostream&)> exitAction;
     std::size_t historySize;
 };
