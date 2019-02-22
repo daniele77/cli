@@ -385,6 +385,44 @@ namespace cli
 		}, strs);
 	}
 
+	template <size_t I>
+	struct visit_impl
+	{
+		template <typename T>
+		static void visit(T& tup, size_t idx, std::ostream & out)
+		{
+			if (idx == I - 1) out << " " << TypeDesc<decltype(std::get<I - 1>(tup))>::Name();
+			else visit_impl<I - 1>::visit(tup, idx, out);
+		}
+	};
+
+	template <>
+	struct visit_impl<0>
+	{
+		template <typename T>
+		static void visit(T&, size_t, std::ostream &) { assert(false); }
+	};
+
+	template <typename... Ts>
+	void visit_at(std::tuple<Ts...> const& tup, size_t idx, std::ostream & out)
+	{
+		visit_impl<sizeof...(Ts)>::visit(tup, idx, out);
+	}
+
+	template <typename... Ts>
+	void visit_at(std::tuple<Ts...>& tup, size_t idx, std::ostream & out)
+	{
+		visit_impl<sizeof...(Ts)>::visit(tup, idx, out);
+	}
+
+	template <typename ...Ts>
+	void describe(std::ostream & out)
+	{
+		for (size_t i = 0; i < sizeof...(Ts); ++i) {
+			visit_at(std::tuple<Ts...>{}, i, out);
+		}
+	}
+
     template < typename ...Ts >
     class FuncCmd : public Command
     {
@@ -421,9 +459,11 @@ namespace cli
         }
         void Help( std::ostream& out ) const override
         {
-            out << " - " << Name()
-//                << " " << TypeDesc< T >::Name()
-                << "\n\t" << description << "\n";
+			out << " - " << Name() << std::endl;
+			describe<Ts...>(out);
+			if (!description.empty()) {
+				out << "\t" << description << std::endl;
+			}
         }
     private:
         const std::function< void( std::ostream&, Ts... )> function;
