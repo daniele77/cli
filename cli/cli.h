@@ -364,28 +364,25 @@ namespace cli
 
     // ********************************************************************
 
-	template<typename ...Ts>
-	std::enable_if_t<(sizeof...(Ts) == 0), std::tuple<std::ostream &>>
-	lexical_cast(const std::vector<std::string> &, std::ostream & ostream)
+	template<size_t... S>
+	auto tie(const vector<string>& vec, index_sequence<S...>)
 	{
-		return std::tuple<std::ostream &>{ostream};
+		return std::tie(vec.at(S)...);
 	}
 
-	template<typename ...Ts>
-	std::enable_if_t<(sizeof...(Ts) == 1), std::tuple<std::ostream &, Ts...>>
-	lexical_cast(const std::vector<std::string> & cmdLine, std::ostream & ostream)
+	template<class... Args1, class... Args2>
+	auto make_param_tuple_(std::tuple<Args1...>*, Args2&&... args2)
 	{
-		return std::make_tuple(ostream,
-							   boost::lexical_cast<std::tuple_element_t<0, std::tuple<Ts...>>>(cmdLine[1]));
+		return std::tuple<Args1...>{boost::lexical_cast<Args1>(args2)...};
 	}
 
-	template<typename ...Ts>
-	std::enable_if_t<(sizeof...(Ts) == 2), std::tuple<std::ostream &, Ts...>>
-	lexical_cast(const std::vector<std::string> & cmdLine, std::ostream & ostream)
+	template<class... Args>
+	auto make_param_tuple(const std::vector<string>& vec)
 	{
-		return std::make_tuple(ostream,
-							   boost::lexical_cast<std::tuple_element_t<0, std::tuple<Ts...>>>(cmdLine[1]),
-							   boost::lexical_cast<std::tuple_element_t<1, std::tuple<Ts...>>>(cmdLine[2]));
+		auto strs = tie(vec, make_index_sequence<sizeof...(Args)>());
+		return GC::apply([&](auto&&... args){
+			return make_param_tuple_(static_cast<std::tuple<Args...>*>(nullptr), args...);
+		}, strs);
 	}
 
     template < typename ...Ts >
@@ -410,8 +407,8 @@ namespace cli
             {
                 try
                 {
-					auto args = lexical_cast<Ts...>(cmdLine, session.OutStream());
-					GC::apply(function, args);
+					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple(cmdLine));
+					GC::apply(function, std::move(args));
                 }
                 catch ( boost::bad_lexical_cast & )
                 {
