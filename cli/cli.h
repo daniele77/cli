@@ -379,7 +379,7 @@ namespace cli
 	template<class... Args>
 	auto make_param_tuple(const std::vector<string>& vec)
 	{
-		auto strs = tie(vec, make_index_sequence<sizeof...(Args)>());
+		auto strs = tie(vec, std::make_index_sequence<sizeof...(Args)>());
 		return GC::apply([&](auto&&... args){
 			return make_param_tuple_(static_cast<std::tuple<Args...>*>(nullptr), args...);
 		}, strs);
@@ -407,7 +407,7 @@ namespace cli
             {
                 try
                 {
-					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple(cmdLine));
+					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple<Ts...>(cmdLine));
 					GC::apply(function, std::move(args));
                 }
                 catch ( boost::bad_lexical_cast & )
