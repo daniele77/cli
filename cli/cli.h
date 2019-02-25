@@ -368,7 +368,7 @@ namespace cli
     // ********************************************************************
 
 	template<size_t... S>
-	auto tie(const vector<string>& vec, index_sequence<S...>)
+	auto tie(const std::vector<std::string>& vec, std::index_sequence<S...>)
 	{
 		return std::tie(vec.at(S)...);
 	}
@@ -380,7 +380,7 @@ namespace cli
 	}
 
 	template<class... Args>
-	auto make_param_tuple(const std::vector<string>& vec)
+	auto make_param_tuple(const std::vector<std::string>& vec)
 	{
 		auto strs = tie(vec, std::make_index_sequence<sizeof...(Args)>());
 		return experimental::apply([&](auto&&... args){
