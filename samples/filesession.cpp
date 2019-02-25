@@ -50,7 +50,7 @@ int main()
             "Print hello everybody on all open sessions" );
     rootMenu -> Add(
             "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
+            [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
     rootMenu -> Add(
             "color",
