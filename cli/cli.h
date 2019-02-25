@@ -41,7 +41,10 @@
 #include "colorprofile.h"
 #include "history.h"
 
-#include <GCMath/tuple.h>
+#if __cplusplus < 201703L
+	// Provides std::apply implementation
+	#include "experimental17/tuple.h"
+#endif
 
 namespace cli
 {
@@ -380,7 +383,7 @@ namespace cli
 	auto make_param_tuple(const std::vector<string>& vec)
 	{
 		auto strs = tie(vec, std::make_index_sequence<sizeof...(Args)>());
-		return GC::apply([&](auto&&... args){
+		return experimental::apply([&](auto&&... args){
 			return make_param_tuple_(static_cast<std::tuple<Args...>*>(nullptr), args...);
 		}, strs);
 	}
@@ -443,7 +446,7 @@ namespace cli
                 {
 					auto b = cmdLine.begin();
 					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple<Ts...>({++b, cmdLine.end()}));
-					GC::apply(function, std::move(args));
+					experimental::apply(function, std::move(args));
                 }
                 catch ( boost::bad_lexical_cast & )
                 {
