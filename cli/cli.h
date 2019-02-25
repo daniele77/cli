@@ -418,7 +418,7 @@ namespace cli
 		}
 	}
 
-    template < typename ...Ts >
+    template <typename ExecF, typename ...Ts>
     class FuncCmd : public Command
     {
     public:
@@ -426,17 +426,18 @@ namespace cli
         FuncCmd( const FuncCmd& ) = delete;
         FuncCmd& operator = ( const FuncCmd& ) = delete;
 
+		template <typename F>
         FuncCmd(
             const std::string& _name,
-            std::function< void( std::ostream&, Ts... ) > _function,
+            F && _function,
             const std::string& desc = ""
-            ) : Command( _name ), function( _function ), description( desc )
+			) : Command( _name ), function( std::forward<F>(_function) ), description( desc )
         {
         }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec(const std::vector<std::string> & cmdLine, CliSession & session) override
         {
             if ( cmdLine.size() != sizeof...(Ts) + 1 ) return false;
-            if ( Name() == cmdLine[ 0 ] )
+            if ( Name() == cmdLine[0] )
             {
                 try
                 {
@@ -463,7 +464,7 @@ namespace cli
 			out << std::endl;
         }
     private:
-        const std::function< void( std::ostream&, Ts... )> function;
+        const ExecF function;
         const std::string description;
     };
 
@@ -555,7 +556,7 @@ namespace cli
     template < typename F, typename R, typename ...As >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out, As...) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd< As... > >( name, f, help ) );
+        cmds.push_back( std::make_unique< FuncCmd< F, As... > >( name, f, help ) );
     }
 
 } // namespace
