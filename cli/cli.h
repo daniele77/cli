@@ -445,7 +445,8 @@ namespace cli
             {
                 try
                 {
-					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple<Ts...>(cmdLine));
+					auto b = cmdLine.begin();
+					auto args = std::tuple_cat(std::tuple<std::ostream&>(session.OutStream()), make_param_tuple<Ts...>({++b, cmdLine.end()}));
 					GC::apply(function, std::move(args));
                 }
                 catch ( boost::bad_lexical_cast & )
