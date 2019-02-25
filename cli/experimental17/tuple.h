@@ -43,7 +43,7 @@ namespace experimental
 	{
 		template<class F, class Tuple, std::size_t... I>
 		constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
-		{ return GC::invoke(std::forward<F>(f), std::get<I>(std::forward<Tuple>(t))...); }
+		{ return cli::experimental::invoke(std::forward<F>(f), std::get<I>(std::forward<Tuple>(t))...); }
 	}
 
 	template<class F, class Tuple>
