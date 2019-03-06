@@ -53,10 +53,17 @@ int main()
             "hello_everysession",
             [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
-    rootMenu -> Add(
+    rootMenu -> _Add(
             "answer",
-            [](int x, std::ostream& out){ out << "The answer is: " << x << "\n"; },
-            "Print the answer to Life, the Universe and Everything " );
+            [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
+            "Print the answer to Life, the Universe and Everything" );
+    rootMenu -> _Add(
+            "add",
+            [](std::ostream& out, int x, int y)
+            {
+                out << x << " + " << y << " = " << (x+y) << "\n";
+            },
+            "Print the sum of the two numbers" );
     rootMenu -> Add(
             "color",
             [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },

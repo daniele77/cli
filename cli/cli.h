@@ -40,6 +40,8 @@
 #include "colorprofile.h"
 #include "history.h"
 
+#define CLI_DEPRECATED_API
+
 namespace cli
 {
 
@@ -255,12 +257,23 @@ namespace cli
             Command( _name ), parent( nullptr ), description( desc )
         {}
 
-        template < typename F >
-        void Add( const std::string& name, F f, const std::string& help = "" )
+
+        template <typename F>
+        void _Add(const std::string& name, F f, const std::string& help = "")
+        {
+            // dispatch to private _Add methods
+            _Add(name, help, f, &F::operator());
+        }
+
+#ifdef CLI_DEPRECATED_API
+        template <typename F>
+        [[deprecated("Use the method _Add instead")]]
+        void Add(const std::string& name, F f, const std::string& help = "")
         {
             // dispatch to private Add methods
             Add( name, help, f, &F::operator() );
         }
+#endif // CLI_DEPRECATED_API
 
         void Add( std::unique_ptr< Command >&& cmd )
         {
@@ -350,6 +363,7 @@ namespace cli
 
     private:
 
+#ifdef CLI_DEPRECATED_API
         template < typename F, typename R >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
 
@@ -364,6 +378,10 @@ namespace cli
 
         template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
         void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
+#endif // CLI_DEPRECATED_API
+
+        template <typename F, typename R, typename ... Args>
+        void _Add(const std::string& name, const std::string& help, F& f, R (F::*)(std::ostream& out, Args...) const );
 
         Menu* parent;
         const std::string description;
@@ -372,6 +390,8 @@ namespace cli
     };
 
     // ********************************************************************
+
+#ifdef CLI_DEPRECATED_API
 
     class FuncCmd : public Command
     {
@@ -599,6 +619,109 @@ namespace cli
         const std::string description;
     };
 
+#endif // CLI_DEPRECATED_API
+
+    // *******************************************
+
+    template <typename F, typename ... Args>
+    struct Select;
+
+    template <typename F, typename P, typename ... Args>
+    struct Select<F, P, Args...>
+    {
+        static void Exec(F f, const std::vector<std::string>& v, std::size_t i=0)
+        {
+            assert( !v.empty() );
+            assert( v.size()-i == 1+sizeof...(Args) );
+            assert( i < v.size() );
+            const P p = boost::lexical_cast<P>(v[i]);
+            auto g = [=](auto ... pars){ f(p, pars...); };
+            Select<decltype(g), Args...>::Exec(g, v, i+1);
+        }
+    };
+
+    template <typename F>
+    struct Select<F>
+    {
+        static void Exec(F f, const std::vector<std::string>& v, std::size_t i)
+        {
+            assert(i == v.size());
+            f();
+        }
+    };
+
+    template <typename ... Args>
+    struct PrintDesc;
+
+    template <typename P, typename ... Args>
+    struct PrintDesc<P, Args...>
+    {
+        static void Dump(std::ostream& out)
+        {
+            out << " " << TypeDesc< P >::Name();
+            PrintDesc<Args...>::Dump(out);
+        }
+    };
+
+    template <>
+    struct PrintDesc<>
+    {
+        static void Dump(std::ostream& /*out*/) {}
+    };
+
+    // *******************************************
+
+    template <typename F, typename ... Args>
+    class VariadicFunctionCommand : public Command
+    {
+    public:
+        // disable value semantics
+        VariadicFunctionCommand(const VariadicFunctionCommand&) = delete;
+        VariadicFunctionCommand& operator = (const VariadicFunctionCommand&) = delete;
+
+        VariadicFunctionCommand(
+            const std::string& _name,
+            F fun,
+            const std::string& desc = "unknown command"
+        )
+            : Command(_name), function(fun), description(desc)
+        {
+        }
+
+        bool Exec(const std::vector< std::string >& cmdLine, CliSession& session) override
+        {
+            const std::size_t paramSize = sizeof...(Args);
+            if (cmdLine.size() != paramSize+1) return false;
+            if (Name() == cmdLine[0])
+            {
+                try
+                {
+                    const std::vector<std::string> nv(cmdLine.begin()+1, cmdLine.end());
+                    auto g = [&](auto ... pars){ function( session.OutStream(), pars... ); };
+                    Select<decltype(g), Args...>::Exec(g, nv);
+                }
+                catch (boost::bad_lexical_cast &)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        void Help(std::ostream& out) const override
+        {
+            out << " - " << Name();
+            PrintDesc<Args...>::Dump(out);
+            out << "\n\t" << description << "\n";
+        }
+
+    private:
+
+        const F function;
+        const std::string description;
+    };
+
+
     // ********************************************************************
 
     // CliSession implementation
@@ -684,6 +807,7 @@ namespace cli
 
     // Menu implementation
 
+#ifdef CLI_DEPRECATED_API
     template < typename F, typename R >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
     {
@@ -712,6 +836,13 @@ namespace cli
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
     {
         cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
+    }
+#endif // CLI_DEPRECATED_API
+
+    template <typename F, typename R, typename ... Args>
+    void Menu::_Add(const std::string& name, const std::string& help, F& f, R (F::*)(std::ostream& out, Args...) const )
+    {
+        cmds.push_back(std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help));
     }
 
 } // namespace
