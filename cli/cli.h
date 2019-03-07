@@ -685,7 +685,7 @@ namespace cli
             F fun,
             const std::string& desc = "unknown command"
         )
-            : Command(_name), function(std::move(fun)), description(desc)
+            : Command(_name), func(std::move(fun)), description(desc)
         {
         }
 
@@ -697,7 +697,7 @@ namespace cli
             {
                 try
                 {
-                    auto g = [&](auto ... pars){ function( session.OutStream(), pars... ); };
+                    auto g = [&](auto ... pars){ func( session.OutStream(), pars... ); };
                     Select<decltype(g), Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
                 }
                 catch (boost::bad_lexical_cast &)
@@ -717,7 +717,7 @@ namespace cli
 
     private:
 
-        const F function;
+        const F func;
         const std::string description;
     };
 
