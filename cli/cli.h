@@ -629,23 +629,24 @@ namespace cli
     template <typename F, typename P, typename ... Args>
     struct Select<F, P, Args...>
     {
-        static void Exec(const F& f, const std::vector<std::string>& v, std::size_t i=0)
+        template <typename InputIt>
+        static void Exec(const F& f, InputIt first, InputIt last)
         {
-            assert( !v.empty() );
-            assert( v.size()-i == 1+sizeof...(Args) );
-            assert( i < v.size() );
-            const P p = boost::lexical_cast<P>(v[i]);
+            assert( first != last );
+            assert( std::distance(first, last) == 1+sizeof...(Args) );
+            const P p = boost::lexical_cast<P>(*first);
             auto g = [&](auto ... pars){ f(p, pars...); };
-            Select<decltype(g), Args...>::Exec(g, v, i+1);
+            Select<decltype(g), Args...>::Exec(g, std::next(first), last);
         }
     };
 
     template <typename F>
     struct Select<F>
     {
-        static void Exec(const F& f, const std::vector<std::string>& v, std::size_t i)
+        template <typename InputIt>
+        static void Exec(const F& f, InputIt first, InputIt last)
         {
-            assert(i == v.size());
+            assert(first == last);
             f();
         }
     };
@@ -696,9 +697,8 @@ namespace cli
             {
                 try
                 {
-                    const std::vector<std::string> nv(cmdLine.begin()+1, cmdLine.end());
                     auto g = [&](auto ... pars){ function( session.OutStream(), pars... ); };
-                    Select<decltype(g), Args...>::Exec(g, nv);
+                    Select<decltype(g), Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
                 }
                 catch (boost::bad_lexical_cast &)
                 {
