@@ -64,6 +64,13 @@ int main()
                 out << x << " + " << y << " = " << (x+y) << "\n";
             },
             "Print the sum of the two numbers" );
+    rootMenu -> _Add(
+            "add",
+            [](std::ostream& out, int x, int y, int z)
+            {
+                out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
+            },
+            "Print the sum of the three numbers" );
     rootMenu -> Add(
             "color",
             [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },

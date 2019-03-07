@@ -629,13 +629,13 @@ namespace cli
     template <typename F, typename P, typename ... Args>
     struct Select<F, P, Args...>
     {
-        static void Exec(F f, const std::vector<std::string>& v, std::size_t i=0)
+        static void Exec(const F& f, const std::vector<std::string>& v, std::size_t i=0)
         {
             assert( !v.empty() );
             assert( v.size()-i == 1+sizeof...(Args) );
             assert( i < v.size() );
             const P p = boost::lexical_cast<P>(v[i]);
-            auto g = [=](auto ... pars){ f(p, pars...); };
+            auto g = [&](auto ... pars){ f(p, pars...); };
             Select<decltype(g), Args...>::Exec(g, v, i+1);
         }
     };
@@ -643,7 +643,7 @@ namespace cli
     template <typename F>
     struct Select<F>
     {
-        static void Exec(F f, const std::vector<std::string>& v, std::size_t i)
+        static void Exec(const F& f, const std::vector<std::string>& v, std::size_t i)
         {
             assert(i == v.size());
             f();
@@ -684,7 +684,7 @@ namespace cli
             F fun,
             const std::string& desc = "unknown command"
         )
-            : Command(_name), function(fun), description(desc)
+            : Command(_name), function(std::move(fun)), description(desc)
         {
         }
 
