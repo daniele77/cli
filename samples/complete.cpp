@@ -37,7 +37,6 @@
 using namespace cli;
 using namespace std;
 
-
 int main()
 {
     boost::asio::io_service ios;
@@ -58,7 +57,24 @@ int main()
             [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything" );
     rootMenu -> _Add(
-            "add",
+            "file",
+            [](std::ostream& out, int fd)
+            {
+				out << "file descriptor: " << fd << "\n";
+            },
+            "Print the file descriptor specified",
+			{"file_descriptor"} );
+    rootMenu -> _Add(
+            "reverse", {"string_to_revers"},
+            [](std::ostream& out, const string& arg)
+            {
+				string copy(arg);
+				std::reverse(copy.begin(), copy.end());
+                out << copy << "\n";
+            },
+            "Print the reverse string" );
+    rootMenu -> _Add(
+            "add", {"first_term", "second_term"},
             [](std::ostream& out, int x, int y)
             {
                 out << x << " + " << y << " = " << (x+y) << "\n";

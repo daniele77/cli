@@ -35,6 +35,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <type_traits>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include "colorprofile.h"
@@ -257,12 +258,18 @@ namespace cli
             Command( _name ), parent( nullptr ), description( desc )
         {}
 
-
         template <typename F>
-        void _Add(const std::string& name, F f, const std::string& help = "")
+        void _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
             // dispatch to private _Add methods
-            _Add(name, help, f, &F::operator());
+            _Add(name, help, parDesc, f, &F::operator());
+        }
+
+        template <typename F>
+        void _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
+        {
+            // dispatch to private _Add methods
+            _Add(name, help, parDesc, f, &F::operator());
         }
 
 #ifdef CLI_DEPRECATED_API
@@ -381,7 +388,7 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
         template <typename F, typename R, typename ... Args>
-        void _Add(const std::string& name, const std::string& help, F& f, R (F::*)(std::ostream& out, Args...) const );
+        void _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const );
 
         Menu* parent;
         const std::string description;
@@ -634,7 +641,7 @@ namespace cli
         {
             assert( first != last );
             assert( std::distance(first, last) == 1+sizeof...(Args) );
-            const P p = boost::lexical_cast<P>(*first);
+            const P p = boost::lexical_cast<std::decay<P>::type>(*first);
             auto g = [&](auto ... pars){ f(p, pars...); };
             Select<decltype(g), Args...>::Exec(g, std::next(first), last);
         }
@@ -659,7 +666,7 @@ namespace cli
     {
         static void Dump(std::ostream& out)
         {
-            out << " " << TypeDesc< P >::Name();
+            out << " " << TypeDesc< std::decay<P>::type >::Name();
             PrintDesc<Args...>::Dump(out);
         }
     };
@@ -683,9 +690,10 @@ namespace cli
         VariadicFunctionCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc = "unknown command"
+            const std::string& desc = "unknown command",
+			const std::vector<std::string>& parDesc = {}
         )
-            : Command(_name), func(std::move(fun)), description(desc)
+            : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
         {
         }
 
@@ -711,7 +719,10 @@ namespace cli
         void Help(std::ostream& out) const override
         {
             out << " - " << Name();
-            PrintDesc<Args...>::Dump(out);
+			if (parameterDesc.empty())
+				PrintDesc<Args...>::Dump(out);
+			for (auto& s: parameterDesc)
+				out << " <" << s << '>';
             out << "\n\t" << description << "\n";
         }
 
@@ -719,6 +730,7 @@ namespace cli
 
         const F func;
         const std::string description;
+		const std::vector<std::string> parameterDesc;
     };
 
 
@@ -840,9 +852,9 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
     template <typename F, typename R, typename ... Args>
-    void Menu::_Add(const std::string& name, const std::string& help, F& f, R (F::*)(std::ostream& out, Args...) const )
-    {
-        cmds.push_back(std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help));
+    void Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+	{
+        cmds.push_back(std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc));
     }
 
 } // namespace
