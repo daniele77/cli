@@ -1,6 +1,11 @@
 # Changelog
 
-Current Version: 1.0
+Current Version: 1.0-dirty
+
+## Unreleased
+
+- New variadic template method to add commands and menu (makes Add() deprecated)
+- Explicitly set the names of parameters in help description
 
 ## [1.0.0] - 2019-02-16
 
