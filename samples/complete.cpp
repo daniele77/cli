@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2018 Daniele Pallastrelli
+ * Copyright (C) Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -39,16 +39,18 @@ using namespace std;
 
 int main()
 {
-    boost::asio::io_service ios;
+    boost::asio::io_context ios;
+    Cmd colorCmd;
+    Cmd nocolorCmd;
 
     // setup cli
 
     auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> Add(
+    rootMenu -> _Add(
             "hello",
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
-    rootMenu -> Add(
+    rootMenu -> _Add(
             "hello_everysession",
             [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
@@ -87,33 +89,53 @@ int main()
                 out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
             },
             "Print the sum of the three numbers" );
-    rootMenu -> Add(
+    colorCmd = rootMenu -> _Add(
             "color",
-            [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },
+            [&](std::ostream& out)
+            {
+                out << "Colors ON\n";
+                SetColor();
+                colorCmd.Disable();
+                nocolorCmd.Enable();
+            },
             "Enable colors in the cli" );
-    rootMenu -> Add(
+    nocolorCmd = rootMenu -> _Add(
             "nocolor",
-            [](std::ostream& out){ out << "Colors OFF\n"; SetNoColor(); },
+            [&](std::ostream& out)
+            {
+                out << "Colors OFF\n";
+                SetNoColor();
+                colorCmd.Enable();
+                nocolorCmd.Disable();                
+            },
             "Disable colors in the cli" );
+    rootMenu->_Add(
+            "removecmds",
+            [&](std::ostream&)
+            {
+                colorCmd.Remove();
+                nocolorCmd.Remove();
+            }
+    );
 
     auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> Add(
+    subMenu -> _Add(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
-    subMenu -> Add(
+    subMenu -> _Add(
             "demo",
             [](std::ostream& out){ out << "This is a sample!\n"; },
             "Print a demo string" );
 
     auto subSubMenu = make_unique< Menu >( "subsub" );
-        subSubMenu -> Add(
+        subSubMenu -> _Add(
             "hello",
             [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
             "Print hello world in the sub-submenu" );
-    subMenu -> Add( std::move(subSubMenu));
+    subMenu -> _Add( std::move(subSubMenu));
 
-    rootMenu -> Add( std::move(subMenu) );
+    rootMenu -> _Add( std::move(subMenu) );
 
 
     Cli cli( std::move(rootMenu) );

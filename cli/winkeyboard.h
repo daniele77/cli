@@ -47,7 +47,7 @@ namespace cli
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(boost::asio::io_service &ios) : InputDevice(ios)
+    explicit WinKeyboard(boost::asio::io_context &ios) : InputDevice(ios)
     {
         servant = std::make_unique<std::thread>([this]() { Read(); });
         servant->detach();

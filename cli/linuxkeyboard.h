@@ -50,7 +50,7 @@ namespace cli
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(boost::asio::io_service& ios) :
+    explicit LinuxKeyboard(boost::asio::io_context& ios) :
         InputDevice(ios)
     {
         ToManualMode();

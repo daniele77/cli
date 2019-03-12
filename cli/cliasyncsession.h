@@ -44,7 +44,7 @@ namespace cli
 class CliAsyncSession : public CliSession
 {
 public:
-    CliAsyncSession( boost::asio::io_service& ios, Cli& cli ) :
+    CliAsyncSession( boost::asio::io_context& ios, Cli& cli ) :
         CliSession(cli, std::cout, 1),
         input( ios, ::dup( STDIN_FILENO ) )        
     {

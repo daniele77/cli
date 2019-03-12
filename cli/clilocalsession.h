@@ -42,7 +42,7 @@ class CliLocalTerminalSession : public CliSession
 {
 public:
 
-    CliLocalTerminalSession(Cli& _cli, boost::asio::io_service& ios, std::ostream& _out, std::size_t historySize = 100) :
+    CliLocalTerminalSession(Cli& _cli, boost::asio::io_context& ios, std::ostream& _out, std::size_t historySize = 100) :
         CliSession(_cli, _out, historySize),
         kb(ios),
         ih(*this, kb)

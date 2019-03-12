@@ -30,7 +30,7 @@
 override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I..
 override LDLIBS += -lboost_system -lpthread
 
-SAMPLES := complete asyncsession filesession simplelocalsession
+SAMPLES := complete asyncsession filesession simplelocalsession pluginmanager
 
 .PHONY: clean all
 

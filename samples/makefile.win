@@ -28,7 +28,7 @@
 ################################################################################
 
 #define macros
-EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe
+EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe
 DIR_INCLUDE = /I.. /I%BOOST%
 DIR_LINK = %BOOST%\stage\lib
 COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE

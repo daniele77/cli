@@ -148,8 +148,10 @@ namespace cli
     class Command
     {
     public:
-        explicit Command(const std::string& _name) : name(_name) {}
+        explicit Command(const std::string& _name) : name(_name), enabled(true) {}
         virtual ~Command() = default;
+        virtual void Enable() { enabled = true; }
+        virtual void Disable() { enabled = false; }
         virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
         virtual void Help( std::ostream& out ) const = 0;
         // Returns the collection of completions relatives to this command.
@@ -158,13 +160,16 @@ namespace cli
         // and the subcommand recursively
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
         {
+            if (!enabled) return {};
             if ( boost::algorithm::starts_with(name, line) ) return {name};
             else return {};
         }
     protected:
         const std::string& Name() const { return name; }
+        bool IsEnabled() const { return enabled; }
     private:
         const std::string name;
+        bool enabled;
     };
 
     // ********************************************************************
@@ -245,6 +250,39 @@ namespace cli
 
     // ********************************************************************
 
+    class Cmd
+    {
+    public:
+        using CmdVec = std::vector< std::unique_ptr< Command > >;
+        Cmd() : descriptor(std::make_shared<Descriptor>()) {}
+        Cmd(Command* c, CmdVec* v) : descriptor(std::make_shared<Descriptor>(c, v)) {}
+        void Enable() { if (descriptor) descriptor->Enable(); }
+        void Disable() { if (descriptor) descriptor->Disable(); }
+        void Remove() { if (descriptor) descriptor->Remove(); }
+    private:
+        struct Descriptor
+        {
+            Descriptor() : cmd(nullptr), cmds(nullptr) {}
+            Descriptor(Command* c, CmdVec* v) : cmd(c), cmds(v) {}
+            void Enable() { if(cmd) cmd->Enable(); }
+            void Disable() { if(cmd) cmd->Disable(); }
+            void Remove()
+            {
+                if (cmd && cmds)
+                {
+                    auto i = std::find_if(cmds->begin(), cmds->end(), [&](const auto& c){ return c.get() == cmd; });
+                    if (i != cmds->end()) cmds->erase(i);
+                }
+            }
+###devo controllare se cmd e cmds esistono ancora 
+			Command* cmd;
+            CmdVec* cmds;
+        };
+        std::shared_ptr<Descriptor> descriptor;
+    };
+
+    // ********************************************************************
+
     class Menu : public Command
     {
     public:
@@ -259,17 +297,17 @@ namespace cli
         {}
 
         template <typename F>
-        void _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
+        Cmd _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
             // dispatch to private _Add methods
-            _Add(name, help, parDesc, f, &F::operator());
+            return _Add(name, help, parDesc, f, &F::operator());
         }
 
         template <typename F>
-        void _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
+        Cmd _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
         {
             // dispatch to private _Add methods
-            _Add(name, help, parDesc, f, &F::operator());
+            return _Add(name, help, parDesc, f, &F::operator());
         }
 
 #ifdef CLI_DEPRECATED_API
@@ -280,21 +318,39 @@ namespace cli
             // dispatch to private Add methods
             Add( name, help, f, &F::operator() );
         }
-#endif // CLI_DEPRECATED_API
 
-        void Add( std::unique_ptr< Command >&& cmd )
+        [[deprecated("Use the method _Add instead")]]
+        void Add(std::unique_ptr< Command >&& cmd)
         {
             cmds.push_back( std::move(cmd) );
         }
 
+        [[deprecated("Use the method _Add instead")]]
         void Add( std::unique_ptr< Menu >&& menu )
         {
             menu -> parent = this;
             cmds.push_back( std::move(menu) );
         }
+#endif // CLI_DEPRECATED_API
+        
+        Cmd _Add(std::unique_ptr<Command>&& cmd)
+        {
+            Cmd c(cmd.get(), &cmds);
+            cmds.push_back( std::move(cmd) );
+            return c;
+        }
+
+        Cmd _Add(std::unique_ptr<Menu>&& menu)
+        {
+            Cmd c(menu.get(), &cmds);
+            menu->parent = this;
+            cmds.push_back(std::move(menu));
+            return c;
+        }
 
         bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
         {
+            if (!IsEnabled()) return false;
             if ( cmdLine[ 0 ] == Name() )
             {
                 if ( cmdLine.size() == 1 )
@@ -315,6 +371,7 @@ namespace cli
 
         bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
         {
+            if (!IsEnabled()) return false;
             for ( auto& cmd: cmds )
                 if ( cmd -> Exec( cmdLine, session ) ) return true;
             if ( parent && parent -> Exec( cmdLine, session ) ) return true;
@@ -328,6 +385,7 @@ namespace cli
 
         void MainHelp( std::ostream& out )
         {
+            if (!IsEnabled()) return;
             for ( auto& cmd: cmds )
                 cmd -> Help( out );
             if ( parent ) parent -> Help( out );
@@ -335,6 +393,7 @@ namespace cli
 
         void Help( std::ostream& out ) const override
         {
+            if (!IsEnabled()) return;
             out << " - " << Name() << "\n\t" << description << "\n";
         }
 
@@ -388,7 +447,7 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
         template <typename F, typename R, typename ... Args>
-        void _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const );
+        Cmd _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const );
 
         Menu* parent;
         const std::string description;
@@ -699,6 +758,7 @@ namespace cli
 
         bool Exec(const std::vector< std::string >& cmdLine, CliSession& session) override
         {
+            if (!IsEnabled()) return false;
             const std::size_t paramSize = sizeof...(Args);
             if (cmdLine.size() != paramSize+1) return false;
             if (Name() == cmdLine[0])
@@ -718,6 +778,7 @@ namespace cli
         }
         void Help(std::ostream& out) const override
         {
+            if (!IsEnabled()) return;
             out << " - " << Name();
 			if (parameterDesc.empty())
 				PrintDesc<Args...>::Dump(out);
@@ -746,18 +807,18 @@ namespace cli
             history(historySize)
         {
             cli.Register(out);
-            globalScopeMenu->Add(
+            globalScopeMenu->_Add(
                 "help",
                 [this](std::ostream&){ Help(); },
                 "This help message"
             );
-            globalScopeMenu->Add(
+            globalScopeMenu->_Add(
                 "exit",
                 [this](std::ostream&){ Exit(); },
                 "Quit the session"
             );
 #ifdef CLI_HISTORY_CMD
-            globalScopeMenu->Add(
+            globalScopeMenu->_Add(
                 "history",
                 [this](std::ostream&){ ShowHistory(); },
                 "Show the history"
@@ -852,9 +913,12 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
     template <typename F, typename R, typename ... Args>
-    void Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+    Cmd Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
 	{
-        cmds.push_back(std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc));
+        auto c = std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
+        Cmd cmd(c.get(), &cmds);
+        cmds.push_back(std::move(c));
+        return cmd;
     }
 
 } // namespace

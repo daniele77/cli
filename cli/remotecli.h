@@ -426,7 +426,7 @@ private:
 class TelnetServer : public Server
 {
 public:
-    TelnetServer(boost::asio::io_service& ios, short port) :
+    TelnetServer(boost::asio::io_context& ios, short port) :
         Server(ios, port)
     {}
     virtual std::shared_ptr< Session > CreateSession(boost::asio::ip::tcp::socket socket) override
@@ -533,7 +533,7 @@ private:
 class CliTelnetServer : public Server
 {
 public:
-    CliTelnetServer(boost::asio::io_service& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
+    CliTelnetServer(boost::asio::io_context& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
         Server(ios, port),
         cli(_cli),
         historySize(_historySize)
