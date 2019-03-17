@@ -27,16 +27,16 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-#    error Async session is not supported on this platform.
-#endif
-
 #ifndef CLIASYNCSESSION_H_
 #define CLIASYNCSESSION_H_
 
 #include <string>
 #include <boost/asio.hpp>
 #include "cli.h" // CliSession
+
+#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
+#    error Async session is not supported on this platform.
+#endif
 
 namespace cli
 {

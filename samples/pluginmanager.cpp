@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) Daniele Pallastrelli
+ * Copyright (C) 2019 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -124,6 +124,7 @@ public:
     RegisteredPlugin() : Plugin(NAME)
     {
         const Registration& dummy = registration;
+        do { (void)(dummy); } while (0); // silence unused variable warning
     }
 private:
     static unique_ptr<Plugin> Create(Menu* menu) { return make_unique<T>(menu); }
@@ -243,14 +244,14 @@ int main()
             "Load the plugin specified" );
     rootMenu -> Insert(
             "load", {"plugin_name"},
-            [](std::ostream& out, const string& plugin)
+            [](std::ostream&, const string& plugin)
             {
                 PluginContainer::Instance().Load(plugin);
             },
             "Load the plugin specified" );
     rootMenu -> Insert(
             "unload", {"plugin_name"},
-            [](std::ostream& out, const string& plugin)
+            [](std::ostream&, const string& plugin)
             {
                 PluginContainer::Instance().Unload(plugin);
             },

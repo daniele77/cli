@@ -730,7 +730,7 @@ namespace cli
         {
             assert( first != last );
             assert( std::distance(first, last) == 1+sizeof...(Args) );
-            const P p = boost::lexical_cast<std::decay<P>::type>(*first);
+            const P p = boost::lexical_cast<typename std::decay<P>::type>(*first);
             auto g = [&](auto ... pars){ f(p, pars...); };
             Select<decltype(g), Args...>::Exec(g, std::next(first), last);
         }
@@ -755,7 +755,7 @@ namespace cli
     {
         static void Dump(std::ostream& out)
         {
-            out << " " << TypeDesc< std::decay<P>::type >::Name();
+            out << " " << TypeDesc< typename std::decay<P>::type >::Name();
             PrintDesc<Args...>::Dump(out);
         }
     };
