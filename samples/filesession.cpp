@@ -40,45 +40,45 @@ int main()
     // setup cli
 
     auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "hello_everysession",
             [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "answer",
             [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything " );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "color",
             [](std::ostream& out){ out << "Colors ON\n"; SetColor(); },
             "Enable colors in the cli" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "nocolor",
             [](std::ostream& out){ out << "Colors OFF\n"; SetNoColor(); },
             "Disable colors in the cli" );
 
     auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> _Add(
+    subMenu -> Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
-    subMenu -> _Add(
+    subMenu -> Insert(
             "demo",
             [](std::ostream& out){ out << "This is a sample!\n"; },
             "Print a demo string" );
 
     auto subSubMenu = make_unique< Menu >( "subsub" );
-        subSubMenu -> _Add(
+        subSubMenu -> Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
             "Print hello world in the sub-submenu" );
-    subMenu -> _Add(std::move(subSubMenu));
+    subMenu -> Insert(std::move(subSubMenu));
 
-    rootMenu -> _Add(std::move(subMenu));
+    rootMenu -> Insert(std::move(subMenu));
 
 
     Cli cli( std::move(rootMenu) );

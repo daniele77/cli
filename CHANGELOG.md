@@ -4,6 +4,7 @@ Current Version: 1.0-dirty
 
 ## Unreleased
 
+- Dynamically Remove/Disable/Enable commands and submenus
 - New variadic template method to add commands and menu (makes Add() deprecated)
 - Explicitly set the names of parameters in help description
 

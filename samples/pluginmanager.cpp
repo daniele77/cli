@@ -146,21 +146,21 @@ public:
     Arithmetic(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
-        subMenu -> _Add(
+        subMenu -> Insert(
                 "add", {"first_term", "second_term"},
                 [](std::ostream& out, int x, int y)
                 {
                     out << x << " + " << y << " = " << (x+y) << "\n";
                 },
                 "Print the sum of the two numbers" );
-        subMenu -> _Add(
+        subMenu -> Insert(
                 "add",
                 [](std::ostream& out, int x, int y, int z)
                 {
                     out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
                 },
                 "Print the sum of the three numbers" );
-        subMenu -> _Add(
+        subMenu -> Insert(
                 "sub", {"subtrahend", "minuend"},
                 [](std::ostream& out, int x, int y)
                 {
@@ -168,7 +168,7 @@ public:
                 },
                 "Print the result of a subtraction" );
 
-        menuHandler = menu->_Add(move(subMenu));
+        menuHandler = menu->Insert(move(subMenu));
     }
     ~Arithmetic()
     {
@@ -188,7 +188,7 @@ public:
     Strings(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
-        subMenu -> _Add(
+        subMenu -> Insert(
                 "reverse", {"string_to_revers"},
                 [](std::ostream& out, const string& arg)
                 {
@@ -198,7 +198,7 @@ public:
                 },
                 "Print the reverse string" );
 
-        subMenu -> _Add(
+        subMenu -> Insert(
                 "upper",
                 [](std::ostream& out, string arg)
                 {
@@ -207,7 +207,7 @@ public:
                 },
                 "Print the string in uppercase" );
                 
-        menuHandler = menu->_Add(move(subMenu));
+        menuHandler = menu->Insert(move(subMenu));
     }
     ~Strings()
     {
@@ -230,32 +230,32 @@ int main()
 
     auto rootMenu = make_unique< Menu >( "cli" );
     PluginContainer::Instance().SetMenu(*rootMenu);
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "list",
             [](std::ostream& out){ PluginRegistry::Instance().Print(out); },
             "Print the plugin list" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "loaded",
             [](std::ostream& out)
             {
                 PluginContainer::Instance().PrintLoaded(out);
             },
             "Load the plugin specified" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "load", {"plugin_name"},
             [](std::ostream& out, const string& plugin)
             {
                 PluginContainer::Instance().Load(plugin);
             },
             "Load the plugin specified" );
-    rootMenu -> _Add(
+    rootMenu -> Insert(
             "unload", {"plugin_name"},
             [](std::ostream& out, const string& plugin)
             {
                 PluginContainer::Instance().Unload(plugin);
             },
             "Unload the plugin specified" );
-    colorCmd = rootMenu -> _Add(
+    colorCmd = rootMenu -> Insert(
             "color",
             [&](std::ostream& out)
             {
@@ -265,7 +265,7 @@ int main()
                 nocolorCmd.Enable();
             },
             "Enable colors in the cli" );
-    nocolorCmd = rootMenu -> _Add(
+    nocolorCmd = rootMenu -> Insert(
             "nocolor",
             [&](std::ostream& out)
             {

@@ -321,36 +321,36 @@ namespace cli
         {}
 
         template <typename F>
-        CmdHandler _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
+        CmdHandler Insert(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
-            // dispatch to private _Add methods
-            return _Add(name, help, parDesc, f, &F::operator());
+            // dispatch to private Insert methods
+            return Insert(name, help, parDesc, f, &F::operator());
         }
 
         template <typename F>
-        CmdHandler _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
+        CmdHandler Insert(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
         {
-            // dispatch to private _Add methods
-            return _Add(name, help, parDesc, f, &F::operator());
+            // dispatch to private Insert methods
+            return Insert(name, help, parDesc, f, &F::operator());
         }
 
 #ifdef CLI_DEPRECATED_API
         template <typename F>
-        [[deprecated("Use the method _Add instead")]]
+        [[deprecated("Use the method Insert instead")]]
         void Add(const std::string& name, F f, const std::string& help = "")
         {
             // dispatch to private Add methods
             Add(name, help, f, &F::operator());
         }
 
-        [[deprecated("Use the method _Add instead")]]
+        [[deprecated("Use the method Insert instead")]]
         void Add(std::unique_ptr<Command>&& cmd)
         {
 			std::shared_ptr<Command> s(std::move(cmd));
             cmds->push_back(s);
         }
 
-        [[deprecated("Use the method _Add instead")]]
+        [[deprecated("Use the method Insert instead")]]
         void Add(std::unique_ptr<Menu>&& menu)
         {
 			std::shared_ptr<Menu> s(std::move(menu));
@@ -359,7 +359,7 @@ namespace cli
         }
 #endif // CLI_DEPRECATED_API
         
-        CmdHandler _Add(std::unique_ptr<Command>&& cmd)
+        CmdHandler Insert(std::unique_ptr<Command>&& cmd)
         {
 			std::shared_ptr<Command> scmd(std::move(cmd));
             CmdHandler c(scmd, cmds);
@@ -367,7 +367,7 @@ namespace cli
             return c;
         }
 
-        CmdHandler _Add(std::unique_ptr<Menu>&& menu)
+        CmdHandler Insert(std::unique_ptr<Menu>&& menu)
         {
 			std::shared_ptr<Menu> smenu(std::move(menu));
 			CmdHandler c(smenu, cmds);
@@ -475,7 +475,7 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
         template <typename F, typename R, typename ... Args>
-        CmdHandler _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
+        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
 
         Menu* parent;
         const std::string description;
@@ -837,18 +837,18 @@ namespace cli
             history(historySize)
         {
             cli.Register(out);
-            globalScopeMenu->_Add(
+            globalScopeMenu->Insert(
                 "help",
                 [this](std::ostream&){ Help(); },
                 "This help message"
             );
-            globalScopeMenu->_Add(
+            globalScopeMenu->Insert(
                 "exit",
                 [this](std::ostream&){ Exit(); },
                 "Quit the session"
             );
 #ifdef CLI_HISTORY_CMD
-            globalScopeMenu->_Add(
+            globalScopeMenu->Insert(
                 "history",
                 [this](std::ostream&){ ShowHistory(); },
                 "Show the history"
@@ -943,7 +943,7 @@ namespace cli
 #endif // CLI_DEPRECATED_API
 
     template <typename F, typename R, typename ... Args>
-    CmdHandler Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+    CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
 	{
         auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
         CmdHandler cmd(c, cmds);
