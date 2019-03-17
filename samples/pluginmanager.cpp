@@ -175,7 +175,7 @@ public:
         menuHandler.Remove();
     }
 private:
-    Cmd menuHandler;
+    CmdHandler menuHandler;
 };
 
 // plugin Strings
@@ -214,7 +214,7 @@ public:
         menuHandler.Remove();
     }
 private:
-    Cmd menuHandler;
+    CmdHandler menuHandler;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -223,8 +223,8 @@ private:
 int main()
 {
     boost::asio::io_context ioc;
-    Cmd colorCmd;
-    Cmd nocolorCmd;    
+    CmdHandler colorCmd;
+    CmdHandler nocolorCmd;    
 
     // setup cli
 

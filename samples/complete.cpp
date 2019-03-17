@@ -40,8 +40,8 @@ using namespace std;
 int main()
 {
     boost::asio::io_context ios;
-    Cmd colorCmd;
-    Cmd nocolorCmd;
+    CmdHandler colorCmd;
+    CmdHandler nocolorCmd;
 
     // setup cli
 

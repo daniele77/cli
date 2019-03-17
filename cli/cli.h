@@ -116,18 +116,17 @@ namespace cli
 
     public:
         Cli(
-            std::unique_ptr< Menu >&& _rootMenu,
-            std::function< void( std::ostream& )> _exitAction = std::function< void(std::ostream&) >()
+            std::unique_ptr<Menu>&& _rootMenu,
+            std::function< void(std::ostream&)> _exitAction = std::function< void(std::ostream&) >()
         ) :
-            rootMenu( std::move(_rootMenu) ),
-            exitAction( _exitAction )
+            rootMenu(std::move(_rootMenu)),
+            exitAction(_exitAction)
         {
         }
 
-
         // disable value semantics
-        Cli( const Cli& ) = delete;
-        Cli& operator = ( const Cli& ) = delete;
+        Cli(const Cli&) = delete;
+        Cli& operator = (const Cli&) = delete;
 
         Menu* RootMenu() { return rootMenu.get(); }
         void ExitAction( std::function< void(std::ostream&)> action ) { exitAction = action; }
@@ -136,11 +135,15 @@ namespace cli
         static void Register(std::ostream& o) { cout().Register(o); }
         static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
-        static OutStream& cout() { static OutStream s; return s; }
+        static OutStream& cout()
+		{
+			static OutStream s;
+			return s;
+		}
 
     private:
-        std::unique_ptr< Menu > rootMenu; // just to keep it alive
-        std::function< void(std::ostream&) > exitAction;
+        std::unique_ptr<Menu> rootMenu; // just to keep it alive
+        std::function<void(std::ostream&)> exitAction;
     };
 
     // ********************************************************************
@@ -175,14 +178,20 @@ namespace cli
     // ********************************************************************
 
     // free utility function to get completions from a list of commands and the current line
-    inline std::vector<std::string> GetCompletions(const std::vector< std::unique_ptr< Command > >& cmds, const std::string& currentLine)
+    inline std::vector<std::string> GetCompletions(
+		const std::shared_ptr<std::vector<std::shared_ptr<Command>>>& cmds, 
+		const std::string& currentLine)
     {
         std::vector<std::string> result;
-        std::for_each( cmds.begin(), cmds.end(),
-            [&currentLine,&result](auto& cmd)
+        std::for_each(cmds->begin(), cmds->end(),
+            [&currentLine,&result](const auto& cmd)
             {
                 auto c = cmd->GetCompletionRecursive(currentLine);
-                result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+                result.insert(
+					result.end(),
+					std::make_move_iterator(c.begin()),
+					std::make_move_iterator(c.end())
+				);
             }
         );
         return result;
@@ -193,21 +202,18 @@ namespace cli
     class CliSession
     {
     public:
-        CliSession( Cli& _cli, std::ostream& _out, std::size_t historySize = 100 );
+        CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
         ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
-        CliSession( const CliSession& ) = delete;
-        CliSession& operator = ( const CliSession& ) = delete;
+        CliSession(const CliSession&) = delete;
+        CliSession& operator = (const CliSession&) = delete;
 
         void Feed( const std::string& cmd );
 
         void Prompt();
 
-        void Current( Menu* menu )
-        {
-            current = menu;
-        }
+        void Current(Menu* menu) { current = menu; }
 
         std::ostream& OutStream() { return out; }
 
@@ -219,7 +225,7 @@ namespace cli
             cli.ExitAction(out);
         }
 
-        void ExitAction( std::function< void(std::ostream&)> action )
+        void ExitAction(const std::function<void(std::ostream&)>& action)
         {
             exitAction = action;
         }
@@ -242,7 +248,7 @@ namespace cli
 
         Cli& cli;
         Menu* current;
-        std::unique_ptr< Menu > globalScopeMenu;
+        std::unique_ptr<Menu> globalScopeMenu;
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction;
         detail::History history;
@@ -250,33 +256,51 @@ namespace cli
 
     // ********************************************************************
 
-    class Cmd
+    class CmdHandler
     {
     public:
-        using CmdVec = std::vector< std::unique_ptr< Command > >;
-        Cmd() : descriptor(std::make_shared<Descriptor>()) {}
-        Cmd(Command* c, CmdVec* v) : descriptor(std::make_shared<Descriptor>(c, v)) {}
+        using CmdVec = std::vector<std::shared_ptr<Command>>;
+        CmdHandler() : descriptor(std::make_shared<Descriptor>()) {}
+        CmdHandler(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) :
+			descriptor(std::make_shared<Descriptor>(c, v))
+		{}
         void Enable() { if (descriptor) descriptor->Enable(); }
         void Disable() { if (descriptor) descriptor->Disable(); }
         void Remove() { if (descriptor) descriptor->Remove(); }
     private:
         struct Descriptor
         {
-            Descriptor() : cmd(nullptr), cmds(nullptr) {}
-            Descriptor(Command* c, CmdVec* v) : cmd(c), cmds(v) {}
-            void Enable() { if(cmd) cmd->Enable(); }
-            void Disable() { if(cmd) cmd->Disable(); }
+            Descriptor() {}
+            Descriptor(const std::weak_ptr<Command>& c, const std::weak_ptr<CmdVec>& v) :
+				cmd(c), cmds(v)
+			{}
+            void Enable()
+			{ 
+				if (auto c = cmd.lock())
+					c->Enable();
+			}
+            void Disable()
+			{
+				if(auto c = cmd.lock())
+					c->Disable();
+			}
             void Remove()
             {
-                if (cmd && cmds)
+				auto scmd = cmd.lock();
+				auto scmds = cmds.lock();
+                if (scmd && scmds)
                 {
-                    auto i = std::find_if(cmds->begin(), cmds->end(), [&](const auto& c){ return c.get() == cmd; });
-                    if (i != cmds->end()) cmds->erase(i);
+                    auto i = std::find_if(
+						scmds->begin(),
+						scmds->end(),
+						[&](const auto& c){ return c.get() == scmd.get(); }
+					);
+                    if (i != scmds->end())
+						scmds->erase(i);
                 }
             }
-###devo controllare se cmd e cmds esistono ancora 
-			Command* cmd;
-            CmdVec* cmds;
+			std::weak_ptr<Command> cmd;
+			std::weak_ptr<CmdVec> cmds;
         };
         std::shared_ptr<Descriptor> descriptor;
     };
@@ -287,24 +311,24 @@ namespace cli
     {
     public:
         // disable value semantics
-        Menu( const Menu& ) = delete;
-        Menu& operator = ( const Menu& ) = delete;
+        Menu(const Menu&) = delete;
+        Menu& operator = (const Menu&) = delete;
 
-        Menu() : Command( {} ), parent( nullptr ), description() {}
+        Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
         Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
-            Command( _name ), parent( nullptr ), description( desc )
+            Command(_name), parent(nullptr), description(desc), cmds(std::make_shared<Cmds>())
         {}
 
         template <typename F>
-        Cmd _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
+        CmdHandler _Add(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
             // dispatch to private _Add methods
             return _Add(name, help, parDesc, f, &F::operator());
         }
 
         template <typename F>
-        Cmd _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
+        CmdHandler _Add(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
         {
             // dispatch to private _Add methods
             return _Add(name, help, parDesc, f, &F::operator());
@@ -316,39 +340,43 @@ namespace cli
         void Add(const std::string& name, F f, const std::string& help = "")
         {
             // dispatch to private Add methods
-            Add( name, help, f, &F::operator() );
+            Add(name, help, f, &F::operator());
         }
 
         [[deprecated("Use the method _Add instead")]]
-        void Add(std::unique_ptr< Command >&& cmd)
+        void Add(std::unique_ptr<Command>&& cmd)
         {
-            cmds.push_back( std::move(cmd) );
+			std::shared_ptr<Command> s(std::move(cmd));
+            cmds->push_back(s);
         }
 
         [[deprecated("Use the method _Add instead")]]
-        void Add( std::unique_ptr< Menu >&& menu )
+        void Add(std::unique_ptr<Menu>&& menu)
         {
-            menu -> parent = this;
-            cmds.push_back( std::move(menu) );
+			std::shared_ptr<Menu> s(std::move(menu));
+            s->parent = this;
+			cmds->push_back(s);
         }
 #endif // CLI_DEPRECATED_API
         
-        Cmd _Add(std::unique_ptr<Command>&& cmd)
+        CmdHandler _Add(std::unique_ptr<Command>&& cmd)
         {
-            Cmd c(cmd.get(), &cmds);
-            cmds.push_back( std::move(cmd) );
+			std::shared_ptr<Command> scmd(std::move(cmd));
+            CmdHandler c(scmd, cmds);
+            cmds->push_back(scmd);
             return c;
         }
 
-        Cmd _Add(std::unique_ptr<Menu>&& menu)
+        CmdHandler _Add(std::unique_ptr<Menu>&& menu)
         {
-            Cmd c(menu.get(), &cmds);
-            menu->parent = this;
-            cmds.push_back(std::move(menu));
+			std::shared_ptr<Menu> smenu(std::move(menu));
+			CmdHandler c(smenu, cmds);
+            smenu->parent = this;
+            cmds->push_back(smenu);
             return c;
         }
 
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
+        bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) override
         {
             if (!IsEnabled()) return false;
             if ( cmdLine[ 0 ] == Name() )
@@ -361,20 +389,20 @@ namespace cli
                 else
                 {
                     // check also for subcommands
-                    std::vector<std::string > subCmdLine( cmdLine.begin()+1, cmdLine.end() );
-                    for ( auto& cmd: cmds )
-                        if ( cmd -> Exec( subCmdLine, session ) ) return true;
+                    std::vector<std::string > subCmdLine(cmdLine.begin()+1, cmdLine.end());
+                    for (auto& cmd: *cmds)
+                        if (cmd->Exec( subCmdLine, session )) return true;
                 }
             }
             return false;
         }
 
-        bool ScanCmds( const std::vector< std::string >& cmdLine, CliSession& session )
+        bool ScanCmds(const std::vector<std::string>& cmdLine, CliSession& session)
         {
             if (!IsEnabled()) return false;
-            for ( auto& cmd: cmds )
-                if ( cmd -> Exec( cmdLine, session ) ) return true;
-            if ( parent && parent -> Exec( cmdLine, session ) ) return true;
+            for (auto& cmd: *cmds)
+                if (cmd->Exec(cmdLine, session)) return true;
+            if (parent && parent->Exec(cmdLine, session)) return true;
             return false;
         }
 
@@ -383,15 +411,15 @@ namespace cli
             return Name();
         }
 
-        void MainHelp( std::ostream& out )
+        void MainHelp(std::ostream& out)
         {
             if (!IsEnabled()) return;
-            for ( auto& cmd: cmds )
-                cmd -> Help( out );
-            if ( parent ) parent -> Help( out );
+            for (const auto& cmd: *cmds)
+                cmd->Help(out);
+            if (parent) parent->Help(out);
         }
 
-        void Help( std::ostream& out ) const override
+        void Help(std::ostream& out) const override
         {
             if (!IsEnabled()) return;
             out << " - " << Name() << "\n\t" << description << "\n";
@@ -403,24 +431,24 @@ namespace cli
 			if (parent)
 			{
 				auto c = parent->GetCompletionRecursive(currentLine);
-				result.insert( result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+				result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
 			}
 			return result;
         }
 
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
-            if ( boost::algorithm::starts_with( line, Name() ) )
+            if (boost::algorithm::starts_with(line, Name()))
             {
                 auto rest = line;
-                rest.erase( 0, Name().size() );
+                rest.erase(0, Name().size());
                 boost::algorithm::trim_left(rest);
                 std::vector<std::string> result;
-                for ( auto& cmd: cmds )
+                for (const auto& cmd: *cmds)
                 {
-                    auto cs = cmd->GetCompletionRecursive( rest );
-                    for ( auto& c: cs )
-                        result.push_back( Name() + ' ' + c );
+                    auto cs = cmd->GetCompletionRecursive(rest);
+                    for (const auto& c: cs)
+                        result.push_back(Name() + ' ' + c); // concat submenu with command
                 }
                 return result;
             }
@@ -430,29 +458,31 @@ namespace cli
     private:
 
 #ifdef CLI_DEPRECATED_API
-        template < typename F, typename R >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const );
+        template <typename F, typename R>
+        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const);
 
-        template < typename F, typename R, typename A1 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, std::ostream& out) const );
+        template <typename F, typename R, typename A1>
+        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, std::ostream& out) const);
 
-        template < typename F, typename R, typename A1, typename A2 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, std::ostream& out) const );
+        template <typename F, typename R, typename A1, typename A2>
+        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, std::ostream& out) const);
 
-        template < typename F, typename R, typename A1, typename A2, typename A3 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, std::ostream& out) const );
+        template <typename F, typename R, typename A1, typename A2, typename A3>
+        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, std::ostream& out) const);
 
-        template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
-        void Add( const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const );
+        template <typename F, typename R, typename A1, typename A2, typename A3, typename A4>
+        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const);
 #endif // CLI_DEPRECATED_API
 
         template <typename F, typename R, typename ... Args>
-        Cmd _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const );
+        CmdHandler _Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
 
         Menu* parent;
         const std::string description;
-        using Cmds = std::vector< std::unique_ptr< Command > >;
-        Cmds cmds;
+		// using shared_ptr instead of unique_ptr to get a weak_ptr
+		// for the CmdHandler::Descriptor
+        using Cmds = std::vector<std::shared_ptr<Command>>;
+        std::shared_ptr<Cmds> cmds;
     };
 
     // ********************************************************************
@@ -489,7 +519,7 @@ namespace cli
             out << " - " << Name() << "\n\t" << description << "\n";
         }
     private:
-        const std::function< void( std::ostream& )> function;
+        const std::function< void( std::ostream& ) > function;
         const std::string description;
     };
 
@@ -873,8 +903,8 @@ namespace cli
     inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
     {
         auto v1 = globalScopeMenu->GetCompletions(currentLine);
-        auto v3 = current -> GetCompletions(currentLine);
-        v1.insert( v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()) );
+        auto v3 = current->GetCompletions(currentLine);
+        v1.insert(v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()));
         return v1;
     }
 
@@ -884,40 +914,40 @@ namespace cli
     template < typename F, typename R >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd >( name, f, help ) );
+        cmds->push_back(std::make_shared<FuncCmd>(name, f, help));
     }
 
     template < typename F, typename R, typename A1 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd1< A1 > >( name, f, help ) );
+        cmds->push_back(std::make_shared<FuncCmd1<A1>>(name, f, help));
     }
 
     template < typename F, typename R, typename A1, typename A2 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd2< A1, A2 > >( name, f, help ) );
+        cmds->push_back(std::make_shared<FuncCmd2<A1, A2>>(name, f, help));
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd3< A1, A2, A3 > >( name, f, help ) );
+        cmds->push_back(std::make_shared<FuncCmd3<A1, A2, A3>>(name, f, help));
     }
 
     template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
     void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
     {
-        cmds.push_back( std::make_unique< FuncCmd4< A1, A2, A3, A4> >( name, f, help ) );
+        cmds->push_back(std::make_shared<FuncCmd4<A1, A2, A3, A4>>(name, f, help));
     }
 #endif // CLI_DEPRECATED_API
 
     template <typename F, typename R, typename ... Args>
-    Cmd Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+    CmdHandler Menu::_Add(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
 	{
-        auto c = std::make_unique<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
-        Cmd cmd(c.get(), &cmds);
-        cmds.push_back(std::move(c));
+        auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
+        CmdHandler cmd(c, cmds);
+        cmds->push_back(c);
         return cmd;
     }
 
