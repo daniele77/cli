@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..;$(BOOST)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\include;$(BOOST)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);_WIN32_WINNT=0x0501; BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE;_SCL_SECURE_NO_WARNINGS</PreprocessorDefinitions>
     </ClCompile>
     <Link>

@@ -27,7 +27,7 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I..
+override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include
 override LDLIBS += -lboost_system -lpthread
 
 SAMPLES := complete asyncsession filesession simplelocalsession pluginmanager
