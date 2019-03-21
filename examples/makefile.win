@@ -37,7 +37,7 @@ RM = del /F /Q 2> nul
 
 .PHONY: all apps clean
  
-# clean and build samples
+# clean and build examples
 all: clean apps
 
 .cpp.exe:

@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2016-2018 Daniele Pallastrelli
+# Copyright (C) 2016 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -30,12 +30,12 @@
 override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include
 override LDLIBS += -lboost_system -lpthread
 
-SAMPLES := complete asyncsession filesession simplelocalsession pluginmanager
+EXAMPLES := complete asyncsession filesession simplelocalsession pluginmanager
 
 .PHONY: clean all
 
-all: $(SAMPLES)
+all: $(EXAMPLES)
 
 clean:
-	@- $(RM) *.o *~ core $(SAMPLES)
+	@- $(RM) *.o *~ core $(EXAMPLES)
 

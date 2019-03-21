@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(cli VERSION 1.0 LANGUAGES CXX)
 
-option(CLI_BuildSamples "Build the samples." OFF)
+option(CLI_BuildExamples "Build the examples." OFF)
 
 find_package(Boost 1.55 REQUIRED COMPONENTS system)
 find_package(Threads REQUIRED)
@@ -21,9 +21,9 @@ target_include_directories(cli
 target_link_libraries(cli INTERFACE Boost::system Threads::Threads)
 target_compile_features(cli INTERFACE cxx_std_14)
 
-# Samples
-if (CLI_BuildSamples)
-    add_subdirectory(samples)
+# Examples
+if (CLI_BuildExamples)
+    add_subdirectory(examples)
 endif()
 
 # Install

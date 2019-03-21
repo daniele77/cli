@@ -46,7 +46,7 @@ and, if you want to specify the installation path:
 
 ## Compilation of the examples
 
-You can find some examples in the directory "samples".
+You can find some examples in the directory "examples".
 Each .cpp file corresponds to an executable. You can compile each sample by including
 cli and boost header files and linking boost system (and pthread on linux).
 
@@ -54,10 +54,10 @@ To compile the examples using cmake, use instead:
 
     mkdir build
     cd build
-    cmake .. -DCLI_BuildSamples=ON 
+    cmake .. -DCLI_BuildExamples=ON 
     make all
 
-In the directory samples you can also find:
+In the directory examples you can also find:
 
 * a GNU make file (Makefile)
 * a Windows nmake file (makefile.win)
@@ -84,7 +84,7 @@ Set the environment variable BOOST. Then, from a visual studio console, use the 
 ### Visual Studio solution
 
 Set the environment variable BOOST. Then, open the file
-`cli/samples/samples.sln`
+`cli/examples/examples.sln`
 
 ## License
 
