@@ -15,3 +15,7 @@ target_link_libraries(filesession cli::cli)
 add_executable(simplelocalsession simplelocalsession.cpp)
 
 target_link_libraries(simplelocalsession cli::cli)
+
+add_executable(pluginmanager pluginmanager.cpp)
+
+target_link_libraries(pluginmanager cli::cli)
