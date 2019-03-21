@@ -137,7 +137,9 @@ Registration RegisteredPlugin<T, NAME>::registration(NAME, &RegisteredPlugin<T, 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // plugins
 
-// plugin Arithmetic
+///////////////////////////// arithmetic.cpp //////////////////////////////////
+
+// Arithmetic plugin
 
 constexpr char ArithmeticName[] = "arithmetic";
 
@@ -179,7 +181,9 @@ private:
     CmdHandler menuHandler;
 };
 
-// plugin Strings
+///////////////////////////// strings.cpp //////////////////////////////////
+
+// Strings plugin
 
 constexpr char StringsName[] = "strings";
 
