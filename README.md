@@ -50,7 +50,7 @@ You can find some examples in the directory "examples".
 Each .cpp file corresponds to an executable. You can compile each sample by including
 cli and boost header files and linking boost system (and pthread on linux).
 
-To compile the examples using cmake, use instead:
+To compile the examples using cmake, use:
 
     mkdir build
     cd build
