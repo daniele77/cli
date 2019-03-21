@@ -27,7 +27,7 @@ if (CLI_BuildSamples)
 endif()
 
 # Install
-install(DIRECTORY cli DESTINATION include)
+install(DIRECTORY include DESTINATION .)
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
