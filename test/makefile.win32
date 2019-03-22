@@ -27,24 +27,67 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-add_executable(complete complete.cpp)
+# usage:
+# set env var BOOST to boost lib path
+# nmake /f makefile.win32
+# or
+# nmake /f makefile.win32 DEBUG=1
+# or
+# nmake /f makefile.win32 UNICODE=1
+# or
+# nmake /f makefile.win32 DEBUG=1 UNICODE=1
 
-target_link_libraries(complete cli::cli)
+#define macros
+EXE_NAME = test_suite.exe
+DIR_INCLUDE = /I..\include /I%BOOST%
 
-if (NOT WIN32)
-    add_executable(asyncsession asyncsession.cpp)
+!ifdef DEBUG
+RUNTIME_LIB = /MDd
+!else
+RUNTIME_LIB = /MD
+!endif
 
-    target_link_libraries(asyncsession cli::cli)
-endif()
+!ifdef UNICODE
+CHAR_SET = /D "_UNICODE" /D "UNICODE"
+!else
+CHAR_SET = /D "_MBCS"
+!endif
 
-add_executable(filesession filesession.cpp)
+RUN_OPT = --build_info --report_level=short
+COMPILE_FLAGS = /nologo /EHsc /DBOOST_TEST_DYN_LINK $(RUNTIME_LIB) $(CHAR_SET)
+LINK_FLAGS = /LIBPATH:%BOOST%\stage\lib /NOLOGO
+PATH = $(PATH);$(BOOST)\stage\lib\ # to run the test suite
 
-target_link_libraries(filesession cli::cli)
+RM = del /F /Q 2> nul
 
-add_executable(simplelocalsession simplelocalsession.cpp)
+CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
 
-target_link_libraries(simplelocalsession cli::cli)
+EXE_OBJ_FILES= \
+    test_history.obj \
+    driver.obj
 
-add_executable(pluginmanager pluginmanager.cpp)
+.PHONY: all mainapp plugin1 plugin2 test clean
 
-target_link_libraries(pluginmanager cli::cli)
+# create directories and build application
+all: clean mainapp test
+
+$(EXE_NAME) : $(EXE_OBJ_FILES)
+    @echo Linking $(EXE_NAME)...
+    link $(LINK_FLAGS) /out:$(EXE_NAME) $(EXE_OBJ_FILES)
+
+# application
+
+mainapp: $(EXE_NAME)
+
+# run the test
+test:
+    $(EXE_NAME) $(RUN_OPT)
+    
+# delete output files
+clean:
+    @-$(RM) *.obj
+    @-$(RM) *.exp
+    @-$(RM) *.lib
+    @-$(RM) $(EXE_NAME)
+
+

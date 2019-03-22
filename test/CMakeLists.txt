@@ -27,24 +27,24 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-add_executable(complete complete.cpp)
+cmake_minimum_required(VERSION 3.8)
+project(cli_test)
+enable_testing()
 
-target_link_libraries(complete cli::cli)
+# replace XX with the version you have
+set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 
-if (NOT WIN32)
-    add_executable(asyncsession asyncsession.cpp)
+# finds boost, triggers an error otherwise
+find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
 
-    target_link_libraries(asyncsession cli::cli)
-endif()
+# creates the executable
+add_executable(test_suite driver.cpp test_history.cpp)
+# indicates the include paths
+target_include_directories(test_suite PRIVATE ${Boost_INCLUDE_DIRS})
+# indicates the shared library variant
+target_compile_definitions(test_suite PRIVATE "BOOST_TEST_DYN_LINK=1")
+# indicates the link paths
+target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} cli::cli)
 
-add_executable(filesession filesession.cpp)
-
-target_link_libraries(filesession cli::cli)
-
-add_executable(simplelocalsession simplelocalsession.cpp)
-
-target_link_libraries(simplelocalsession cli::cli)
-
-add_executable(pluginmanager pluginmanager.cpp)
-
-target_link_libraries(pluginmanager cli::cli)
+# declares a test with our executable
+add_test(NAME cli_test COMMAND test_suite)

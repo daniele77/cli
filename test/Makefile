@@ -27,24 +27,30 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-add_executable(complete complete.cpp)
+# usage:
+# make BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR>
+# or
+# make BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR> CXXFLAGS=-std=c++0x
 
-target_link_libraries(complete cli::cli)
+override RUN_OPT += --build_info --report_level=short
 
-if (NOT WIN32)
-    add_executable(asyncsession asyncsession.cpp)
+override CXXFLAGS += -Wall -Wextra -Werror -I../include -DBOOST_TEST_DYN_LINK -isystem $(BOOST_INC) -std=c++1y
+override LDFLAGS += -L$(BOOST_LIB) -lboost_unit_test_framework -ldl
 
-    target_link_libraries(asyncsession cli::cli)
-endif()
+OBJ := test_history.o \
+       driver.o
 
-add_executable(filesession filesession.cpp)
+EXE := test_suite
 
-target_link_libraries(filesession cli::cli)
+.PHONY: all test clean
 
-add_executable(simplelocalsession simplelocalsession.cpp)
+all: $(EXE) test
 
-target_link_libraries(simplelocalsession cli::cli)
+$(EXE): $(OBJ)
+	$(LINK.cc) $(OBJ) -o $(EXE)
 
-add_executable(pluginmanager pluginmanager.cpp)
+test:
+	export LD_LIBRARY_PATH=.:$(BOOST_LIB) ; ./$(EXE) $(RUN_OPT)
 
-target_link_libraries(pluginmanager cli::cli)
+clean:
+	@- $(RM) *.o *~ core $(EXE)
