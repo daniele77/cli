@@ -37,9 +37,9 @@
 #include <functional>
 #include <type_traits>
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 #include "colorprofile.h"
 #include "history.h"
+#include "split.h"
 
 #define CLI_DEPRECATED_API
 
@@ -164,7 +164,8 @@ namespace cli
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
         {
             if (!enabled) return {};
-            if ( boost::algorithm::starts_with(name, line) ) return {name};
+            // if ( boost::algorithm::starts_with(name, line) ) return {name}; @@@
+            if (name.rfind(line, 0) == 0) return {name};
             else return {};
         }
     protected:
@@ -438,11 +439,13 @@ namespace cli
 
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
-            if (boost::algorithm::starts_with(line, Name()))
+            // if (boost::algorithm::starts_with(line, Name())) @@@
+            if (line.rfind(Name(), 0) == 0)
             {
                 auto rest = line;
                 rest.erase(0, Name().size());
-                boost::algorithm::trim_left(rest);
+                //boost::algorithm::trim_left(rest); @@@
+                rest.erase(rest.begin(), std::find_if(rest.begin(), rest.end(), [](int ch) { return !std::isspace(ch); }));
                 std::vector<std::string> result;
                 for (const auto& cmd: *cmds)
                 {
@@ -856,29 +859,20 @@ namespace cli
 #endif
         }
 
-    inline void CliSession::Feed( const std::string& cmd )
+    inline void CliSession::Feed(const std::string& cmd)
     {
-        std::vector< std::string > strs;
-        boost::split( strs, cmd, boost::is_any_of( " \t\n" ), boost::token_compress_on );
-        // remove null entries from the vector:
-        strs.erase(
-            std::remove_if(
-                strs.begin(),
-                strs.end(),
-                [](const std::string& s){ return s.empty(); }
-            ),
-            strs.end()
-        );
-        if ( strs.empty() ) return; // just hit enter
+        std::vector<std::string> strs;
+        detail::split(strs, cmd);
+        if (strs.empty()) return; // just hit enter
 
         // global cmds check
         bool found = globalScopeMenu->ScanCmds(strs, *this);
 
         // root menu recursive cmds check
-        if ( !found ) found = current -> ScanCmds( std::move(strs), *this ); // last use of strs
+        if (!found) found = current -> ScanCmds(std::move(strs), *this); // last use of strs
 
-        history.NewCommand( cmd ); // add anyway to history
-        if ( !found ) // error msg if not found
+        history.NewCommand(cmd); // add anyway to history
+        if (!found) // error msg if not found
             out << "Command unknown: " << cmd << "\n";
 
         return;

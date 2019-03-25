@@ -38,7 +38,11 @@ set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
 
 # creates the executable
-add_executable(test_suite driver.cpp test_history.cpp)
+add_executable(
+	test_suite driver.cpp
+	test_history.cpp
+	test_split.cpp
+)
 # indicates the include paths
 target_include_directories(test_suite PRIVATE ${Boost_INCLUDE_DIRS})
 # indicates the shared library variant

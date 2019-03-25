@@ -38,6 +38,7 @@ override CXXFLAGS += -Wall -Wextra -Werror -I../include -DBOOST_TEST_DYN_LINK -i
 override LDFLAGS += -L$(BOOST_LIB) -lboost_unit_test_framework -ldl
 
 OBJ := test_history.o \
+       test_split.o \
        driver.o
 
 EXE := test_suite
