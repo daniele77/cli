@@ -164,8 +164,7 @@ namespace cli
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const
         {
             if (!enabled) return {};
-            // if ( boost::algorithm::starts_with(name, line) ) return {name}; @@@
-            if (name.rfind(line, 0) == 0) return {name};
+            if (name.rfind(line, 0) == 0) return {name}; // name starts_with line
             else return {};
         }
     protected:
@@ -243,7 +242,7 @@ namespace cli
             return history.Next();
         }
 
-        std::vector<std::string> GetCompletions(const std::string& currentLine) const;
+        std::vector<std::string> GetCompletions(std::string currentLine) const;
 
     private:
 
@@ -439,12 +438,11 @@ namespace cli
 
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
-            // if (boost::algorithm::starts_with(line, Name())) @@@
-            if (line.rfind(Name(), 0) == 0)
+            if (line.rfind(Name(), 0) == 0) // line starts_with Name()
             {
                 auto rest = line;
                 rest.erase(0, Name().size());
-                //boost::algorithm::trim_left(rest); @@@
+                // trim_left(rest);
                 rest.erase(rest.begin(), std::find_if(rest.begin(), rest.end(), [](int ch) { return !std::isspace(ch); }));
                 std::vector<std::string> result;
                 for (const auto& cmd: *cmds)
@@ -894,8 +892,10 @@ namespace cli
         current -> MainHelp( out );
     }
 
-    inline std::vector<std::string> CliSession::GetCompletions( const std::string& currentLine ) const
+    inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const
     {
+        // trim_left(currentLine);
+        currentLine.erase(currentLine.begin(), std::find_if(currentLine.begin(), currentLine.end(), [](int ch) { return !std::isspace(ch); }));
         auto v1 = globalScopeMenu->GetCompletions(currentLine);
         auto v3 = current->GetCompletions(currentLine);
         v1.insert(v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()));

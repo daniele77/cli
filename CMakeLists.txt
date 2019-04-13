@@ -55,7 +55,10 @@ if (CLI_BuildExamples)
     add_subdirectory(examples)
 endif()
 
-add_subdirectory(test)
+# Tests
+if (CLI_BuildTests)
+	add_subdirectory(test)
+endif()
 
 # Install
 install(DIRECTORY include DESTINATION .)

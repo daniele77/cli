@@ -39,6 +39,7 @@ override LDFLAGS += -L$(BOOST_LIB) -lboost_unit_test_framework -ldl
 
 OBJ := test_history.o \
        test_split.o \
+       test_commonprefix.o \
        driver.o
 
 EXE := test_suite

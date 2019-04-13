@@ -43,6 +43,7 @@ cmake-build-*
 *.app
 Debug
 Release
+test/test_suite
 
 # Project files
 .cproject

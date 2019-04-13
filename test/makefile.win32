@@ -65,6 +65,7 @@ CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
 EXE_OBJ_FILES= \
     test_history.obj \
     test_split.obj \
+    test_commonprefix.obj \
     driver.obj
 
 .PHONY: all mainapp plugin1 plugin2 test clean
