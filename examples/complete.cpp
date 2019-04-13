@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) Daniele Pallastrelli
+ * Copyright (C) 2016 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -67,7 +67,7 @@ int main()
             "Print the file descriptor specified",
 			{"file_descriptor"} );
     rootMenu -> Insert(
-            "reverse", {"string_to_revers"},
+            "reverse", {"string_to_revert"},
             [](std::ostream& out, const string& arg)
             {
 				string copy(arg);

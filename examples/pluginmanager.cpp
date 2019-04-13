@@ -194,7 +194,7 @@ public:
     {
         auto subMenu = make_unique<Menu>(Name());
         subMenu -> Insert(
-                "reverse", {"string_to_revers"},
+                "reverse", {"string_to_revert"},
                 [](std::ostream& out, const string& arg)
                 {
                     string copy(arg);

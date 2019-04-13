@@ -35,6 +35,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <cctype> // std::isspace
 #include <type_traits>
 #include <boost/lexical_cast.hpp>
 #include "colorprofile.h"

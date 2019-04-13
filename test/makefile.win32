@@ -68,7 +68,7 @@ EXE_OBJ_FILES= \
     test_commonprefix.obj \
     driver.obj
 
-.PHONY: all mainapp plugin1 plugin2 test clean
+.PHONY: all mainapp test clean
 
 # create directories and build application
 all: clean mainapp test
