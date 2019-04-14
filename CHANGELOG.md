@@ -1,15 +1,16 @@
 # Changelog
 
-Current Version: 1.0-dirty
+Current Version: 1.1
 
-## Unreleased
+## [1.1.0] - 2019-04-14
 
 - Dynamically Remove/Disable/Enable commands and submenus (issue #15)
 - New variadic template method to add commands and menu (makes Add() deprecated)
 - Optionally delimitate string parameters by " (issue #38)
 - Explicitly set the names of parameters in help description
+- Unit tests
 - CMake support
-- Unit test
+- Vcpkg support
 
 ## [1.0.0] - 2019-02-16
 

@@ -29,13 +29,13 @@
 
 # usage:
 # set env var BOOST to boost lib path
-# nmake /f makefile.win32
+# nmake /f makefile.win
 # or
-# nmake /f makefile.win32 DEBUG=1
+# nmake /f makefile.win DEBUG=1
 # or
-# nmake /f makefile.win32 UNICODE=1
+# nmake /f makefile.win UNICODE=1
 # or
-# nmake /f makefile.win32 DEBUG=1 UNICODE=1
+# nmake /f makefile.win DEBUG=1 UNICODE=1
 
 #define macros
 EXE_NAME = test_suite.exe

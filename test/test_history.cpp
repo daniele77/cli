@@ -35,24 +35,6 @@ using namespace cli::detail;
 
 BOOST_AUTO_TEST_SUITE(HistorySuite)
 
-/*
-content
-- time_0_cmd
-- time_1_cmd
-- time_2_cmd
-- time_3_cmd
-- current_editing
-
-arrow up goes through:
-- current_editing
-- time_3_cmd
-- time_2_cmd
-- time_1_cmd
-- time_0_cmd (and stops here)
-
-arrow down stops at "current_editing"
-*/
-
 BOOST_AUTO_TEST_CASE(NotFull)
 {
     History history(10);
@@ -63,48 +45,48 @@ BOOST_AUTO_TEST_CASE(NotFull)
 
     BOOST_CHECK_EQUAL(history.Previous(""), "item4");
     BOOST_CHECK_EQUAL(history.Next(), "");
+    BOOST_CHECK_EQUAL(history.Previous(""), "item4");
+    BOOST_CHECK_EQUAL(history.Previous("item4"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item2");
+    BOOST_CHECK_EQUAL(history.Previous("item2"), "item1");
+    BOOST_CHECK_EQUAL(history.Previous("item1"), "item1");
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE(Full)
 {
     History history(3);
-    history.Add("item1");
-    history.Add("item2");
-    history.Add("item3");
-    history.Add("item4");
+    history.NewCommand("item1");
+    history.NewCommand("item2");
+    history.NewCommand("item3");
+    history.NewCommand("item4");
 
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item3");
-    history.ToNextEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
-    history.ToNextEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
-    history.ToNextEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
-
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item3");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item2");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item2");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item2");
-
-    history.ToNextEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item3");
-    history.ToNextEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item3");
-    history.ToPreviousEntry();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item2");
-
-    history.ResetCurrent();
-    BOOST_CHECK_EQUAL(history.GetCurrent(), "item4");
+    BOOST_CHECK_EQUAL(history.Previous(""), "item4");
+    BOOST_CHECK_EQUAL(history.Next(), "");
+    BOOST_CHECK_EQUAL(history.Previous(""), "item4");
+    BOOST_CHECK_EQUAL(history.Previous("item4"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item3");
+    BOOST_CHECK_EQUAL(history.Next(), "item4");
+    BOOST_CHECK_EQUAL(history.Next(), "");
 }
-#endif
+
+
+BOOST_AUTO_TEST_CASE(Insertion)
+{
+    History history(10);
+    history.NewCommand("item1");
+    history.NewCommand("item2");
+    history.NewCommand("item3");
+    history.NewCommand("item4");
+
+    BOOST_CHECK_EQUAL(history.Previous(""), "item4");
+    BOOST_CHECK_EQUAL(history.Previous("item4"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
+    BOOST_CHECK_EQUAL(history.Next(), "foo");
+    BOOST_CHECK_EQUAL(history.Next(), "item4");
+    BOOST_CHECK_EQUAL(history.Previous("item4"), "foo");
+    BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
+}
 
 BOOST_AUTO_TEST_SUITE_END()

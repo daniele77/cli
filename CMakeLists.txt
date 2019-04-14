@@ -29,9 +29,10 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-project(cli VERSION 1.0 LANGUAGES CXX)
+project(cli VERSION 1.1 LANGUAGES CXX)
 
 option(CLI_BuildExamples "Build the examples." OFF)
+option(CLI_BuildTests "Build the unit tests." OFF)
 
 find_package(Boost 1.55 REQUIRED COMPONENTS system)
 find_package(Threads REQUIRED)

@@ -17,6 +17,11 @@ A cross-platform header only C++14 library for interactive command line interfac
 * Async interface
 * Colors
 
+## How to get CLI library
+
+* From [GitHub](https://github.com/daniele77/cli/releases)
+* Using [Vcpkg](https://github.com/Microsoft/vcpkg)
+
 ## Dependencies
 
 The library depends on boost asio (to provide telnet server)
@@ -47,7 +52,7 @@ and, if you want to specify the installation path:
 ## Compilation of the examples
 
 You can find some examples in the directory "examples".
-Each .cpp file corresponds to an executable. You can compile each sample by including
+Each .cpp file corresponds to an executable. You can compile each example by including
 cli and boost header files and linking boost system (and pthread on linux).
 
 To compile the examples using cmake, use:
@@ -57,7 +62,7 @@ To compile the examples using cmake, use:
     cmake .. -DCLI_BuildExamples=ON 
     make all
 
-In the directory examples you can also find:
+In the same directory you can also find:
 
 * a GNU make file (Makefile)
 * a Windows nmake file (makefile.win)
