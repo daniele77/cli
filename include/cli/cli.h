@@ -137,10 +137,10 @@ namespace cli
         static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
         static OutStream& cout()
-		{
-			static OutStream s;
-			return s;
-		}
+        {
+            static OutStream s;
+            return s;
+        }
 
     private:
         std::unique_ptr<Menu> rootMenu; // just to keep it alive
@@ -180,8 +180,8 @@ namespace cli
 
     // free utility function to get completions from a list of commands and the current line
     inline std::vector<std::string> GetCompletions(
-		const std::shared_ptr<std::vector<std::shared_ptr<Command>>>& cmds, 
-		const std::string& currentLine)
+        const std::shared_ptr<std::vector<std::shared_ptr<Command>>>& cmds, 
+        const std::string& currentLine)
     {
         std::vector<std::string> result;
         std::for_each(cmds->begin(), cmds->end(),
@@ -189,10 +189,10 @@ namespace cli
             {
                 auto c = cmd->GetCompletionRecursive(currentLine);
                 result.insert(
-					result.end(),
-					std::make_move_iterator(c.begin()),
-					std::make_move_iterator(c.end())
-				);
+                    result.end(),
+                    std::make_move_iterator(c.begin()),
+                    std::make_move_iterator(c.end())
+                );
             }
         );
         return result;
@@ -263,8 +263,8 @@ namespace cli
         using CmdVec = std::vector<std::shared_ptr<Command>>;
         CmdHandler() : descriptor(std::make_shared<Descriptor>()) {}
         CmdHandler(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) :
-			descriptor(std::make_shared<Descriptor>(c, v))
-		{}
+            descriptor(std::make_shared<Descriptor>(c, v))
+        {}
         void Enable() { if (descriptor) descriptor->Enable(); }
         void Disable() { if (descriptor) descriptor->Disable(); }
         void Remove() { if (descriptor) descriptor->Remove(); }
@@ -273,35 +273,35 @@ namespace cli
         {
             Descriptor() {}
             Descriptor(const std::weak_ptr<Command>& c, const std::weak_ptr<CmdVec>& v) :
-				cmd(c), cmds(v)
-			{}
+                cmd(c), cmds(v)
+            {}
             void Enable()
-			{ 
-				if (auto c = cmd.lock())
-					c->Enable();
-			}
+            { 
+                if (auto c = cmd.lock())
+                    c->Enable();
+            }
             void Disable()
-			{
-				if(auto c = cmd.lock())
-					c->Disable();
-			}
+            {
+                if(auto c = cmd.lock())
+                    c->Disable();
+            }
             void Remove()
             {
-				auto scmd = cmd.lock();
-				auto scmds = cmds.lock();
+                auto scmd = cmd.lock();
+                auto scmds = cmds.lock();
                 if (scmd && scmds)
                 {
                     auto i = std::find_if(
-						scmds->begin(),
-						scmds->end(),
-						[&](const auto& c){ return c.get() == scmd.get(); }
-					);
+                        scmds->begin(),
+                        scmds->end(),
+                        [&](const auto& c){ return c.get() == scmd.get(); }
+                    );
                     if (i != scmds->end())
-						scmds->erase(i);
+                        scmds->erase(i);
                 }
             }
-			std::weak_ptr<Command> cmd;
-			std::weak_ptr<CmdVec> cmds;
+            std::weak_ptr<Command> cmd;
+            std::weak_ptr<CmdVec> cmds;
         };
         std::shared_ptr<Descriptor> descriptor;
     };
@@ -347,22 +347,22 @@ namespace cli
         [[deprecated("Use the method Insert instead")]]
         void Add(std::unique_ptr<Command>&& cmd)
         {
-			std::shared_ptr<Command> s(std::move(cmd));
+            std::shared_ptr<Command> s(std::move(cmd));
             cmds->push_back(s);
         }
 
         [[deprecated("Use the method Insert instead")]]
         void Add(std::unique_ptr<Menu>&& menu)
         {
-			std::shared_ptr<Menu> s(std::move(menu));
+            std::shared_ptr<Menu> s(std::move(menu));
             s->parent = this;
-			cmds->push_back(s);
+            cmds->push_back(s);
         }
 #endif // CLI_DEPRECATED_API
         
         CmdHandler Insert(std::unique_ptr<Command>&& cmd)
         {
-			std::shared_ptr<Command> scmd(std::move(cmd));
+            std::shared_ptr<Command> scmd(std::move(cmd));
             CmdHandler c(scmd, cmds);
             cmds->push_back(scmd);
             return c;
@@ -370,8 +370,8 @@ namespace cli
 
         CmdHandler Insert(std::unique_ptr<Menu>&& menu)
         {
-			std::shared_ptr<Menu> smenu(std::move(menu));
-			CmdHandler c(smenu, cmds);
+            std::shared_ptr<Menu> smenu(std::move(menu));
+            CmdHandler c(smenu, cmds);
             smenu->parent = this;
             cmds->push_back(smenu);
             return c;
@@ -429,12 +429,12 @@ namespace cli
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
         {
             auto result = cli::GetCompletions(cmds, currentLine);
-			if (parent)
-			{
-				auto c = parent->GetCompletionRecursive(currentLine);
-				result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
-			}
-			return result;
+            if (parent)
+            {
+                auto c = parent->GetCompletionRecursive(currentLine);
+                result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
+            }
+            return result;
         }
 
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
@@ -481,8 +481,8 @@ namespace cli
 
         Menu* parent;
         const std::string description;
-		// using shared_ptr instead of unique_ptr to get a weak_ptr
-		// for the CmdHandler::Descriptor
+        // using shared_ptr instead of unique_ptr to get a weak_ptr
+        // for the CmdHandler::Descriptor
         using Cmds = std::vector<std::shared_ptr<Command>>;
         std::shared_ptr<Cmds> cmds;
     };
@@ -782,7 +782,7 @@ namespace cli
             const std::string& _name,
             F fun,
             const std::string& desc = "unknown command",
-			const std::vector<std::string>& parDesc = {}
+            const std::vector<std::string>& parDesc = {}
         )
             : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
         {
@@ -812,10 +812,10 @@ namespace cli
         {
             if (!IsEnabled()) return;
             out << " - " << Name();
-			if (parameterDesc.empty())
-				PrintDesc<Args...>::Dump(out);
-			for (auto& s: parameterDesc)
-				out << " <" << s << '>';
+            if (parameterDesc.empty())
+                PrintDesc<Args...>::Dump(out);
+            for (auto& s: parameterDesc)
+                out << " <" << s << '>';
             out << "\n\t" << description << "\n";
         }
 
@@ -823,7 +823,7 @@ namespace cli
 
         const F func;
         const std::string description;
-		const std::vector<std::string> parameterDesc;
+        const std::vector<std::string> parameterDesc;
     };
 
 
@@ -939,7 +939,7 @@ namespace cli
 
     template <typename F, typename R, typename ... Args>
     CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
-	{
+    {
         auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
         CmdHandler cmd(c, cmds);
         cmds->push_back(c);

@@ -43,7 +43,7 @@
 #if defined(OS_LINUX) || defined(OS_MAC)
     #include "linuxkeyboard.h"
 #elif defined(OS_WIN)
-	#include "winkeyboard.h"
+    #include "winkeyboard.h"
 #else
     #error "Platform not supported (yet)."
 #endif
@@ -53,7 +53,7 @@ namespace cli
 #if defined(OS_LINUX) || defined(OS_MAC)
     using Keyboard = LinuxKeyboard;
 #elif defined(OS_WIN)
-	using Keyboard = WinKeyboard;
+    using Keyboard = WinKeyboard;
 #else
     #error "Platform not supported (yet)."
 #endif

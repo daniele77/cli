@@ -41,15 +41,15 @@ namespace cli
 class CliFileSession : public CliSession
 {
 public:
-	/// @throw std::invalid_argument if @c _in or @c out are invalid streams
+    /// @throw std::invalid_argument if @c _in or @c out are invalid streams
     CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
         CliSession(cli, out, 1),
         exit(false),
         in(_in)
     {
-		if (!in.good())	throw std::invalid_argument("istream invalid");
-		if (!out.good()) throw std::invalid_argument("ostream invalid");
-		ExitAction(
+        if (!in.good())    throw std::invalid_argument("istream invalid");
+        if (!out.good()) throw std::invalid_argument("ostream invalid");
+        ExitAction(
             [this](std::ostream&)
             {
                 exit = true;
@@ -62,8 +62,8 @@ public:
         {
             Prompt();
             std::string line;
-			if (!in.good())
-				Exit();
+            if (!in.good())
+                Exit();
             std::getline(in, line);
             if (in.eof())
                 Exit();

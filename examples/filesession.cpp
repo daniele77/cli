@@ -86,18 +86,18 @@ int main()
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
     std::ifstream infile("input.txt");
-	if (!infile)
-	{
-		std::cerr << "File input.txt not found in current directory!\n";
-		return 1;
-	}
+    if (!infile)
+    {
+        std::cerr << "File input.txt not found in current directory!\n";
+        return 1;
+    }
     std::ofstream outfile("output.txt");
-	if (!outfile)
-	{
-		std::cerr << "Can't write file output.txt in the current directory!\n";
-		return 1;
-	}
-	CliFileSession input(cli, infile, outfile);
+    if (!outfile)
+    {
+        std::cerr << "Can't write file output.txt in the current directory!\n";
+        return 1;
+    }
+    CliFileSession input(cli, infile, outfile);
     input.Start();
 
     return 0;

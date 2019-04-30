@@ -62,16 +62,16 @@ int main()
             "file",
             [](std::ostream& out, int fd)
             {
-				out << "file descriptor: " << fd << "\n";
+                out << "file descriptor: " << fd << "\n";
             },
             "Print the file descriptor specified",
-			{"file_descriptor"} );
+            {"file_descriptor"} );
     rootMenu -> Insert(
             "reverse", {"string_to_revert"},
             [](std::ostream& out, const string& arg)
             {
-				string copy(arg);
-				std::reverse(copy.begin(), copy.end());
+                string copy(arg);
+                std::reverse(copy.begin(), copy.end());
                 out << copy << "\n";
             },
             "Print the reverse string" );
