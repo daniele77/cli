@@ -58,6 +58,7 @@ endif()
 
 # Tests
 if (CLI_BuildTests)
+	enable_testing()
 	add_subdirectory(test)
 endif()
 
