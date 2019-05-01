@@ -1,0 +1,8 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+includedir=${prefix}/include
+
+Name: cli
+Description: A cross-platform header only C++14 library for interactive command line interfaces (Cisco style)
+URL: https://github.com/daniele77/cli
+Version: @cli_VERSION@
+Cflags: -I${includedir}

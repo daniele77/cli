@@ -51,6 +51,7 @@ target_include_directories(cli
 target_link_libraries(cli INTERFACE Boost::system Threads::Threads)
 target_compile_features(cli INTERFACE cxx_std_14)
 
+
 # Examples
 if (CLI_BuildExamples)
     add_subdirectory(examples)
@@ -72,10 +73,26 @@ configure_package_config_file(
 	INSTALL_DESTINATION "lib/cmake/cli"
 )
 
+include(GNUInstallDirs)
+# Generate pkg-config .pc file
+set(PKGCONFIG_INSTALL_DIR
+	${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+	CACHE PATH "Installation directory for pkg-config (cli.pc) file"
+)
+configure_file(
+	"cli.pc.in"
+	"cli.pc"
+	@ONLY
+)
+
 install(TARGETS cli EXPORT cliTargets DESTINATION lib)
 install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION lib/cmake/cli)
 
 install(
 	FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
 	DESTINATION "lib/cmake/cli"
+)
+install(
+      FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
+      DESTINATION ${PKGCONFIG_INSTALL_DIR}
 )
