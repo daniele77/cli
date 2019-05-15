@@ -538,6 +538,11 @@ public:
         cli(_cli),
         historySize(_historySize)
     {}
+    CliTelnetServer(boost::asio::io_context& ios, std::string address, short port, Cli& _cli, std::size_t _historySize=100 ) :
+        Server(ios, address, port),
+        cli(_cli),
+        historySize(_historySize)
+    {}
     void ExitAction( std::function< void(std::ostream&)> action )
     {
         exitAction = action;

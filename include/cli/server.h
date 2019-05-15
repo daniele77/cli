@@ -128,6 +128,12 @@ public:
     {
         Accept();
     }
+    Server( boost::asio::io_context& ios, std::string address, short port ) :
+        acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::make_address(address), port ) ),
+        socket( ios )
+    {
+        Accept();
+    }
     virtual ~Server() = default;
     // returns shared_ptr instead of unique_ptr because Session needs to use enable_shared_from_this
     virtual std::shared_ptr< Session > CreateSession( boost::asio::ip::tcp::socket socket ) = 0;
