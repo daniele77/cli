@@ -59,8 +59,10 @@ To compile the examples using cmake, use:
 
     mkdir build
     cd build
-    cmake .. -DCLI_BuildExamples=ON 
+    cmake .. -DCLI_BuildExamples=ON
+    # or: cmake .. -DCLI_BuildExamples=ON -DBOOST_INCLUDEDIR=<boost_include_directory>
     make all
+    # or: cmake --build .
 
 In the same directory you can also find:
 

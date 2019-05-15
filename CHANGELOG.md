@@ -1,6 +1,10 @@
 # Changelog
 
-Current Version: 1.1
+Current Version: 1.1-dirty
+
+## Unreleased
+
+ - Specify binding IP address in CliTelnetServer
 
 ## [1.1.0] - 2019-04-14
 
