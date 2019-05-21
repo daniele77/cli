@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef COLORPROFILE_H_
-#define COLORPROFILE_H_
+#ifndef CLI_COLORPROFILE_H_
+#define CLI_COLORPROFILE_H_
 
 #include "rang.h"
 
@@ -71,6 +71,6 @@ inline std::ostream& operator<<(std::ostream& os, AfterInput)
 
 } // namespace cli
 
-#endif // COLORPROFILE_H_
+#endif // CLI_COLORPROFILE_H_
 
 

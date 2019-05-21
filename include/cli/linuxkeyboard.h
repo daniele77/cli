@@ -27,13 +27,13 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef LINUXKEYBOARD_H_
-#define LINUXKEYBOARD_H_
+#ifndef CLI_LINUXKEYBOARD_H_
+#define CLI_LINUXKEYBOARD_H_
 
 #include <thread>
 #include <memory>
 #include <atomic>
-#include <boost/asio.hpp>
+#include "boostasio.h"
 
 #include <stdio.h>
 #include <termios.h>
@@ -50,8 +50,8 @@ namespace cli
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(boost::asio::io_context& ios) :
-        InputDevice(ios)
+    explicit LinuxKeyboard(detail::BoostExecutor ex) :
+        InputDevice(ex)
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
@@ -147,5 +147,5 @@ private:
 
 } // namespace
 
-#endif // LINUXKEYBOARD_H_
+#endif // CLI_LINUXKEYBOARD_H_
 

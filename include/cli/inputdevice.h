@@ -27,12 +27,12 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef INPUTDEVICE_H_
-#define INPUTDEVICE_H_
+#ifndef CLI_INPUTDEVICE_H_
+#define CLI_INPUTDEVICE_H_
 
 #include <functional>
 #include <string>
-#include <boost/asio.hpp>
+#include "boostasio.h"
 
 namespace cli
 {
@@ -44,7 +44,7 @@ class InputDevice
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    InputDevice(boost::asio::io_context& ios) : ioService(ios) {}
+    InputDevice(detail::BoostExecutor ex) : executor(ex) {}
     virtual ~InputDevice() = default;
 
     template <typename H>
@@ -54,16 +54,16 @@ protected:
 
     void Notify(std::pair<KeyType,char> k)
     {
-        ioService.post( [this,k](){ if (handler) handler(k); } );
+        executor.Post([this,k](){ if (handler) handler(k); });
     }
 
 private:
 
-    boost::asio::io_context& ioService;
+    detail::BoostExecutor executor;
     Handler handler;
 };
 
 } // namespace cli
 
-#endif // INPUTDEVICE_H_
+#endif // CLI_INPUTDEVICE_H_
 

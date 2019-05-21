@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef TERMINAL_H_
-#define TERMINAL_H_
+#ifndef CLI_TERMINAL_H_
+#define CLI_TERMINAL_H_
 
 #include <string>
 #include "colorprofile.h"
@@ -195,4 +195,4 @@ class Terminal
 
 } // namespace cli
 
-#endif // TERMINAL_H_
+#endif // CLI_TERMINAL_H_

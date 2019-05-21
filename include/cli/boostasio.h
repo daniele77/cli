@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2018 Daniele Pallastrelli
+ * Copyright (C) 2019 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,57 +27,27 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_FILESESSION_H_
-#define CLI_FILESESSION_H_
+#ifndef CLI_DETAIL_BOOSTIO_H_
+#define CLI_DETAIL_BOOSTIO_H_
 
-#include <string>
-#include <iostream>
-#include <stdexcept> // std::invalid_argument
-#include "cli.h" // CliSession
+#include <boost/version.hpp>
 
-namespace cli
-{
-
-class CliFileSession : public CliSession
-{
-public:
-    /// @throw std::invalid_argument if @c _in or @c out are invalid streams
-    CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
-        CliSession(cli, out, 1),
-        exit(false),
-        in(_in)
-    {
-        if (!in.good()) throw std::invalid_argument("istream invalid");
-        if (!out.good()) throw std::invalid_argument("ostream invalid");
-        ExitAction(
-            [this](std::ostream&)
-            {
-                exit = true;
-            }
-        );
+#if BOOST_VERSION < 106600
+    #include "oldboostasio.h"
+    namespace cli {
+    namespace detail {
+        using BoostExecutor = oldboost::BoostExecutor;
+        auto& IpAddressFromString = oldboost::IpAddressFromString;
     }
-    void Start()
-    {
-        while(!exit)
-        {
-            Prompt();
-            std::string line;
-            if (!in.good())
-                Exit();
-            std::getline(in, line);
-            if (in.eof())
-                Exit();
-            else
-                Feed(line);
-        }
     }
+#else
+    #include "newboostasio.h"
+    namespace cli {
+    namespace detail {
+        using BoostExecutor = newboost::BoostExecutor;
+        auto& IpAddressFromString = newboost::IpAddressFromString;
+    }
+    }
+#endif
 
-private:
-    bool exit;
-    std::istream& in;
-};
-
-} // namespace
-
-#endif // CLI_FILESESSION_H_
-
+#endif // CLI_DETAIL_BOOSTIO_H_

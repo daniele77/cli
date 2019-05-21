@@ -27,11 +27,11 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLIASYNCSESSION_H_
-#define CLIASYNCSESSION_H_
+#ifndef CLI_ASYNCSESSION_H_
+#define CLI_ASYNCSESSION_H_
 
 #include <string>
-#include <boost/asio.hpp>
+#include "boostasio.h"
 #include "cli.h" // CliSession
 
 #if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
@@ -44,9 +44,9 @@ namespace cli
 class CliAsyncSession : public CliSession
 {
 public:
-    CliAsyncSession( boost::asio::io_context& ios, Cli& cli ) :
+    CliAsyncSession(detail::BoostExecutor::ContextType& ios, Cli& cli ) :
         CliSession(cli, std::cout, 1),
-        input( ios, ::dup( STDIN_FILENO ) )        
+        input(ios, ::dup( STDIN_FILENO))
     {
         Read();
     }
@@ -96,5 +96,5 @@ private:
 
 } // namespace
 
-#endif // CLIASYNCSESSION_H_
+#endif // CLI_ASYNCSESSION_H_
 

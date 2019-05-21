@@ -27,10 +27,10 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLILOCALSESSION_H_
-#define CLILOCALSESSION_H_
+#ifndef CLI_LOCALSESSION_H_
+#define CLI_LOCALSESSION_H_
 
-#include <boost/asio.hpp>
+#include "boostasio.h"
 #include "keyboard.h"
 #include "inputhandler.h"
 #include "cli.h" // CliSession
@@ -42,9 +42,9 @@ class CliLocalTerminalSession : public CliSession
 {
 public:
 
-    CliLocalTerminalSession(Cli& _cli, boost::asio::io_context& ios, std::ostream& _out, std::size_t historySize = 100) :
+    CliLocalTerminalSession(Cli& _cli, detail::BoostExecutor::ContextType& ios, std::ostream& _out, std::size_t historySize = 100) :
         CliSession(_cli, _out, historySize),
-        kb(ios),
+        kb(detail::BoostExecutor(ios)),
         ih(*this, kb)
     {
         Prompt();
@@ -59,5 +59,5 @@ using CliLocalSession = CliLocalTerminalSession;
 
 } // namespace cli
 
-#endif // CLILOCALSESSION_H_
+#endif // CLI_LOCALSESSION_H_
 

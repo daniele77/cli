@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef INPUTHANDLER_H_
-#define INPUTHANDLER_H_
+#ifndef CLI_INPUTHANDLER_H_
+#define CLI_INPUTHANDLER_H_
 
 #include <functional>
 #include <string>
@@ -121,5 +121,5 @@ private:
 
 } // namespace cli
 
-#endif // INPUTHANDLER_H_
+#endif // CLI_INPUTHANDLER_H_
 

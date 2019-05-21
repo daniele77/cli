@@ -50,7 +50,7 @@ target_include_directories(cli
 
 target_link_libraries(cli INTERFACE Boost::system Threads::Threads)
 target_compile_features(cli INTERFACE cxx_std_14)
-
+target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
 
 # Examples
 if (CLI_BuildExamples)

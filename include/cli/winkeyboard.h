@@ -27,15 +27,15 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef WINKEYBOARD_H_
-#define WINKEYBOARD_H_
+#ifndef CLI_WINKEYBOARD_H_
+#define CLI_WINKEYBOARD_H_
 
 #include <functional>
 #include <string>
 #include <thread>
 #include <memory>
 #include <atomic>
-#include <boost/asio.hpp>
+#include "boostasio.h"
 
 #include <conio.h>
 
@@ -47,7 +47,8 @@ namespace cli
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(boost::asio::io_context &ios) : InputDevice(ios)
+    explicit WinKeyboard(detail::BoostExecutor ex) :
+        InputDevice(ex)
     {
         servant = std::make_unique<std::thread>([this]() { Read(); });
         servant->detach();
@@ -121,4 +122,4 @@ private:
 
 } // namespace
 
-#endif // WINKEYBOARD_H_
+#endif // CLI_WINKEYBOARD_H_

@@ -27,14 +27,15 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef REMOTECLI_H_
-#define REMOTECLI_H_
+#ifndef CLI_REMOTECLI_H_
+#define CLI_REMOTECLI_H_
 
 #include <cli/inputhandler.h>
 #include <memory>
 #include "cli.h"
 #include "server.h"
 #include "inputdevice.h"
+#include "boostasio.h"
 
 namespace cli
 {
@@ -426,7 +427,7 @@ private:
 class TelnetServer : public Server
 {
 public:
-    TelnetServer(boost::asio::io_context& ios, short port) :
+    TelnetServer(detail::BoostExecutor::ContextType& ios, short port) :
         Server(ios, port)
     {}
     virtual std::shared_ptr< Session > CreateSession(boost::asio::ip::tcp::socket socket) override
@@ -437,13 +438,13 @@ public:
 
 //////////////
 
-class CliTelnetSession : public TelnetSession, public InputDevice, public CliSession
+class CliTelnetSession : public InputDevice, public TelnetSession, public CliSession
 {
 public:
 
     CliTelnetSession(boost::asio::ip::tcp::socket socket, Cli& cli, std::function< void(std::ostream&)> exitAction, std::size_t historySize ) :
+        InputDevice(detail::BoostExecutor(socket)),
         TelnetSession(std::move(socket)),
-        InputDevice(socket.get_io_service()),
         CliSession(cli, TelnetSession::OutStream(), historySize),
         poll(*this, *this)
     {
@@ -533,12 +534,12 @@ private:
 class CliTelnetServer : public Server
 {
 public:
-    CliTelnetServer(boost::asio::io_context& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
+    CliTelnetServer(detail::BoostExecutor::ContextType& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
         Server(ios, port),
         cli(_cli),
         historySize(_historySize)
     {}
-    CliTelnetServer(boost::asio::io_context& ios, std::string address, short port, Cli& _cli, std::size_t _historySize=100 ) :
+    CliTelnetServer(detail::BoostExecutor::ContextType& ios, std::string address, short port, Cli& _cli, std::size_t _historySize=100 ) :
         Server(ios, address, port),
         cli(_cli),
         historySize(_historySize)
@@ -560,5 +561,5 @@ private:
 
 } // namespace cli
 
-#endif // REMOTECLI_H_
+#endif // CLI_REMOTECLI_H_
 

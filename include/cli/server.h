@@ -27,12 +27,12 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef CLI_SERVER_H_
+#define CLI_SERVER_H_
 
 #include <memory>
-#include <boost/asio.hpp>
 #include <queue>
+#include "boostasio.h"
 
 namespace cli
 {
@@ -122,14 +122,14 @@ public:
     Server( const Server& ) = delete;
     Server& operator = ( const Server& ) = delete;
 
-    Server( boost::asio::io_context& ios, short port ) :
+    Server(detail::BoostExecutor::ContextType& ios, short port) :
         acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::tcp::v4(), port ) ),
         socket( ios )
     {
         Accept();
     }
-    Server( boost::asio::io_context& ios, std::string address, short port ) :
-        acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::make_address(address), port ) ),
+    Server(detail::BoostExecutor::ContextType& ios, std::string address, short port) :
+        acceptor( ios, boost::asio::ip::tcp::endpoint(detail::IpAddressFromString(address), port ) ),
         socket( ios )
     {
         Accept();
@@ -152,5 +152,5 @@ private:
 
 } // namespace cli
 
-#endif
+#endif // CLI_SERVER_H_
 

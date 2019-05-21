@@ -4,7 +4,10 @@ Current Version: 1.1-dirty
 
 ## Unreleased
 
- - Specify binding IP address in CliTelnetServer
+ - Specify binding IP address in CliTelnetServer (issue #44)
+ - Fix compilation with boost v. 1.70.0 (issue #40)
+ - Fix compilation with older boost versions (< 1.66.0)
+ - CMake generates cli.pc configuration file for pkg-config
 
 ## [1.1.0] - 2019-04-14
 

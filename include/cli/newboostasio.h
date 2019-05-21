@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2018 Daniele Pallastrelli
+ * Copyright (C) 2019 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,57 +27,36 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_FILESESSION_H_
-#define CLI_FILESESSION_H_
+#ifndef CLI_DETAIL_NEWBOOSTASIO_H_
+#define CLI_DETAIL_NEWBOOSTASIO_H_
 
-#include <string>
-#include <iostream>
-#include <stdexcept> // std::invalid_argument
-#include "cli.h" // CliSession
+#include <boost/asio.hpp>
 
-namespace cli
-{
+namespace cli {
+namespace detail {
+namespace newboost {
 
-class CliFileSession : public CliSession
+class BoostExecutor
 {
 public:
-    /// @throw std::invalid_argument if @c _in or @c out are invalid streams
-    CliFileSession(Cli& cli, std::istream& _in=std::cin, std::ostream& out=std::cout) :
-        CliSession(cli, out, 1),
-        exit(false),
-        in(_in)
-    {
-        if (!in.good()) throw std::invalid_argument("istream invalid");
-        if (!out.good()) throw std::invalid_argument("ostream invalid");
-        ExitAction(
-            [this](std::ostream&)
-            {
-                exit = true;
-            }
-        );
-    }
-    void Start()
-    {
-        while(!exit)
-        {
-            Prompt();
-            std::string line;
-            if (!in.good())
-                Exit();
-            std::getline(in, line);
-            if (in.eof())
-                Exit();
-            else
-                Feed(line);
-        }
-    }
-
+    using ContextType = boost::asio::io_context;
+    explicit BoostExecutor(ContextType& ios) :
+        executor(ios.get_executor()) {}
+    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
+        executor(socket.get_executor()) {}
+    template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
 private:
-    bool exit;
-    std::istream& in;
+    boost::asio::executor executor;
 };
 
-} // namespace
+inline boost::asio::ip::address IpAddressFromString(const std::string& address)
+{
+    return boost::asio::ip::make_address(address);
+}
 
-#endif // CLI_FILESESSION_H_
+} // namespace newboost
+} // namespace detail
+} // namespace cli
+
+#endif // CLI_DETAIL_NEWBOOSTASIO_H_
 
