@@ -89,4 +89,17 @@ BOOST_AUTO_TEST_CASE(Insertion)
     BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
 }
 
+BOOST_AUTO_TEST_CASE(Empty)
+{
+    History history(10);
+
+    BOOST_CHECK_EQUAL(history.Next(), "");
+    BOOST_CHECK_EQUAL(history.Previous(""), "");
+
+    History history2(10);
+
+    BOOST_CHECK_EQUAL(history2.Previous(""), "");
+    BOOST_CHECK_EQUAL(history2.Next(), "");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -6,6 +6,7 @@ Current Version: 1.1-dirty
 
  - Specify binding IP address in CliTelnetServer (issue #44)
  - Fix compilation with boost v. 1.70.0 (issue #40)
+ - Fix assertion in History::Next() when buffer is empty (issue #47)
  - Fix compilation with older boost versions (< 1.66.0)
  - CMake generates cli.pc configuration file for pkg-config
 
