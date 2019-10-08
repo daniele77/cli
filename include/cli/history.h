@@ -94,6 +94,8 @@ public:
     // Return the next item of the history, updating the current item.
     std::string Next()
     {
+        if (buffer.empty())
+            return {};
         if (current != 0)
             --current;
         assert(current < buffer.size());
