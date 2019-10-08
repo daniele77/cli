@@ -36,16 +36,14 @@
     #include "oldboostasio.h"
     namespace cli {
     namespace detail {
-        using BoostExecutor = oldboost::BoostExecutor;
-        auto& IpAddressFromString = oldboost::IpAddressFromString;
+        namespace asio = oldboost;
     }
     }
 #else
     #include "newboostasio.h"
     namespace cli {
     namespace detail {
-        using BoostExecutor = newboost::BoostExecutor;
-        auto& IpAddressFromString = newboost::IpAddressFromString;
+        namespace asio = newboost;
     }
     }
 #endif
