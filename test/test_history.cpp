@@ -71,7 +71,6 @@ BOOST_AUTO_TEST_CASE(Full)
     BOOST_CHECK_EQUAL(history.Next(), "");
 }
 
-
 BOOST_AUTO_TEST_CASE(Insertion)
 {
     History history(10);
@@ -87,6 +86,32 @@ BOOST_AUTO_TEST_CASE(Insertion)
     BOOST_CHECK_EQUAL(history.Next(), "item4");
     BOOST_CHECK_EQUAL(history.Previous("item4"), "foo");
     BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
+}
+
+BOOST_AUTO_TEST_CASE(InsertionIgnoreRepeat)
+{
+    History history(10);
+    history.NewCommand("item1");
+    history.NewCommand("item2");
+    history.NewCommand("item2");
+    history.NewCommand("item1");
+    history.NewCommand("item1");
+    history.NewCommand("item3");
+    history.NewCommand("item3");
+    history.NewCommand("item3");
+    history.NewCommand("item1");
+    history.NewCommand("item1");
+    history.NewCommand("item1");
+
+    BOOST_CHECK_EQUAL(history.Previous(""), "item1");
+    BOOST_CHECK_EQUAL(history.Previous("item1"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item1");
+    BOOST_CHECK_EQUAL(history.Previous("item1"), "item2");
+    BOOST_CHECK_EQUAL(history.Previous("item2"), "item1");
+    BOOST_CHECK_EQUAL(history.Next(), "item2");
+    BOOST_CHECK_EQUAL(history.Next(), "item1");
+    BOOST_CHECK_EQUAL(history.Next(), "item3");
+    BOOST_CHECK_EQUAL(history.Next(), "item1");
 }
 
 BOOST_AUTO_TEST_CASE(Empty)

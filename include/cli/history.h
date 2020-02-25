@@ -54,13 +54,19 @@ public:
         if (mode == Mode::browsing)
         {
             assert(!buffer.empty());
-            buffer[current] = item;
+            if (buffer[1] == item)
+                buffer.pop_front();
+            else
+                buffer[current] = item;
         }
         else // Mode::inserting
         {
-            buffer.push_front(item);
-            if (buffer.size() > maxSize)
-                buffer.pop_back();
+            if (buffer.empty() || buffer[0] != item)
+            {
+                buffer.push_front(item);
+                if (buffer.size() > maxSize)
+                    buffer.pop_back();
+            }
         }
         mode = Mode::inserting;
     }
