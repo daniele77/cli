@@ -45,7 +45,7 @@ public:
     explicit History(std::size_t size) : maxSize(size) {}
 
     // Insert a new item in the buffer, changing the current state to "inserting"
-    // If we're browsing the history (eg with arrow keys) the new item overwrite
+    // If we're browsing the history (eg with arrow keys) the new item overwrites
     // the current one.
     // Otherwise, the item is added to the front of the container
     void NewCommand(const std::string& item)
