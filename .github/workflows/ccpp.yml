@@ -9,6 +9,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
+    - name: setup dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install libboost-all-dev
     - name: run cmake
       run: |
         mkdir build
