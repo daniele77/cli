@@ -1,0 +1,19 @@
+name: C/C++ CI
+
+on: [push,pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: mkdir
+      run: mkdir build && cd build
+    - name: cmake
+      run: cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
+    - name: make
+      run: make all
+    - name: tun_tests
+      run: test/test_suite
