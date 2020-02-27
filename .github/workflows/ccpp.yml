@@ -19,6 +19,10 @@ jobs:
         cd build
         cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
     - name: make
-      run: make all
+      run: |
+        cd /home/runner/work/cli/cli/build
+        make all
     - name: run tests
-      run: test/test_suite
+      run: |
+        cd /home/runner/work/cli/cli/build/test
+        ./test_suite
