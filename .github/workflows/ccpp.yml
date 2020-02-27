@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: C/C++ CI of Cli
 
 on: [push,pull_request]
 
@@ -9,11 +9,12 @@ jobs:
     
     steps:
     - uses: actions/checkout@v2
-    - name: mkdir
-      run: cd cli && mkdir build && cd build
-    - name: cmake
-      run: cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
+    - name: run cmake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
     - name: make
       run: make all
-    - name: tun_tests
+    - name: run tests
       run: test/test_suite
