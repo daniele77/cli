@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: mkdir
-      run: mkdir build && cd build
+      run: cd cli && mkdir build && cd build
     - name: cmake
       run: cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
     - name: make
