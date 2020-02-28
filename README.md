@@ -6,6 +6,8 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ![demo_telnet_session](https://user-images.githubusercontent.com/5451767/51046612-d1dadc00-15c6-11e9-83c2-beadb3593348.gif)
 
+![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
+
 ## Features
 
 * Header only
