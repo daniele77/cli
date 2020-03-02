@@ -143,4 +143,65 @@ BOOST_AUTO_TEST_CASE(Empty)
     BOOST_CHECK_EQUAL(history3.Previous(""), "item1");
 }
 
+BOOST_AUTO_TEST_CASE(Copies)
+{
+    History history(10);
+
+    const std::vector<std::string> v = { "item1", "item2", "item3" };
+    history.LoadCommands(v);
+
+    BOOST_CHECK_EQUAL(history.Previous(""), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item2");
+    BOOST_CHECK_EQUAL(history.Previous("item2"), "item1");
+    BOOST_CHECK_EQUAL(history.Previous("item1"), "item1");
+
+    history.NewCommand("itemA");
+    history.NewCommand("itemB");
+
+    BOOST_CHECK_EQUAL(history.Previous(""), "itemB");
+    BOOST_CHECK_EQUAL(history.Previous("itemB"), "itemA");
+    BOOST_CHECK_EQUAL(history.Previous("itemA"), "item3");
+    BOOST_CHECK_EQUAL(history.Previous("item3"), "item2");
+    BOOST_CHECK_EQUAL(history.Previous("item2"), "item1");
+
+    auto cmds = history.GetCommands();
+    const std::vector<std::string> expected = { "itemA", "itemB" };
+    BOOST_CHECK_EQUAL_COLLECTIONS(cmds.begin(), cmds.end(), expected.begin(), expected.end());
+
+
+
+    History history1(3);
+
+    const std::vector<std::string> v1 = { "item1", "item2", "item3" };
+    history1.LoadCommands(v1);
+
+    BOOST_CHECK_EQUAL(history1.Previous(""), "item3");
+    BOOST_CHECK_EQUAL(history1.Previous("item3"), "item2");
+    BOOST_CHECK_EQUAL(history1.Previous("item2"), "item2");
+
+    history1.NewCommand("itemA");
+    history1.NewCommand("itemB");
+
+    BOOST_CHECK_EQUAL(history1.Previous(""), "itemB");
+    BOOST_CHECK_EQUAL(history1.Previous("itemB"), "itemA");
+    BOOST_CHECK_EQUAL(history1.Previous("itemA"), "itemA");
+
+    auto cmds1 = history1.GetCommands();
+    const std::vector<std::string> expected1 = { "itemA", "itemB" };
+    BOOST_CHECK_EQUAL_COLLECTIONS(cmds1.begin(), cmds1.end(), expected1.begin(), expected1.end());
+
+
+    History history2(3);
+
+    history2.NewCommand("itemA");
+    history2.NewCommand("itemB");
+    history2.NewCommand("itemC");
+    history2.NewCommand("itemD");
+    history2.NewCommand("itemE");
+
+    auto cmds2 = history2.GetCommands();
+    const std::vector<std::string> expected2 = { "itemC", "itemD", "itemE" };
+    BOOST_CHECK_EQUAL_COLLECTIONS(cmds2.begin(), cmds2.end(), expected2.begin(), expected2.end());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

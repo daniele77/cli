@@ -44,8 +44,70 @@
 
 #define CLI_DEPRECATED_API
 
+#include <fstream> // @@@
+
 namespace cli
 {
+
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    class HistoryStorage
+    {
+        public:
+            virtual ~HistoryStorage() = default;
+            virtual void Store(const std::vector<std::string>& commands) = 0;
+            virtual std::vector<std::string> Commands() const = 0;
+    };
+
+    class LocalHistoryStorage : public HistoryStorage
+    {
+        public:
+            explicit LocalHistoryStorage(std::size_t size = 1000) : maxSize(size) {}
+            void Store(const std::vector<std::string>& cmds) override
+            {
+                commands.insert(commands.end(), cmds.begin(), cmds.end());
+                if (commands.size() > maxSize)
+                    commands.erase(commands.begin(), commands.begin()+commands.size()-maxSize);
+            }
+            std::vector<std::string> Commands() const override
+            {
+                return std::vector<std::string>(commands.begin(), commands.end());
+            }
+        private:
+            const std::size_t maxSize;
+            std::deque<std::string> commands;
+    };
+
+    class FileHistoryStorage : public HistoryStorage
+    {
+        public:
+            explicit FileHistoryStorage(const std::string& _fileName = ".cli") :
+                fileName(_fileName)
+            {}
+            void Store(const std::vector<std::string>& cmds) override
+            {
+                std::ofstream f(fileName, std::ios_base::app | std::ios_base::out);
+                for (const auto& line: cmds)
+                    f << line << '\n';
+            }
+            std::vector<std::string> Commands() const override
+            {
+                std::vector<std::string> commands;
+                std::ifstream in(fileName);
+                if (in)
+                {
+                    std::string line;
+                    while (std::getline(in, line))
+                        commands.push_back(line);
+                }
+                return commands;
+            }
+        private:
+            const std::string fileName;
+    };
+
+    // @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
 
     // ********************************************************************
 
@@ -118,8 +180,10 @@ namespace cli
     public:
         Cli(
             std::unique_ptr<Menu>&& _rootMenu,
-            std::function< void(std::ostream&)> _exitAction = std::function< void(std::ostream&) >()
+            std::function< void(std::ostream&)> _exitAction = std::function< void(std::ostream&) >(),
+            std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<LocalHistoryStorage>()
         ) :
+            globalHistoryStorage(std::move(historyStorage)),
             rootMenu(std::move(_rootMenu)),
             exitAction(_exitAction)
         {
@@ -142,7 +206,18 @@ namespace cli
             return s;
         }
 
+        void StoreCommands(const std::vector<std::string>& cmds)
+        {
+            globalHistoryStorage->Store(cmds);
+        }
+
+        std::vector<std::string> GetCommands() const
+        {
+            return globalHistoryStorage->Commands();
+        }
+
     private:
+        std::unique_ptr<HistoryStorage> globalHistoryStorage;
         std::unique_ptr<Menu> rootMenu; // just to keep it alive
         std::function<void(std::ostream&)> exitAction;
     };
@@ -224,6 +299,9 @@ namespace cli
         {
             if (exitAction) exitAction(out);
             cli.ExitAction(out);
+
+            auto cmds = history.GetCommands();
+            cli.StoreCommands(cmds);
         }
 
         void ExitAction(const std::function<void(std::ostream&)>& action)
@@ -838,6 +916,8 @@ namespace cli
             out(_out),
             history(historySize)
         {
+            history.LoadCommands(cli.GetCommands());
+
             cli.Register(out);
             globalScopeMenu->Insert(
                 "help",
@@ -864,13 +944,14 @@ namespace cli
         detail::split(strs, cmd);
         if (strs.empty()) return; // just hit enter
 
+        history.NewCommand(cmd); // add anyway to history
+        
         // global cmds check
         bool found = globalScopeMenu->ScanCmds(strs, *this);
 
         // root menu recursive cmds check
         if (!found) found = current -> ScanCmds(std::move(strs), *this); // last use of strs
 
-        history.NewCommand(cmd); // add anyway to history
         if (!found) // error msg if not found
             out << "Command unknown: " << cmd << "\n";
 
