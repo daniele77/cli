@@ -83,6 +83,11 @@ private:
                 terminal.SetLine(session.PreviousCmd(line));
                 break;
             }
+            case Symbol::eof:
+            {
+                session.Exit();
+                break;
+            }
             case Symbol::tab:
             {
                 auto line = terminal.GetLine();
