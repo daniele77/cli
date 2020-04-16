@@ -792,9 +792,13 @@ namespace cli
         {
             if (!IsEnabled()) return false;
             const std::size_t paramSize = sizeof...(Args);
-            if (cmdLine.size() != paramSize+1) return false;
             if (Name() == cmdLine[0])
             {
+                if (cmdLine.size() != paramSize+1)
+                {
+                    std::cout << "Wrong number of arguments" << std::endl;
+                    return true;
+                }
                 try
                 {
                     auto g = [&](auto ... pars){ func( session.OutStream(), pars... ); };
