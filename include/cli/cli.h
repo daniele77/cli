@@ -566,7 +566,7 @@ namespace cli
                 << "\n\t" << description << "\n";
         }
     private:
-        const stdstd::function< void( T, std::ostream& )> function;
+        const std::function< void( T, std::ostream& )> function;
         const std::string description;
     };
 
