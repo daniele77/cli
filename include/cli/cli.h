@@ -566,7 +566,7 @@ namespace cli
                 << "\n\t" << description << "\n";
         }
     private:
-        const std::function< void( T, std::ostream& )> function;
+        const stdstd::function< void( T, std::ostream& )> function;
         const std::string description;
     };
 
@@ -796,7 +796,7 @@ namespace cli
             {
                 if (cmdLine.size() != paramSize+1)
                 {
-                    std::cout << "Wrong number of arguments" << std::endl;
+                    session.OutStream() << "Wrong number of arguments" << std::endl;
                     return true;
                 }
                 try
