@@ -131,6 +131,25 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK_EQUAL(ExtractContent(oss), R"(foo 'bar' "foo\2)");
 }
 
+BOOST_AUTO_TEST_CASE(freeform)
+{
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert("cmd_printer", [](ostream& out, std::vector<std::string> args){
+        for (const auto& entry : args) {
+            out << entry << "*";
+        }
+        out << "\n";
+    }, "cmd_printer help", {"<string values>"} );
+
+    Cli cli(move(rootMenu));
+    stringstream oss;
+
+    UserInput(cli, oss, R"(cmd_printer a b 'c d e' f)");
+    BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "cmd_printer*a*b*c d e*f*");
+}
+
 BOOST_AUTO_TEST_CASE(borderLine)
 {
     auto rootMenu = make_unique<Menu>("cli");
