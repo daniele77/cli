@@ -42,8 +42,11 @@ namespace detail
 
 inline void split(std::vector<std::string>& strs, const std::string& input)
 {
-    enum class State { space, word, sentence };
+    enum class State { space, word, sentence, escape };
     State state = State::space;
+    State prev_state = State::space;
+    enum class SentenceType { quote, double_quote };
+    SentenceType sentence_type = SentenceType::double_quote;
 
     strs.clear();
 
@@ -56,9 +59,18 @@ inline void split(std::vector<std::string>& strs, const std::string& input)
                 {
                     // do nothing
                 }
-                else if (c == '"')
+                else if (c == '"' || c == '\'')
                 {
                     state = State::sentence;
+                    sentence_type = c == '"' ? SentenceType::double_quote : SentenceType::quote;
+                    strs.push_back("");
+                }
+                else if (c == '\\')
+                {
+                    // This is the case when the first character of a  word is escaped.
+                    // Should come back into the word state after this.
+                    prev_state = State::word;
+                    state = State::escape;
                     strs.push_back("");
                 }
                 else
@@ -72,10 +84,15 @@ inline void split(std::vector<std::string>& strs, const std::string& input)
                 {
                     state = State::space;
                 }
-                else if (c == '"')
+                else if (c == '"' || c == '\'')
                 {
                     state = State::sentence;
                     strs.push_back("");
+                }
+                else if (c == '\\')
+                {
+                    prev_state = state;
+                    state = State::escape;
                 }
                 else
                 {
@@ -84,15 +101,30 @@ inline void split(std::vector<std::string>& strs, const std::string& input)
                 }
                 break;
             case State::sentence:
-                if (c == '"')
+                if (c == '"' || c == '\'')
                 {
-                    state = State::space;
+                    auto new_type = c == '"' ? SentenceType::double_quote : SentenceType::quote;
+                    if (new_type == sentence_type) {
+                        state = State::space;
+                    } else {
+                        strs.back() += c;
+                    }
+                }
+                else if (c == '\\')
+                {
+                    prev_state = state;
+                    state = State::escape;
                 }
                 else
                 {
                     assert(!strs.empty());
                     strs.back() += c;
                 }
+                break;
+            case State::escape:
+                strs.back() += c;
+                state = prev_state;
+                break;
         }
     }
 
