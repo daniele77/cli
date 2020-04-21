@@ -204,7 +204,7 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        ~CliSession() { cli.UnRegister(out); }
+        virtual ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
         CliSession(const CliSession&) = delete;

@@ -1,0 +1,28 @@
+name: C/C++ CI of Cli
+
+on: [push,pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: setup dependencies
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install libboost-all-dev
+    - name: run cmake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
+    - name: make
+      run: |
+        cd /home/runner/work/cli/cli/build
+        make all
+    - name: run tests
+      run: |
+        cd /home/runner/work/cli/cli/build/test
+        ./test_suite
