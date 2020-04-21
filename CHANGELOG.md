@@ -5,7 +5,8 @@ Current Version: 1.1.1-dirty
 ## Unreleased
 
  - Consecutive identical commands are not stored in the history (issue #55)
-
+ - Change message in case of wrong command
+ 
 ## [1.1.1] - 2019-09-16
 
  - Specify binding IP address in CliTelnetServer (issue #44)
