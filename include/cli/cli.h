@@ -128,22 +128,12 @@ namespace cli
             exitAction(_exitAction)
         {
         }
-#if 0 // whiy this does not work?
+
         Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) : 
-            Cli(std::move(rootMenu), {}, std::move(historyStorage))
+            Cli(std::move(_rootMenu), {}, std::move(historyStorage))
         {
         }
-#else
-        Cli(
-            std::unique_ptr<Menu>&& _rootMenu,
-            std::unique_ptr<HistoryStorage>&& historyStorage
-        ) :
-            globalHistoryStorage(std::move(historyStorage)),
-            rootMenu(std::move(_rootMenu)),
-            exitAction(nullptr)
-        {
-        }
-#endif
+
         // disable value semantics
         Cli(const Cli&) = delete;
         Cli& operator = (const Cli&) = delete;
