@@ -42,6 +42,8 @@ add_executable(
 	test_suite
     driver.cpp
 	test_history.cpp
+	test_localhistorystorage.cpp
+	test_filehistorystorage.cpp
 	test_split.cpp
 	test_commonprefix.cpp
 )

@@ -33,6 +33,7 @@
 // so in Windows it should appear before cli.h that include rang
 // (consider to provide a global header file for the library)
 #include <cli/cli.h>
+#include <cli/filehistorystorage.h>
 
 using namespace cli;
 using namespace std;
@@ -141,8 +142,7 @@ int main()
 
     rootMenu -> Insert( std::move(subMenu) );
 
-
-    Cli cli( std::move(rootMenu) );
+    Cli cli( std::move(rootMenu), std::make_unique<FileHistoryStorage>() );
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
