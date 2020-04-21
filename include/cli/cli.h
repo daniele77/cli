@@ -781,8 +781,8 @@ namespace cli
         VariadicFunctionCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc = "unknown command",
-            const std::vector<std::string>& parDesc = {}
+            const std::string& desc,
+            const std::vector<std::string>& parDesc
         )
             : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
         {
@@ -872,7 +872,7 @@ namespace cli
 
         history.NewCommand(cmd); // add anyway to history
         if (!found) // error msg if not found
-            out << "Command unknown: " << cmd << "\n";
+            out << "wrong command: " << cmd << "\n";
 
         return;
     }
