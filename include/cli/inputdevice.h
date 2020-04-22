@@ -37,7 +37,7 @@
 namespace cli
 {
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, ignored };
+enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof, ignored };
 
 class InputDevice
 {

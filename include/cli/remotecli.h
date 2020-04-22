@@ -465,6 +465,9 @@ protected:
             case Step::_1:
                 switch( c )
                 {
+                    case EOF:
+                    case 4:  // EOT
+                        Notify(std::make_pair(KeyType::eof,' ')); break;
                     case 127: Notify(std::make_pair(KeyType::backspace,' ')); break;
                     //case 10: Notify(std::make_pair(KeyType::ret,' ')); break;
                     case 27: step = Step::_2; break;  // symbol
