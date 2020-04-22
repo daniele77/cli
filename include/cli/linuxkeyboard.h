@@ -82,7 +82,8 @@ private:
         {
             case EOF:
             case 4:  // EOT
-                return std::make_pair(KeyType::eof,' '); break;
+                return std::make_pair(KeyType::eof,' ');
+                break;
             case 127: return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
