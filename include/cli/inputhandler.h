@@ -66,6 +66,11 @@ private:
             {
                 break;
             }
+            case Symbol::eof:
+            {
+                session.Exit();
+                break;
+            }
             case Symbol::command:
             {
                 session.Feed(s.second);
@@ -81,11 +86,6 @@ private:
             {
                 auto line = terminal.GetLine();
                 terminal.SetLine(session.PreviousCmd(line));
-                break;
-            }
-            case Symbol::eof:
-            {
-                session.Exit();
                 break;
             }
             case Symbol::tab:

@@ -79,6 +79,9 @@ class Terminal
     {
         switch (k.first)
         {
+            case KeyType::eof:
+                return std::make_pair(Symbol::eof, std::string{});
+                break;
             case KeyType::backspace:
             {
                 if (position == 0)
@@ -99,9 +102,6 @@ class Terminal
             }
             case KeyType::up:
                 return std::make_pair(Symbol::up, std::string{});
-                break;
-            case KeyType::eof:
-                return std::make_pair(Symbol::eof, std::string{});
                 break;
             case KeyType::down:
                 return std::make_pair(Symbol::down, std::string{});

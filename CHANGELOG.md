@@ -5,6 +5,7 @@ Current Version: 1.1.1-dirty
 ## Unreleased
 
  - Consecutive identical commands are not stored in the history (issue #55)
+ - Handle CTRL-D (EOF) on linux
 
 ## [1.1.1] - 2019-09-16
 
