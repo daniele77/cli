@@ -8,6 +8,7 @@ Current Version: 1.1.1-dirty
  - Change message in case of wrong command
  - Handle CTRL-D (EOF) on linux
  - Handle CTRL-D, CTRL-Z and CTRL-C on windows
+ - Fix Backspace from remote terminal (issue #52)
 
 ## [1.1.1] - 2019-09-16
 
