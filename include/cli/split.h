@@ -87,6 +87,7 @@ inline void split(std::vector<std::string>& strs, const std::string& input)
                 else if (c == '"' || c == '\'')
                 {
                     state = State::sentence;
+                    sentence_type = c == '"' ? SentenceType::double_quote : SentenceType::quote;
                     strs.push_back("");
                 }
                 else if (c == '\\')
