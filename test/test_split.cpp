@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(StandardCases)
     BOOST_CHECK_EQUAL(strs[1], "bar");
 }
 
-BOOST_AUTO_TEST_CASE(QuotedCases)
+BOOST_AUTO_TEST_CASE(DoubleQuotedCases)
 {
     VS strs;
 
@@ -107,17 +107,138 @@ BOOST_AUTO_TEST_CASE(QuotedCases)
     BOOST_CHECK_EQUAL(strs.size(), 2);
     BOOST_CHECK_EQUAL(strs[0], "first");
     BOOST_CHECK_EQUAL(strs[1], "foo \tbar");
+
+    split(strs, "first \"'second' 'thirdh'\""); // input: first "'second' 'thirdh'"
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "first");
+    BOOST_CHECK_EQUAL(strs[1], "'second' 'thirdh'");
+}
+
+BOOST_AUTO_TEST_CASE(SingleQuotedCases)
+{
+    VS strs;
+
+    split(strs, "''"); // nothing
+    BOOST_CHECK_EQUAL(strs.size(), 0);
+
+    split(strs, "'foo bar'"); // two words
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], "foo bar");
+
+    split(strs, "    \t\t 'foo \tbar'     \t"); // two words with spaces
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], "foo \tbar");
+
+    split(strs, " first   \t\t 'foo \tbar'     \t last"); // mixed
+    BOOST_CHECK_EQUAL(strs.size(), 3);
+    BOOST_CHECK_EQUAL(strs[0], "first");
+    BOOST_CHECK_EQUAL(strs[1], "foo \tbar");
+    BOOST_CHECK_EQUAL(strs[2], "last");
+
+    split(strs, "first'foo \tbar'"); // first'foo \tbar'
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "first");
+    BOOST_CHECK_EQUAL(strs[1], "foo \tbar");
+
+    split(strs, "first '\"second\" \"thirdh\"'"); // first '"second" "thirdh"'
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "first");
+    BOOST_CHECK_EQUAL(strs[1], "\"second\" \"thirdh\"");
 }
 
 /*
+    foo \"bar
+        foo
+        "bar
+
+    foo \'bar\'
+        foo
+        'bar'
+
+    foo bar f\"oo
+        foo
+        bar
+        f"oo
+
+    "foo\"bar\'foo"
+        foo"bar'foo
+
+    'foo\'bar\"foo'
+        foo'bar"foo
+
+    "foo\bar"
+        foo\bar
+
+    "foo\\\"bar"
+        foo\"bar
+*/
 BOOST_AUTO_TEST_CASE(EscapedCases)
 {
     VS strs;
 
-    split(strs, R"string("foo\"bar")string");
-    BOOST_CHECK_EQUAL(strs.size(), 1);
-    BOOST_CHECK_EQUAL(strs[0], "foo\"bar");
-}
+/*
+    foo \"bar
+        foo
+        "bar
 */
+    split(strs, R"(foo \"bar)");
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], R"("bar)");
+
+/*
+    foo \'bar\'
+        foo
+        'bar'
+*/
+    split(strs, R"(foo \'bar\')");
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], R"('bar')");
+
+/*
+    foo bar f\"oo
+        foo
+        bar
+        f"oo
+*/
+    split(strs, R"(foo bar f\"oo)");
+    BOOST_CHECK_EQUAL(strs.size(), 3);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], "bar");
+    BOOST_CHECK_EQUAL(strs[2], R"(f"oo)");
+
+/*
+    "foo\"bar\'foo"
+        foo"bar'foo
+*/
+    split(strs, R"("foo\"bar\'foo")");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo"bar'foo)");
+
+/*
+    'foo\'bar\"foo'
+        foo'bar"foo
+*/
+    split(strs, R"('foo\'bar\"foo')");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo'bar"foo)");
+
+/*
+    "foo\bar"
+        foo\bar
+*/
+    split(strs, R"("foo\bar")");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo\bar)");
+
+/*
+    "foo\\\"bar"
+        foo\"bar
+*/
+    split(strs, R"("foo\\\"bar")");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo\"bar)");
+}
 
 BOOST_AUTO_TEST_SUITE_END()
