@@ -35,6 +35,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
 #include <boost/lexical_cast.hpp>
@@ -42,7 +43,7 @@
 #include "history.h"
 #include "split.h"
 
-#define CLI_DEPRECATED_API
+// #define CLI_DEPRECATED_API
 
 namespace cli
 {
@@ -900,6 +901,12 @@ namespace cli
         auto v1 = globalScopeMenu->GetCompletions(currentLine);
         auto v3 = current->GetCompletions(currentLine);
         v1.insert(v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()));
+
+        // removes duplicates (std::unique requires a sorted container)
+        std::sort(v1.begin(), v1.end()); 
+        auto ip = std::unique(v1.begin(), v1.end()); 
+        v1.resize(std::distance(v1.begin(), ip));
+
         return v1;
     }
 
