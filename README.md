@@ -95,6 +95,29 @@ Set the environment variable BOOST. Then, from a visual studio console, use the 
 Set the environment variable BOOST. Then, open the file
 `cli/examples/examples.sln`
 
+## CLI usage
+
+The cli interpreter can manage correctly sentences using quote (') and double quote (").
+Any character (spaces too) comprises between quotes or double quotes are considered as a single parameter of a command.
+The characters ' and " can be used inside a command parameter by escaping them with a backslash (\).
+
+Some example:
+
+    cli> echo "this is a single parameter"
+    this is a single parameter
+    cli> echo 'this too is a single parameter'
+    this too is a single parameter
+    cli> echo "you can use 'single quotes' inside double quoted parameters"
+    you can use 'single quotes' inside double quoted parameters
+    cli> echo 'you can use "double quotes" inside single quoted parameters'
+    you can use "double quotes" inside single quoted parameters
+    cli> echo "you can escape \"quotes\" inside a parameter"               
+    you can escape "quotes" inside a parameter
+    cli> echo 'you can escape \'single quotes\' inside a parameter'
+    you can escape 'single quotes' inside a parameter
+    cli> echo "you can also show backslash \\ ... "                
+    you can also show backslash \ ... 
+
 ## License
 
 Distributed under the Boost Software License, Version 1.0.
