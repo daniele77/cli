@@ -146,13 +146,99 @@ BOOST_AUTO_TEST_CASE(SingleQuotedCases)
     BOOST_CHECK_EQUAL(strs[1], "\"second\" \"thirdh\"");
 }
 
+/*
+    foo \"bar
+        foo
+        "bar
+
+    foo \'bar\'
+        foo
+        'bar'
+
+    foo bar f\"oo
+        foo
+        bar
+        f"oo
+
+    "foo\"bar\'foo"
+        foo"bar'foo
+
+    'foo\'bar\"foo'
+        foo'bar"foo
+
+    "foo\bar"
+        foo\bar
+
+    "foo\\\"bar"
+        foo\"bar
+*/
 BOOST_AUTO_TEST_CASE(EscapedCases)
 {
     VS strs;
 
-    split(strs, R"string("foo\"bar")string");   // "foo\"bar"
+/*
+    foo \"bar
+        foo
+        "bar
+*/
+    split(strs, R"(foo \"bar)");
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], R"("bar)");
+
+/*
+    foo \'bar\'
+        foo
+        'bar'
+*/
+    split(strs, R"(foo \'bar\')");
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], R"('bar')");
+
+/*
+    foo bar f\"oo
+        foo
+        bar
+        f"oo
+*/
+    split(strs, R"(foo bar f\"oo)");
+    BOOST_CHECK_EQUAL(strs.size(), 3);
+    BOOST_CHECK_EQUAL(strs[0], "foo");
+    BOOST_CHECK_EQUAL(strs[1], "bar");
+    BOOST_CHECK_EQUAL(strs[2], R"(f"oo)");
+
+/*
+    "foo\"bar\'foo"
+        foo"bar'foo
+*/
+    split(strs, R"("foo\"bar\'foo")");
     BOOST_CHECK_EQUAL(strs.size(), 1);
-    BOOST_CHECK_EQUAL(strs[0], "foo\"bar");
+    BOOST_CHECK_EQUAL(strs[0], R"(foo"bar'foo)");
+
+/*
+    'foo\'bar\"foo'
+        foo'bar"foo
+*/
+    split(strs, R"('foo\'bar\"foo')");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo'bar"foo)");
+
+/*
+    "foo\bar"
+        foo\bar
+*/
+    split(strs, R"("foo\bar")");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo\bar)");
+
+/*
+    "foo\\\"bar"
+        foo\"bar
+*/
+    split(strs, R"("foo\\\"bar")");
+    BOOST_CHECK_EQUAL(strs.size(), 1);
+    BOOST_CHECK_EQUAL(strs[0], R"(foo\"bar)");
 }
 
 BOOST_AUTO_TEST_SUITE_END()
