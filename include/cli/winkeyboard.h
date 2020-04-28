@@ -73,6 +73,13 @@ private:
         int c = _getch();
         switch (c)
         {
+            case EOF:
+            case 4:  // EOT ie CTRL-D
+            case 26: // CTRL-Z
+            case 3:  // CTRL-C
+                return std::make_pair(KeyType::eof, ' ');
+                break;
+
             case 224: // symbol
             {
                 c = _getch();

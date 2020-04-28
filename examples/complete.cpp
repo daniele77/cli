@@ -72,6 +72,20 @@ int main()
             "Print the file descriptor specified",
             {"file_descriptor"} );
     rootMenu -> Insert(
+            "echo", {"string to echo"},
+            [](std::ostream& out, const string& arg)
+            {
+                out << arg << "\n";
+            },
+            "Print the string passed as parameter" );
+    rootMenu -> Insert(
+            "echo", {"first string to echo", "second string to echo"},
+            [](std::ostream& out, const string& arg1, const string& arg2)
+            {
+                out << arg1 << ' ' << arg2 << "\n";
+            },
+            "Print the strings passed as parameter" );
+    rootMenu -> Insert(
             "reverse", {"string_to_revert"},
             [](std::ostream& out, const string& arg)
             {

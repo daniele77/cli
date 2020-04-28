@@ -43,7 +43,8 @@ enum class Symbol
     command,
     up,
     down,
-    tab
+    tab,
+    eof
 };
 
 class Terminal
@@ -78,6 +79,9 @@ class Terminal
     {
         switch (k.first)
         {
+            case KeyType::eof:
+                return std::make_pair(Symbol::eof, std::string{});
+                break;
             case KeyType::backspace:
             {
                 if (position == 0)

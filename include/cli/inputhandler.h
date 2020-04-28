@@ -66,6 +66,11 @@ private:
             {
                 break;
             }
+            case Symbol::eof:
+            {
+                session.Exit();
+                break;
+            }
             case Symbol::command:
             {
                 session.Feed(s.second);

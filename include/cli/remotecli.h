@@ -465,7 +465,12 @@ protected:
             case Step::_1:
                 switch( c )
                 {
-                    case 127: Notify(std::make_pair(KeyType::backspace,' ')); break;
+                    case EOF:
+                    case 4:  // EOT
+                        Notify(std::make_pair(KeyType::eof,' ')); break;
+                    case 8: // Backspace
+                    case 127:  // Backspace or Delete
+                        Notify(std::make_pair(KeyType::backspace, ' ')); break;
                     //case 10: Notify(std::make_pair(KeyType::ret,' ')); break;
                     case 27: step = Step::_2; break;  // symbol
                     case 13: step = Step::wait_0; break;  // wait for 0 (ENTER key)
@@ -494,13 +499,13 @@ protected:
             case Step::_3: // got 27 and 91
                 switch( c )
                 {
-                    case 51: step = Step::_4; break;  // not arrow keys
                     case 65: step = Step::_1; Notify(std::make_pair(KeyType::up,' ')); break;
                     case 66: step = Step::_1; Notify(std::make_pair(KeyType::down,' ')); break;
                     case 68: step = Step::_1; Notify(std::make_pair(KeyType::left,' ')); break;
                     case 67: step = Step::_1; Notify(std::make_pair(KeyType::right,' ')); break;
                     case 70: step = Step::_1; Notify(std::make_pair(KeyType::end,' ')); break;
                     case 72: step = Step::_1; Notify(std::make_pair(KeyType::home,' ')); break;
+                    default: step = Step::_4; break;  // not arrow keys
                 }
                 break;
 

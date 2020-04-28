@@ -35,6 +35,7 @@
 #include <vector>
 #include <memory>
 #include <functional>
+#include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
 #include <boost/lexical_cast.hpp>
@@ -44,7 +45,7 @@
 #include "historystorage.h"
 #include "localhistorystorage.h"
 
-#define CLI_DEPRECATED_API
+// #define CLI_DEPRECATED_API
 
 namespace cli
 {
@@ -224,7 +225,7 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        ~CliSession() { cli.UnRegister(out); }
+        virtual ~CliSession() { cli.UnRegister(out); }
 
         // disable value semantics
         CliSession(const CliSession&) = delete;
@@ -804,8 +805,8 @@ namespace cli
         VariadicFunctionCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc = "unknown command",
-            const std::vector<std::string>& parDesc = {}
+            const std::string& desc,
+            const std::vector<std::string>& parDesc
         )
             : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
         {
@@ -898,7 +899,7 @@ namespace cli
         if (!found) found = current -> ScanCmds(std::move(strs), *this); // last use of strs
 
         if (!found) // error msg if not found
-            out << "Command unknown: " << cmd << "\n";
+            out << "wrong command: " << cmd << "\n";
 
         return;
     }
@@ -926,6 +927,12 @@ namespace cli
         auto v1 = globalScopeMenu->GetCompletions(currentLine);
         auto v3 = current->GetCompletions(currentLine);
         v1.insert(v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()));
+
+        // removes duplicates (std::unique requires a sorted container)
+        std::sort(v1.begin(), v1.end()); 
+        auto ip = std::unique(v1.begin(), v1.end()); 
+        v1.resize(std::distance(v1.begin(), ip));
+
         return v1;
     }
 
