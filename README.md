@@ -99,7 +99,7 @@ Set the environment variable BOOST. Then, open the file
 
 The cli interpreter can manage correctly sentences using quote (') and double quote (").
 Any character (spaces too) comprises between quotes or double quotes are considered as a single parameter of a command.
-The characters ' and " can be used inside a command parameter by escaping them with a backslash (\).
+The characters ' and " can be used inside a command parameter by escaping them with a backslash.
 
 Some example:
 
