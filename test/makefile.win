@@ -64,6 +64,8 @@ CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
 
 EXE_OBJ_FILES= \
     test_history.obj \
+    test_volatilehistorystorage.obj \
+    test_filehistorystorage.obj \
     test_split.obj \
     test_commonprefix.obj \
     driver.obj

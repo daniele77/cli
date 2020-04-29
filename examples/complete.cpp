@@ -156,6 +156,10 @@ int main()
 
     rootMenu -> Insert( std::move(subMenu) );
 
+    // create a cli with the given root menu and a persistent storage
+    // you can pass to FileHistoryStorage the path of the history file (default is ".cli" in the current directory)
+    // if you don't pass the second argument, the cli will use a VolatileHistoryStorage object that keeps in memory
+    // the history of all the sessions, until the cli is shut down.
     Cli cli( std::move(rootMenu), std::make_unique<FileHistoryStorage>() );
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );

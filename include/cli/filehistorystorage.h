@@ -72,8 +72,8 @@ public:
     }
 
 private:
-    const std::string fileName;
     const std::size_t maxSize;
+    const std::string fileName;
 };
 
 } // namespace cli

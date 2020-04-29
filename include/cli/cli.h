@@ -43,7 +43,7 @@
 #include "history.h"
 #include "split.h"
 #include "historystorage.h"
-#include "localhistorystorage.h"
+#include "volatilehistorystorage.h"
 
 // #define CLI_DEPRECATED_API
 
@@ -122,7 +122,7 @@ namespace cli
         Cli(
             std::unique_ptr<Menu>&& _rootMenu,
             std::function< void(std::ostream&)> _exitAction = {},
-            std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<LocalHistoryStorage>()
+            std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<VolatileHistoryStorage>()
         ) :
             globalHistoryStorage(std::move(historyStorage)),
             rootMenu(std::move(_rootMenu)),

@@ -27,38 +27,33 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_LOCALHISTORYSTORAGE_H_
-#define CLI_LOCALHISTORYSTORAGE_H_
+#include <boost/test/unit_test.hpp>
+#include "cli/volatilehistorystorage.h"
 
-#include "historystorage.h"
-#include <deque>
+using namespace cli;
 
-namespace cli
+BOOST_AUTO_TEST_SUITE(VolatileHistoryStorageSuite)
+
+BOOST_AUTO_TEST_CASE(Basics)
 {
+    VolatileHistoryStorage s(10);
 
-class LocalHistoryStorage : public HistoryStorage
-{
-    public:
-        explicit LocalHistoryStorage(std::size_t size = 1000) : maxSize(size) {}
-        void Store(const std::vector<std::string>& cmds) override
-        {
-            commands.insert(commands.end(), cmds.begin(), cmds.end());
-            if (commands.size() > maxSize)
-                commands.erase(commands.begin(), commands.begin()+commands.size()-maxSize);
-        }
-        std::vector<std::string> Commands() const override
-        {
-            return std::vector<std::string>(commands.begin(), commands.end());
-        }
-        void Clear() override
-        {
-            commands.clear();
-        }
-    private:
-        const std::size_t maxSize;
-        std::deque<std::string> commands;
-};
+    // starts empty
+    BOOST_CHECK(s.Commands().empty());
 
-} // namespace cli
+    const std::vector<std::string> v = { "item1", "item2", "item3", "item4", "item5", "item6" };
+    s.Store(v);
+    auto result = s.Commands();
+    BOOST_CHECK_EQUAL_COLLECTIONS(v.begin(), v.end(), result.begin(), result.end());
 
-#endif // CLI_LOCALHISTORYSTORAGE_H_
+    const std::vector<std::string> v2 = { "itemA", "itemB", "itemC", "itemD", "itemE", "itemF" };
+    s.Store(v2);
+    result = s.Commands();
+    const std::vector<std::string> expected = { "item3", "item4", "item5", "item6", "itemA", "itemB", "itemC", "itemD", "itemE", "itemF" };
+    BOOST_CHECK_EQUAL_COLLECTIONS(expected.begin(), expected.end(), result.begin(), result.end());
+
+    s.Clear();
+    BOOST_CHECK(s.Commands().empty()); // check clear
+}
+
+BOOST_AUTO_TEST_SUITE_END()
