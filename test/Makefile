@@ -42,6 +42,8 @@ OBJ := test_history.o \
 	   test_filehistorystorage.o \
        test_split.o \
        test_commonprefix.o \
+	   test_menu.o \
+	   test_cli.o \
        driver.o
 
 EXE := test_suite

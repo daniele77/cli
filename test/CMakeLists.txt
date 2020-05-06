@@ -40,12 +40,14 @@ find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
 # creates the executable
 add_executable(
 	test_suite
-    driver.cpp
+	driver.cpp
 	test_history.cpp
 	test_volatilehistorystorage.cpp
 	test_filehistorystorage.cpp
 	test_split.cpp
 	test_commonprefix.cpp
+	test_menu.cpp
+	test_cli.cpp
 )
 # indicates the include paths
 target_include_directories(test_suite PRIVATE ${Boost_INCLUDE_DIRS})

@@ -130,7 +130,7 @@ namespace cli
         {
         }
 
-        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) : 
+        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) :
             Cli(std::move(_rootMenu), {}, std::move(historyStorage))
         {
         }
@@ -177,8 +177,8 @@ namespace cli
         virtual ~Command() = default;
         virtual void Enable() { enabled = true; }
         virtual void Disable() { enabled = false; }
-        virtual bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) = 0;
-        virtual void Help( std::ostream& out ) const = 0;
+        virtual bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) = 0;
+        virtual void Help(std::ostream& out) const = 0;
         // Returns the collection of completions relatives to this command.
         // For simple commands, provides a base implementation that use the name of the command
         // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
@@ -201,7 +201,7 @@ namespace cli
 
     // free utility function to get completions from a list of commands and the current line
     inline std::vector<std::string> GetCompletions(
-        const std::shared_ptr<std::vector<std::shared_ptr<Command>>>& cmds, 
+        const std::shared_ptr<std::vector<std::shared_ptr<Command>>>& cmds,
         const std::string& currentLine)
     {
         std::vector<std::string> result;
@@ -300,7 +300,7 @@ namespace cli
                 cmd(c), cmds(v)
             {}
             void Enable()
-            { 
+            {
                 if (auto c = cmd.lock())
                     c->Enable();
             }
@@ -341,7 +341,7 @@ namespace cli
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
-        Menu( const std::string& _name, const std::string& desc = "(menu)" ) :
+        Menu(const std::string& _name, const std::string& desc = "(menu)") :
             Command(_name), parent(nullptr), description(desc), cmds(std::make_shared<Cmds>())
         {}
 
@@ -383,7 +383,7 @@ namespace cli
             cmds->push_back(s);
         }
 #endif // CLI_DEPRECATED_API
-        
+
         CmdHandler Insert(std::unique_ptr<Command>&& cmd)
         {
             std::shared_ptr<Command> scmd(std::move(cmd));
@@ -403,12 +403,13 @@ namespace cli
 
         bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) override
         {
-            if (!IsEnabled()) return false;
-            if ( cmdLine[ 0 ] == Name() )
+            if (!IsEnabled())
+                return false;
+            if (cmdLine[0] == Name())
             {
-                if ( cmdLine.size() == 1 )
+                if (cmdLine.size() == 1)
                 {
-                    session.Current( this );
+                    session.Current(this);
                     return true;
                 }
                 else
@@ -450,6 +451,10 @@ namespace cli
             out << " - " << Name() << "\n\t" << description << "\n";
         }
 
+        // returns:
+        // - the completions of this menu command
+        // - the recursive completions of subcommands
+        // - the recursive completions of parent menu
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
         {
             auto result = cli::GetCompletions(cmds, currentLine);
@@ -461,6 +466,9 @@ namespace cli
             return result;
         }
 
+        // returns:
+        // - the completion of this menu command
+        // - the recursive completions of the subcommands
         virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
             if (line.rfind(Name(), 0) == 0) // line starts_with Name()
@@ -832,6 +840,7 @@ namespace cli
             }
             return false;
         }
+
         void Help(std::ostream& out) const override
         {
             if (!IsEnabled()) return;
@@ -891,7 +900,7 @@ namespace cli
         if (strs.empty()) return; // just hit enter
 
         history.NewCommand(cmd); // add anyway to history
-        
+
         // global cmds check
         bool found = globalScopeMenu->ScanCmds(strs, *this);
 
@@ -907,7 +916,7 @@ namespace cli
     inline void CliSession::Prompt()
     {
         out << beforePrompt
-            << current -> Prompt()
+            << current->Prompt()
             << afterPrompt
             << "> "
             << std::flush;
@@ -929,8 +938,8 @@ namespace cli
         v1.insert(v1.end(), std::make_move_iterator(v3.begin()), std::make_move_iterator(v3.end()));
 
         // removes duplicates (std::unique requires a sorted container)
-        std::sort(v1.begin(), v1.end()); 
-        auto ip = std::unique(v1.begin(), v1.end()); 
+        std::sort(v1.begin(), v1.end());
+        auto ip = std::unique(v1.begin(), v1.end());
         v1.resize(std::distance(v1.begin(), ip));
 
         return v1;
