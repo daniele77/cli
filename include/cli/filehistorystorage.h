@@ -39,7 +39,7 @@ namespace cli
 class FileHistoryStorage : public HistoryStorage
 {
 public:
-    FileHistoryStorage(const std::string& _fileName = ".cli", std::size_t size = 1000) : 
+    FileHistoryStorage(const std::string& _fileName, std::size_t size = 1000) : 
         maxSize(size),
         fileName(_fileName)
     {
