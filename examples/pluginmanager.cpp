@@ -149,21 +149,21 @@ public:
     Arithmetic(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
-        subMenu -> Insert(
+        subMenu->Insert(
                 "add", {"first_term", "second_term"},
                 [](std::ostream& out, int x, int y)
                 {
                     out << x << " + " << y << " = " << (x+y) << "\n";
                 },
                 "Print the sum of the two numbers" );
-        subMenu -> Insert(
+        subMenu->Insert(
                 "add",
                 [](std::ostream& out, int x, int y, int z)
                 {
                     out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
                 },
                 "Print the sum of the three numbers" );
-        subMenu -> Insert(
+        subMenu->Insert(
                 "sub", {"subtrahend", "minuend"},
                 [](std::ostream& out, int x, int y)
                 {
@@ -193,7 +193,7 @@ public:
     Strings(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
-        subMenu -> Insert(
+        subMenu->Insert(
                 "reverse", {"string_to_revert"},
                 [](std::ostream& out, const string& arg)
                 {
@@ -203,7 +203,7 @@ public:
                 },
                 "Print the reverse string" );
 
-        subMenu -> Insert(
+        subMenu->Insert(
                 "upper",
                 [](std::ostream& out, string arg)
                 {
@@ -239,25 +239,25 @@ int main()
 
     auto rootMenu = make_unique< Menu >( "cli" );
     PluginContainer::Instance().SetMenu(*rootMenu);
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "list",
             [](std::ostream& out){ PluginRegistry::Instance().Print(out); },
             "Print the plugin list" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "loaded",
             [](std::ostream& out)
             {
                 PluginContainer::Instance().PrintLoaded(out);
             },
             "Load the plugin specified" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "load", {"plugin_name"},
             [](std::ostream&, const string& plugin)
             {
                 PluginContainer::Instance().Load(plugin);
             },
             "Load the plugin specified" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "unload", {"plugin_name"},
             [](std::ostream&, const string& plugin)
             {
