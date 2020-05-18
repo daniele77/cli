@@ -54,7 +54,7 @@ CHAR_SET = /D "_MBCS"
 !endif
 
 RUN_OPT = --build_info --report_level=short
-COMPILE_FLAGS = /nologo /EHsc /DBOOST_TEST_DYN_LINK $(RUNTIME_LIB) $(CHAR_SET)
+COMPILE_FLAGS = /nologo /EHsc /DBOOST_TEST_DYN_LINK $(RUNTIME_LIB) $(CHAR_SET) /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 LINK_FLAGS = /LIBPATH:%BOOST%\stage\lib /NOLOGO
 PATH = $(PATH);$(BOOST)\stage\lib\ # to run the test suite
 
