@@ -1,3 +1,5 @@
+![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
+
 # cli
 
 A cross-platform header only C++14 library for interactive command line interfaces (Cisco style)
