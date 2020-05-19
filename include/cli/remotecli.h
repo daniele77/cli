@@ -30,23 +30,23 @@
 #ifndef CLI_REMOTECLI_H_
 #define CLI_REMOTECLI_H_
 
-#include <cli/inputhandler.h>
+#include <cli/detail/inputhandler.h>
 #include <memory>
 #include "cli.h"
-#include "server.h"
-#include "inputdevice.h"
-#include "boostasio.h"
+#include "detail/server.h"
+#include "detail/inputdevice.h"
+#include "detail/boostasio.h"
 
 namespace cli
 {
 
 // *******************************************************************************
 
-class TelnetSession : public Session
+class TelnetSession : public detail::Session
 {
 public:
     TelnetSession(boost::asio::ip::tcp::socket socket) :
-        Session(std::move(socket))
+        detail::Session(std::move(socket))
     {}
 
 protected:
@@ -424,13 +424,13 @@ private:
     //bool waitAck = false;
 };
 
-class TelnetServer : public Server
+class TelnetServer : public detail::Server
 {
 public:
     TelnetServer(detail::asio::BoostExecutor::ContextType& ios, short port) :
-        Server(ios, port)
+        detail::Server(ios, port)
     {}
-    virtual std::shared_ptr< Session > CreateSession(boost::asio::ip::tcp::socket socket) override
+    virtual std::shared_ptr<detail::Session> CreateSession(boost::asio::ip::tcp::socket socket) override
     {
         return std::make_shared<TelnetSession>(std::move(socket));
     }
@@ -438,7 +438,7 @@ public:
 
 //////////////
 
-class CliTelnetSession : public InputDevice, public TelnetSession, public CliSession
+class CliTelnetSession : public detail::InputDevice, public TelnetSession, public CliSession
 {
 public:
 
@@ -460,6 +460,7 @@ protected:
 
     void Output(char c) override
     {
+        using detail::KeyType;
         switch(step)
         {
             case Step::_1:
@@ -532,20 +533,20 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    InputHandler poll;
+    detail::InputHandler poll;
 };
 
 
-class CliTelnetServer : public Server
+class CliTelnetServer : public detail::Server
 {
 public:
     CliTelnetServer(detail::asio::BoostExecutor::ContextType& ios, short port, Cli& _cli, std::size_t _historySize=100 ) :
-        Server(ios, port),
+        detail::Server(ios, port),
         cli(_cli),
         historySize(_historySize)
     {}
     CliTelnetServer(detail::asio::BoostExecutor::ContextType& ios, std::string address, short port, Cli& _cli, std::size_t _historySize=100 ) :
-        Server(ios, address, port),
+        detail::Server(ios, address, port),
         cli(_cli),
         historySize(_historySize)
     {}
@@ -553,7 +554,7 @@ public:
     {
         exitAction = action;
     }
-    virtual std::shared_ptr<Session> CreateSession(boost::asio::ip::tcp::socket socket) override
+    virtual std::shared_ptr<detail::Session> CreateSession(boost::asio::ip::tcp::socket socket) override
     {
         return std::make_shared<CliTelnetSession>(std::move(socket), cli, exitAction, historySize);
     }

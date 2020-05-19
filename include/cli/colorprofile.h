@@ -30,7 +30,7 @@
 #ifndef CLI_COLORPROFILE_H_
 #define CLI_COLORPROFILE_H_
 
-#include "rang.h"
+#include "detail/rang.h"
 
 namespace cli
 {

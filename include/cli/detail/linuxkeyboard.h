@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_LINUXKEYBOARD_H_
-#define CLI_LINUXKEYBOARD_H_
+#ifndef CLI_DETAIL_LINUXKEYBOARD_H_
+#define CLI_DETAIL_LINUXKEYBOARD_H_
 
 #include <thread>
 #include <memory>
@@ -45,6 +45,8 @@
 
 
 namespace cli
+{
+namespace detail
 {
 
 class LinuxKeyboard : public InputDevice
@@ -149,7 +151,8 @@ private:
     std::unique_ptr<std::thread> servant;
 };
 
-} // namespace
+} // namespace detail
+} // namespace cli
 
-#endif // CLI_LINUXKEYBOARD_H_
+#endif // CLI_DETAIL_LINUXKEYBOARD_H_
 

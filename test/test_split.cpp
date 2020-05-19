@@ -28,7 +28,7 @@
  ******************************************************************************/
 
 #include <boost/test/unit_test.hpp>
-#include "cli/split.h"
+#include "cli/detail/split.h"
 
 using namespace std;
 using namespace cli;

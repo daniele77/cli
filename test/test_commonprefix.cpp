@@ -28,7 +28,7 @@
  ******************************************************************************/
 
 #include <boost/test/unit_test.hpp>
-#include "cli/commonprefix.h"
+#include "cli/detail/commonprefix.h"
 
 using namespace std;
 using namespace cli::detail;

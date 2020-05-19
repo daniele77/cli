@@ -27,14 +27,16 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_TERMINAL_H_
-#define CLI_TERMINAL_H_
+#ifndef CLI_DETAIL_TERMINAL_H_
+#define CLI_DETAIL_TERMINAL_H_
 
 #include <string>
-#include "colorprofile.h"
+#include "../colorprofile.h"
 #include "inputdevice.h"
 
 namespace cli
+{
+namespace detail
 {
 
 enum class Symbol
@@ -197,6 +199,7 @@ class Terminal
     std::ostream &out;
 };
 
+} // namespace detail
 } // namespace cli
 
-#endif // CLI_TERMINAL_H_
+#endif // CLI_DETAIL_TERMINAL_H_

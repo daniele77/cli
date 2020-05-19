@@ -30,9 +30,9 @@
 #ifndef CLI_LOCALSESSION_H_
 #define CLI_LOCALSESSION_H_
 
-#include "boostasio.h"
-#include "keyboard.h"
-#include "inputhandler.h"
+#include "detail/boostasio.h"
+#include "detail/keyboard.h"
+#include "detail/inputhandler.h"
 #include "cli.h" // CliSession
 
 namespace cli
@@ -51,8 +51,8 @@ public:
     }
 
 private:
-    Keyboard kb;
-    InputHandler ih;
+    detail::Keyboard kb;
+    detail::InputHandler ih;
 };
 
 using CliLocalSession = CliLocalTerminalSession;

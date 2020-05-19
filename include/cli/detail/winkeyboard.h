@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_WINKEYBOARD_H_
-#define CLI_WINKEYBOARD_H_
+#ifndef CLI_DETAIL_WINKEYBOARD_H_
+#define CLI_DETAIL_WINKEYBOARD_H_
 
 #include <functional>
 #include <string>
@@ -42,6 +42,8 @@
 #include "inputdevice.h"
 
 namespace cli
+{
+namespace detail
 {
 
 class WinKeyboard : public InputDevice
@@ -127,6 +129,7 @@ private:
     std::unique_ptr<std::thread> servant;
 };
 
-} // namespace
+} // namespace detail
+} // namespace cli
 
-#endif // CLI_WINKEYBOARD_H_
+#endif // CLI_DETAIL_WINKEYBOARD_H_

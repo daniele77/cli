@@ -27,14 +27,16 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_SERVER_H_
-#define CLI_SERVER_H_
+#ifndef CLI_DETAIL_SERVER_H_
+#define CLI_DETAIL_SERVER_H_
 
 #include <memory>
 #include <queue>
 #include "boostasio.h"
 
 namespace cli
+{
+namespace detail
 {
 
 class Session : public std::enable_shared_from_this<Session>, public std::streambuf
@@ -150,7 +152,8 @@ private:
     boost::asio::ip::tcp::socket socket;
 };
 
+} // namespace detail
 } // namespace cli
 
-#endif // CLI_SERVER_H_
+#endif // CLI_DETAIL_SERVER_H_
 

@@ -31,7 +31,7 @@
 #define CLI_ASYNCSESSION_H_
 
 #include <string>
-#include "boostasio.h"
+#include "detail/boostasio.h"
 #include "cli.h" // CliSession
 
 #if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)

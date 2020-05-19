@@ -28,7 +28,7 @@
  ******************************************************************************/
 
 #include <boost/test/unit_test.hpp>
-#include "cli/history.h"
+#include "cli/detail/history.h"
 
 using namespace cli;
 using namespace cli::detail;

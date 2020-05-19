@@ -40,8 +40,8 @@
 #include <type_traits>
 #include <boost/lexical_cast.hpp>
 #include "colorprofile.h"
-#include "history.h"
-#include "split.h"
+#include "detail/history.h"
+#include "detail/split.h"
 #include "historystorage.h"
 #include "volatilehistorystorage.h"
 
