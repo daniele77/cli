@@ -13,6 +13,7 @@ Current Version: 1.1.1-dirty
  - Escaping and sentence support with quote and double quote
  - Fix duplicate autocompletion (issue #67)
  - Add a namespace and folder "detail" (issue #17)
+ - Support commands with variable number of arguments
  
 ## [1.1.1] - 2019-09-16
 
