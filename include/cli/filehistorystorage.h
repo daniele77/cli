@@ -46,10 +46,14 @@ public:
     }
     void Store(const std::vector<std::string>& cmds) override
     {
+        using dt = std::vector<std::string>::difference_type;
         auto commands = Commands();
         commands.insert(commands.end(), cmds.begin(), cmds.end());
         if (commands.size() > maxSize)
-            commands.erase(commands.begin(), commands.begin() + commands.size() - maxSize);
+            commands.erase(
+                commands.begin(), 
+                commands.begin() + static_cast<dt>(commands.size() - maxSize)
+            );
         std::ofstream f(fileName, std::ios_base::out);
             for (const auto& line: commands)
                 f << line << '\n';

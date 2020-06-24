@@ -106,6 +106,7 @@ private:
                         case 67: return std::make_pair(KeyType::right,' ');
                         case 70: return std::make_pair(KeyType::end,' ');
                         case 72: return std::make_pair(KeyType::home,' ');
+                        default: return std::make_pair(KeyType::ignored,' ');
                     }
                 }
                 break;
@@ -122,7 +123,7 @@ private:
     {
         tcgetattr( STDIN_FILENO, &oldt );
         newt = oldt;
-        newt.c_lflag &= ~( ICANON | ECHO );
+        newt.c_lflag &= ~( (tcflag_t)ICANON | (tcflag_t)ECHO );
         tcsetattr( STDIN_FILENO, TCSANOW, &newt );
     }
     void ToStandardMode()

@@ -44,8 +44,8 @@ namespace cli
 class CliAsyncSession : public CliSession
 {
 public:
-    CliAsyncSession(detail::asio::BoostExecutor::ContextType& ios, Cli& cli ) :
-        CliSession(cli, std::cout, 1),
+    CliAsyncSession(detail::asio::BoostExecutor::ContextType& ios, Cli& _cli) :
+        CliSession(_cli, std::cout, 1),
         input(ios, ::dup( STDIN_FILENO))
     {
         Read();
@@ -76,7 +76,7 @@ private:
         if ( !error || error == boost::asio::error::not_found )
         {
             auto bufs = inputBuffer.data();
-            std::size_t size = length;
+            auto size = static_cast<long>(length);
             if ( !error ) --size; // remove \n
             std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
             inputBuffer.consume( length );

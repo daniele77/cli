@@ -134,8 +134,10 @@ public:
             start = buffer.begin()+1;
         }
         std::vector<std::string> result(numCmdsToReturn);
-        assert(start+numCmdsToReturn <= buffer.end());
-        std::reverse_copy(start, start+numCmdsToReturn, result.begin());
+        assert(std::distance(start, buffer.end()) >= 0);
+        assert(numCmdsToReturn <= static_cast<std::size_t>(std::distance(buffer.end(), start)));
+        assert(numCmdsToReturn <= std::numeric_limits<long>::max());
+        std::reverse_copy(start, start+static_cast<long>(numCmdsToReturn), result.begin());
         return result;
     }
 

@@ -35,6 +35,8 @@ using namespace std;
 using namespace cli;
 using namespace cli::detail;
 
+namespace {
+
 string ExtractFirstPrompt(const stringstream& o)
 {
     auto content = o.str();
@@ -83,6 +85,8 @@ void UserInput(Cli& cli, stringstream& oss, const string& input)
     iss.str(input + '\n');
     CliFileSession input1(cli, iss, oss);
     input1.Start();
+}
+
 }
 
 BOOST_AUTO_TEST_SUITE(CliSuite)

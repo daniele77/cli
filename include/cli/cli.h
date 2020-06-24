@@ -346,26 +346,26 @@ namespace cli
         {}
 
         template <typename F>
-        CmdHandler Insert(const std::string& name, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
+        CmdHandler Insert(const std::string& cmdName, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
             // dispatch to private Insert methods
-            return Insert(name, help, parDesc, f, &F::operator());
+            return Insert(cmdName, help, parDesc, f, &F::operator());
         }
 
         template <typename F>
-        CmdHandler Insert(const std::string& name, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
+        CmdHandler Insert(const std::string& cmdName, const std::vector<std::string>& parDesc, F f, const std::string& help = "")
         {
             // dispatch to private Insert methods
-            return Insert(name, help, parDesc, f, &F::operator());
+            return Insert(cmdName, help, parDesc, f, &F::operator());
         }
 
 #ifdef CLI_DEPRECATED_API
         template <typename F>
         [[deprecated("Use the method Insert instead")]]
-        void Add(const std::string& name, F f, const std::string& help = "")
+        void Add(const std::string& cmdName, F f, const std::string& help = "")
         {
             // dispatch to private Add methods
-            Add(name, help, f, &F::operator());
+            Add(cmdName, help, f, &F::operator());
         }
 
         [[deprecated("Use the method Insert instead")]]
@@ -995,7 +995,7 @@ namespace cli
         // removes duplicates (std::unique requires a sorted container)
         std::sort(v1.begin(), v1.end());
         auto ip = std::unique(v1.begin(), v1.end());
-        v1.resize(std::distance(v1.begin(), ip));
+        v1.resize(static_cast<std::size_t>(std::distance(v1.begin(), ip)));
 
         return v1;
     }
@@ -1034,19 +1034,19 @@ namespace cli
     }
 #endif // CLI_DEPRECATED_API
 
-    template <typename F, typename R>
-    CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string> args) const )
+    template <typename F, typename R, typename ... Args>
+    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
     {
-        auto c = std::make_shared<FreeformCommand<F>>(name, f, help, parDesc);
+        auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(cmdName, f, help, parDesc);
         CmdHandler cmd(c, cmds);
         cmds->push_back(c);
         return cmd;
     }
 
-    template <typename F, typename R, typename ... Args>
-    CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+    template <typename F, typename R>
+    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string> args) const )
     {
-        auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(name, f, help, parDesc);
+        auto c = std::make_shared<FreeformCommand<F>>(cmdName, f, help, parDesc);
         CmdHandler cmd(c, cmds);
         cmds->push_back(c);
         return cmd;
