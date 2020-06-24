@@ -38,10 +38,10 @@
 #include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
-#include <boost/lexical_cast.hpp>
 #include "colorprofile.h"
 #include "detail/history.h"
 #include "detail/split.h"
+#include "detail/fromstring.h"
 #include "historystorage.h"
 #include "volatilehistorystorage.h"
 
@@ -582,10 +582,10 @@ namespace cli
             {
                 try
                 {
-                    T arg = boost::lexical_cast<T>( cmdLine[ 1 ] );
+                    T arg = detail::from_string<T>( cmdLine[ 1 ] );
                     function( arg, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch (std::bad_cast&)
                 {
                     return false;
                 }
@@ -627,11 +627,11 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
+                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
                     function( arg1, arg2, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch (std::bad_cast&)
                 {
                     return false;
                 }
@@ -674,12 +674,12 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
+                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
+                    T3 arg3 = detail::from_string<T3>( cmdLine[ 3 ] );
                     function( arg1, arg2, arg3, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch (std::bad_cast&)
                 {
                     return false;
                 }
@@ -723,13 +723,13 @@ namespace cli
             {
                 try
                 {
-                    T1 arg1 = boost::lexical_cast<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = boost::lexical_cast<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = boost::lexical_cast<T3>( cmdLine[ 3 ] );
-                    T4 arg4 = boost::lexical_cast<T4>( cmdLine[ 4 ] );
+                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
+                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
+                    T3 arg3 = detail::from_string<T3>( cmdLine[ 3 ] );
+                    T4 arg4 = detail::from_string<T4>( cmdLine[ 4 ] );
                     function( arg1, arg2, arg3, arg4, session.OutStream() );
                 }
-                catch ( boost::bad_lexical_cast & )
+                catch (std::bad_cast&)
                 {
                     return false;
                 }
@@ -767,7 +767,7 @@ namespace cli
         {
             assert( first != last );
             assert( std::distance(first, last) == 1+sizeof...(Args) );
-            const P p = boost::lexical_cast<typename std::decay<P>::type>(*first);
+            const P p = detail::from_string<typename std::decay<P>::type>(*first);
             auto g = [&](auto ... pars){ f(p, pars...); };
             Select<decltype(g), Args...>::Exec(g, std::next(first), last);
         }
@@ -835,7 +835,7 @@ namespace cli
                     auto g = [&](auto ... pars){ func( session.OutStream(), pars... ); };
                     Select<decltype(g), Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
                 }
-                catch (boost::bad_lexical_cast &)
+                catch (std::bad_cast&)
                 {
                     return false;
                 }
@@ -890,7 +890,7 @@ namespace cli
                 {
                     func(session.OutStream(), cmdLine);
                 }
-                catch (boost::bad_lexical_cast &)
+                catch (std::bad_cast&)
                 {
                     return false;
                 }

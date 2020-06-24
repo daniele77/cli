@@ -124,14 +124,14 @@ public:
     Server( const Server& ) = delete;
     Server& operator = ( const Server& ) = delete;
 
-    Server(detail::asio::BoostExecutor::ContextType& ios, unsigned short port) :
-        acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::tcp::v4(), port ) ),
+    Server(asio::BoostExecutor::ContextType& ios, unsigned short port) :
+        acceptor( ios, boost::asio::ip::tcp::endpoint( boost::asio::ip::tcp::v4(), port )),
         socket( ios )
     {
         Accept();
     }
-    Server(detail::asio::BoostExecutor::ContextType& ios, std::string address, unsigned short port) :
-        acceptor( ios, boost::asio::ip::tcp::endpoint(detail::asio::IpAddressFromString(address), port ) ),
+    Server(asio::BoostExecutor::ContextType& ios, std::string address, unsigned short port) :
+        acceptor( ios, boost::asio::ip::tcp::endpoint(asio::IpAddressFromString(address), port)),
         socket( ios )
     {
         Accept();

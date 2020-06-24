@@ -46,7 +46,7 @@ class InputDevice
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    InputDevice(detail::asio::BoostExecutor ex) : executor(ex) {}
+    InputDevice(asio::BoostExecutor ex) : executor(ex) {}
     virtual ~InputDevice() = default;
 
     template <typename H>
@@ -61,7 +61,7 @@ protected:
 
 private:
 
-    detail::asio::BoostExecutor executor;
+    asio::BoostExecutor executor;
     Handler handler;
 };
 
