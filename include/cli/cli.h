@@ -508,6 +508,9 @@ namespace cli
         void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const);
 #endif // CLI_DEPRECATED_API
 
+        template <typename F, typename R>
+        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string>) const);
+
         template <typename F, typename R, typename ... Args>
         CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
 
@@ -860,6 +863,58 @@ namespace cli
     };
 
 
+    template <typename F>
+    class FreeformCommand : public Command
+    {
+    public:
+        // disable value semantics
+        FreeformCommand(const FreeformCommand&) = delete;
+        FreeformCommand& operator = (const FreeformCommand&) = delete;
+
+        FreeformCommand(
+            const std::string& _name,
+            F fun,
+            const std::string& desc = "unknown command",
+            const std::vector<std::string>& parDesc = {}
+        )
+            : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
+        {
+        }
+
+        bool Exec(const std::vector< std::string >& cmdLine, CliSession& session) override
+        {
+            if (!IsEnabled()) return false;
+            if (Name() == cmdLine[0])
+            {
+                try
+                {
+                    func(session.OutStream(), cmdLine);
+                }
+                catch (boost::bad_lexical_cast &)
+                {
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        void Help(std::ostream& out) const override
+        {
+            if (!IsEnabled()) return;
+            out << " - " << Name();
+            for (auto& s: parameterDesc)
+                out << " <" << s << '>';
+            out << "\n\t" << description << "\n";
+        }
+
+    private:
+
+        const F func;
+        const std::string description;
+        const std::vector<std::string> parameterDesc;
+    };
+
+
     // ********************************************************************
 
     // CliSession implementation
@@ -978,6 +1033,15 @@ namespace cli
         cmds->push_back(std::make_shared<FuncCmd4<A1, A2, A3, A4>>(name, f, help));
     }
 #endif // CLI_DEPRECATED_API
+
+    template <typename F, typename R>
+    CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string> args) const )
+    {
+        auto c = std::make_shared<FreeformCommand<F>>(name, f, help, parDesc);
+        CmdHandler cmd(c, cmds);
+        cmds->push_back(c);
+        return cmd;
+    }
 
     template <typename F, typename R, typename ... Args>
     CmdHandler Menu::Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
