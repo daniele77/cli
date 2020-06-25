@@ -14,6 +14,7 @@ Current Version: 1.1.1-dirty
  - Fix duplicate autocompletion (issue #67)
  - Add a namespace and folder "detail" (issue #17)
  - Support commands with variable number of arguments
+ - Remove boost dependency from cli.h: now, if you just use CliFileSession you don't need boost anymore
  
 ## [1.1.1] - 2019-09-16
 
