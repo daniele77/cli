@@ -135,6 +135,134 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK_EQUAL(ExtractContent(oss), R"(foo 'bar' "foo\2)");
 }
 
+BOOST_AUTO_TEST_CASE(parameters)
+{
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert("char_cmd", [](ostream& out, char par){ out << par << "\n"; }, "char_cmd help", {"char_par"} );
+    rootMenu->Insert("unsigned_char_cmd", [](ostream& out, unsigned char par){ out << static_cast<unsigned int>(par) << "\n"; }, "unsigned_char_cmd help", {"unsigned_char_par"} );
+    rootMenu->Insert("signed_char_cmd", [](ostream& out, signed char par){ out << static_cast<int>(par) << "\n"; }, "signed_char_cmd help", {"signed_char_par"} );
+    rootMenu->Insert("short_cmd", [](ostream& out, short par){ out << par << "\n"; }, "short_cmd help", {"short_par"} );
+    rootMenu->Insert("unsigned_short_cmd", [](ostream& out, unsigned short par){ out << par << "\n"; }, "unsigned_short_cmd help", {"unsigned_short_par"} );
+    rootMenu->Insert("int_cmd", [](ostream& out, int par){ out << par << "\n"; }, "int_cmd help", {"int_par"} );
+    rootMenu->Insert("unsigned_int_cmd", [](ostream& out, unsigned int par){ out << par << "\n"; }, "unsigned_int_cmd help", {"unsigned_int_par"} );
+    rootMenu->Insert("long_cmd", [](ostream& out, long par){ out << par << "\n"; }, "long_cmd help", {"long_par"} );
+    rootMenu->Insert("unsigned_long_cmd", [](ostream& out, unsigned long par){ out << par << "\n"; }, "unsigned_long_cmd help", {"unsigned_long_par"} );
+    rootMenu->Insert("long_long_cmd", [](ostream& out, long long par){ out << par << "\n"; }, "long_long_cmd help", {"long_long_par"} );
+    rootMenu->Insert("unsigned_long_long_cmd", [](ostream& out, unsigned long long par){ out << par << "\n"; }, "unsigned_long_long_cmd help", {"unsigned_long_long_par"} );
+    rootMenu->Insert("float_cmd", [](ostream& out, float par){ out << par << "\n"; }, "float_cmd help", {"float_par"} );
+    rootMenu->Insert("double_cmd", [](ostream& out, double par){ out << par << "\n"; }, "double_cmd help", {"double_par"} );
+    rootMenu->Insert("long_double_cmd", [](ostream& out, long double par){ out << par << "\n"; }, "long_double_cmd help", {"long_double_par"} );
+    rootMenu->Insert("string_cmd", [](ostream& out, const string& par){ out << par << "\n"; }, "string_cmd help", {"string_par"} );
+
+    Cli cli(move(rootMenu));
+
+    stringstream oss;
+
+    UserInput(cli, oss, "char_cmd a");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "a");
+    UserInput(cli, oss, "char_cmd ' '");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), " ");
+    UserInput(cli, oss, "char_cmd aa");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "unsigned_char_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "unsigned_char_cmd -42");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_char_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_char_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "signed_char_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "signed_char_cmd -42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "-42");
+    UserInput(cli, oss, "signed_char_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "signed_char_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "short_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "short_cmd -42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "-42");
+    UserInput(cli, oss, "short_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "short_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "unsigned_short_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "unsigned_short_cmd -42");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_short_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_short_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "int_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "int_cmd -42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "-42");
+    UserInput(cli, oss, "int_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "int_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "unsigned_int_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "unsigned_int_cmd -42");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_int_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_int_cmd 99999999999999999999999999999999999999999");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "long_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "long_cmd -42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "-42");
+    UserInput(cli, oss, "long_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "unsigned_long_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "unsigned_long_cmd -42");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_long_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "long_long_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "long_long_cmd -42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "-42");
+    UserInput(cli, oss, "long_long_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "unsigned_long_long_cmd 42");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "42");
+    UserInput(cli, oss, "unsigned_long_long_cmd -42");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+    UserInput(cli, oss, "unsigned_long_long_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "float_cmd 0.1");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "0.1");
+    UserInput(cli, oss, "float_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "double_cmd 0.1");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "0.1");
+    UserInput(cli, oss, "double_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+
+    UserInput(cli, oss, "long_double_cmd 0.1");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "0.1");
+    UserInput(cli, oss, "long_double_cmd a");
+    BOOST_CHECK(ExtractContent(oss).find("wrong command:") != string::npos);
+}
+
 BOOST_AUTO_TEST_CASE(freeform)
 {
     auto rootMenu = make_unique<Menu>("cli");

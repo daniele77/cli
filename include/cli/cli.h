@@ -52,15 +52,18 @@ namespace cli
 
     // ********************************************************************
 
-    template < typename T > struct TypeDesc {};
+    template < typename T > struct TypeDesc { static const char* Name() { return ""; } };
     template <> struct TypeDesc< char > { static const char* Name() { return "<char>"; } };
     template <> struct TypeDesc< unsigned char > { static const char* Name() { return "<unsigned char>"; } };
+    template <> struct TypeDesc< signed char > { static const char* Name() { return "<signed char>"; } };
     template <> struct TypeDesc< short > { static const char* Name() { return "<short>"; } };
     template <> struct TypeDesc< unsigned short > { static const char* Name() { return "<unsigned short>"; } };
     template <> struct TypeDesc< int > { static const char* Name() { return "<int>"; } };
     template <> struct TypeDesc< unsigned int > { static const char* Name() { return "<unsigned int>"; } };
     template <> struct TypeDesc< long > { static const char* Name() { return "<long>"; } };
     template <> struct TypeDesc< unsigned long > { static const char* Name() { return "<unsigned long>"; } };
+    template <> struct TypeDesc< long long > { static const char* Name() { return "<long long>"; } };
+    template <> struct TypeDesc< unsigned long long > { static const char* Name() { return "<unsigned long long>"; } };
     template <> struct TypeDesc< float > { static const char* Name() { return "<float>"; } };
     template <> struct TypeDesc< double > { static const char* Name() { return "<double>"; } };
     template <> struct TypeDesc< long double > { static const char* Name() { return "<long double>"; } };
@@ -1031,44 +1034,6 @@ namespace cli
     }
 #endif // CLI_DEPRECATED_API
 
-#if 0
-    template <typename F, typename R, typename ... Args>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
-    {
-        auto c = std::make_shared<VariadicFunctionCommand<F, Args ...>>(cmdName, f, help, parDesc);
-        CmdHandler cmd(c, cmds);
-        cmds->push_back(c);
-        return cmd;
-    }
-
-    template <typename F, typename R>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, const std::vector<std::string>& args) const )
-    {
-        auto c = std::make_shared<FreeformCommand<F>>(cmdName, f, help, parDesc);
-        CmdHandler cmd(c, cmds);
-        cmds->push_back(c);
-        return cmd;
-    }
-
-    template <typename F, typename R>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string> args) const )
-    {
-        auto c = std::make_shared<FreeformCommand<F>>(cmdName, f, help, parDesc);
-        CmdHandler cmd(c, cmds);
-        cmds->push_back(c);
-        return cmd;
-    }
-
-/*
-        CmdHandler Insert(std::unique_ptr<Command>&& cmd)
-        {
-            std::shared_ptr<Command> scmd(std::move(cmd));
-            CmdHandler c(scmd, cmds);
-            cmds->push_back(scmd);
-            return c;
-        }
-*/
-#else
     template <typename F, typename R, typename ... Args>
     CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
     {
@@ -1086,8 +1051,6 @@ namespace cli
     {
         return Insert(std::make_unique<FreeformCommand<F>>(cmdName, f, help, parDesc));
     }
-
-#endif
 
 } // namespace
 
