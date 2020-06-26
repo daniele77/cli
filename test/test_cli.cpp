@@ -151,7 +151,13 @@ BOOST_AUTO_TEST_CASE(freeform)
     UserInput(cli, oss, R"(cmd_printer a b 'c d e' f)");
     BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
-    BOOST_CHECK_EQUAL(ExtractContent(oss), "cmd_printer*a*b*c d e*f*");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "a*b*c d e*f*");
+
+    // empty parameters
+    UserInput(cli, oss, R"(cmd_printer)");
+    BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "");
 }
 
 BOOST_AUTO_TEST_CASE(borderLine)

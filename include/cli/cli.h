@@ -884,16 +884,10 @@ namespace cli
         bool Exec(const std::vector< std::string >& cmdLine, CliSession& session) override
         {
             if (!IsEnabled()) return false;
+            assert(!cmdLine.empty());
             if (Name() == cmdLine[0])
             {
-                try
-                {
-                    func(session.OutStream(), cmdLine);
-                }
-                catch (std::bad_cast&)
-                {
-                    return false;
-                }
+                func(session.OutStream(), std::vector<std::string>(std::next(cmdLine.begin()), cmdLine.end()));
                 return true;
             }
             return false;
