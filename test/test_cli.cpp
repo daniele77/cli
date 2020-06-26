@@ -138,7 +138,14 @@ BOOST_AUTO_TEST_CASE(Basics)
 BOOST_AUTO_TEST_CASE(freeform)
 {
     auto rootMenu = make_unique<Menu>("cli");
-    rootMenu->Insert("cmd_printer", [](ostream& out, std::vector<std::string> args){
+    rootMenu->Insert("cmd_printer_by_ref", [](ostream& out, const std::vector<std::string>& args){
+        for (const auto& entry : args) {
+            out << entry << "*";
+        }
+        out << "\n";
+    }, "cmd_printer help", {"<string values>"} );
+
+    rootMenu->Insert("cmd_printer_by_value", [](ostream& out, std::vector<std::string> args){
         for (const auto& entry : args) {
             out << entry << "*";
         }
@@ -148,13 +155,18 @@ BOOST_AUTO_TEST_CASE(freeform)
     Cli cli(move(rootMenu));
     stringstream oss;
 
-    UserInput(cli, oss, R"(cmd_printer a b 'c d e' f)");
+    UserInput(cli, oss, R"(cmd_printer_by_value a b 'c d e' f)");
+    BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "a*b*c d e*f*");
+
+    UserInput(cli, oss, R"(cmd_printer_by_ref a b 'c d e' f)");
     BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractContent(oss), "a*b*c d e*f*");
 
     // empty parameters
-    UserInput(cli, oss, R"(cmd_printer)");
+    UserInput(cli, oss, R"(cmd_printer_by_value)");
     BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractContent(oss), "");
