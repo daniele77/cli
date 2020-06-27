@@ -81,7 +81,7 @@ inline std::string from_string(const std::string& s)
 }
 
 template <>
-inline nullptr_t from_string(const std::string& /*s*/)
+inline std::nullptr_t from_string(const std::string& /*s*/)
 {
     return nullptr;
 }
