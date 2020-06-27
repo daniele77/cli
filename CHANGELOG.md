@@ -1,8 +1,6 @@
 # Changelog
 
-Current Version: 1.1.1-dirty
-
-## Unreleased
+## [1.2.0] - 2020-06-27
 
  - Consecutive identical commands are not stored in the history (issue #55)
  - History persistence (issue #39)
