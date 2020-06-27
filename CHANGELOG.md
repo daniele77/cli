@@ -2,18 +2,17 @@
 
 ## [1.2.0] - 2020-06-27
 
- - Consecutive identical commands are not stored in the history (issue #55)
  - History persistence (issue #39)
- - Change message in case of wrong command
+ - Escaping and sentence support with quote and double quote
+ - Remove boost dependency from cli.h: now, if you just use CliFileSession you don't need boost anymore
+ - Support commands with variable number of arguments through `vector<string>`
  - Handle CTRL-D (EOF) on linux
  - Handle CTRL-D, CTRL-Z and CTRL-C on windows
+ - Consecutive identical commands are not stored in the history (issue #55)
+ - Change message in case of wrong command
  - Fix Backspace from remote terminal (issue #52)
- - Escaping and sentence support with quote and double quote
  - Fix duplicate autocompletion (issue #67)
  - Add a namespace and folder "detail" (issue #17)
- - Support commands with variable number of arguments
- - Support vector<string> argument
- - Remove boost dependency from cli.h: now, if you just use CliFileSession you don't need boost anymore
  
 ## [1.1.1] - 2019-09-16
 
