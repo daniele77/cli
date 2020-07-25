@@ -83,8 +83,8 @@ void UserInput(Cli& cli, stringstream& oss, const string& input)
 
     stringstream iss;
     iss.str(input + '\n');
-    CliFileSession input1(cli, iss, oss);
-    input1.Start();
+    CliFileSession session(cli, iss, oss);
+    session.Start();
 }
 
 }
@@ -384,6 +384,30 @@ BOOST_AUTO_TEST_CASE(ExitActions)
 
     UserInput(cli, oss, "exit");
     BOOST_CHECK(exitActionDone);
+}
+
+BOOST_AUTO_TEST_CASE(Exceptions)
+{
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert("stdexception", [](ostream&){ throw std::logic_error("myerror"); } );
+    rootMenu->Insert("customexception", [](ostream&){ throw 42; } );
+
+    Cli cli(move(rootMenu));
+
+    stringstream oss;
+
+    // std exception type, no custom handler
+    BOOST_CHECK_NO_THROW( UserInput(cli, oss, "stdexception") );
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "myerror");
+
+    // std exception type, custom handler
+    bool excActionDone = false;
+    cli.StdExceptionHandler( [&](std::ostream&, const std::string&, const std::exception&){ excActionDone = true; } );
+    BOOST_CHECK_NO_THROW( UserInput(cli, oss, "stdexception") );
+    BOOST_CHECK(excActionDone);
+
+    // custom exception
+    BOOST_CHECK_NO_THROW( UserInput(cli, oss, "customexception") );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

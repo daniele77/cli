@@ -29,7 +29,7 @@
 
 #include <cli/clilocalsession.h> // include boost asio
 #include <cli/remotecli.h>
-// TODO. NB: remotecli.h and clilocalsession.h both includes boost asio, 
+// TODO. NB: remotecli.h and clilocalsession.h both includes boost asio,
 // so in Windows it should appear before cli.h that include rang
 // (consider to provide a global header file for the library)
 #include <cli/cli.h>
@@ -86,6 +86,13 @@ int main()
             },
             "Print the strings passed as parameter" );
     rootMenu -> Insert(
+            "error",
+            [](std::ostream&)
+            {
+                throw std::logic_error("Error in cmd");
+            },
+            "Throw an exception in the command handler" );
+    rootMenu -> Insert(
             "reverse", {"string_to_revert"},
             [](std::ostream& out, const string& arg)
             {
@@ -125,7 +132,7 @@ int main()
                 out << "Colors OFF\n";
                 SetNoColor();
                 colorCmd.Enable();
-                nocolorCmd.Disable();                
+                nocolorCmd.Disable();
             },
             "Disable colors in the cli" );
     rootMenu->Insert(
@@ -163,6 +170,17 @@ int main()
     Cli cli( std::move(rootMenu), std::make_unique<FileHistoryStorage>(".cli") );
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
+    // std exception custom handler
+    cli.StdExceptionHandler(
+        [](std::ostream& out, const std::string& cmd, const std::exception& e)
+        {
+            out << "Exception caught in cli handler: "
+                << e.what()
+                << " handling command: "
+                << cmd
+                << ".\n";
+        }
+    );
 
     CliLocalTerminalSession localSession(cli, ios, std::cout, 200);
     localSession.ExitAction(

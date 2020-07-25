@@ -1,0 +1,38 @@
+- Effettuare tutti i test:
+    - kubuntu
+        - gcc e clang di sistema (cmake, make, diverse versioni di boost)
+        - gcc e clang docker (cmake, make)
+    - debian
+        - gcc e clang di sistema (cmake, make, diverse versioni di boost)
+    - windows
+        - esempi da VS
+        - esempi e test da nmake
+        - cmake ???
+- Aggiornare CHANGELOG.md
+- Cambiare versione in CMakeLists.txt
+- Aggiornare README.md
+- Aggiornare Doxygen
+
+- git add, push, commit
+- fare release e tag dal sito github.com
+- vcpkg:
+    - sul repository di vcpkg:
+        - git fetch upstream 
+        - git checkout master
+        - git merge upstream/master
+    - nella versione installata sul mio pc, modificare i due file relativi a cli, mettendo nuova versione e SHA=1
+    - fare ./vcpkg install cli e vedere la SHA che mette nell'errore
+    - copiare la SHA (e la versione) nel repository locale nei file ports/cli/*
+    - git add git add ports/cli/*
+    - git commit -m " [cli] Update the version to 1.2.0"
+    - git push origin master
+    - git fetch upstream 
+    - git checkout master
+    - git merge upstream/master
+    - git push origin master
+    - richiedere su github la PR
+- pubblicizzare:
+    - reddit C++ inglese
+    - reddit C++ italiano
+    - twitter
+    - slack

@@ -1,0 +1,13 @@
+# con cmake:
+
+    mkdir build
+    cd build
+    cmake .. -DCLI_BuildExamples=ON
+    # or: cmake .. -DCLI_BuildExamples=ON -DBOOST_INCLUDEDIR=<boost_include_directory>
+    make all
+    # or: cmake --build .
+
+# con vcpkg:
+
+    mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=/home/daniele/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+
