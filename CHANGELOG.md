@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+ - Standard and custom exception handler for cli commands (issue #74)
+
 ## [1.2.0] - 2020-06-27
 
  - History persistence (issue #39)

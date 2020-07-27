@@ -42,10 +42,10 @@
 
 #if defined(OS_LINUX) || defined(OS_MAC)
     #include "linuxkeyboard.h"
-    namespace cli { namespace detail { using Keyboard = detail::LinuxKeyboard; } }
+    namespace cli { namespace detail { using Keyboard = LinuxKeyboard; } }
 #elif defined(OS_WIN)
     #include "winkeyboard.h"
-    namespace cli { namespace detail { using Keyboard = detail::WinKeyboard; } }
+    namespace cli { namespace detail { using Keyboard = WinKeyboard; } }
 #else
     #error "Platform not supported (yet)."
 #endif

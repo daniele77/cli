@@ -44,6 +44,11 @@ cmake-build-*
 Debug
 Release
 test/test_suite
+asyncsession
+complete
+filesession
+pluginmanager
+simplelocalsession
 
 # Project files
 .cproject
@@ -59,3 +64,6 @@ test/test_suite
 
 # Doxygen
 doc/doxy/html
+
+# Test files
+cli_test_history

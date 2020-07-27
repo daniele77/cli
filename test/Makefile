@@ -35,7 +35,8 @@
 override RUN_OPT += --build_info --report_level=short
 
 override CXXFLAGS += -Wall -Wextra -Werror -I../include -DBOOST_TEST_DYN_LINK -isystem $(BOOST_INC) -std=c++1y
-override LDFLAGS += -L$(BOOST_LIB) -lboost_unit_test_framework -ldl
+override LDFLAGS += -L$(BOOST_LIB)
+override LDLIBS += -lboost_unit_test_framework -ldl
 
 OBJ := test_history.o \
 	   test_volatilehistorystorage.o \
@@ -53,7 +54,7 @@ EXE := test_suite
 all: $(EXE) test
 
 $(EXE): $(OBJ)
-	$(LINK.cc) $(OBJ) -o $(EXE)
+	$(LINK.cc) $(OBJ) -o $(EXE) $(LDLIBS)
 
 test:
 	export LD_LIBRARY_PATH=.:$(BOOST_LIB) ; ./$(EXE) $(RUN_OPT)

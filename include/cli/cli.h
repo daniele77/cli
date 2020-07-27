@@ -143,8 +143,23 @@ namespace cli
         Cli& operator = (const Cli&) = delete;
 
         Menu* RootMenu() { return rootMenu.get(); }
-        void ExitAction( std::function< void(std::ostream&)> action ) { exitAction = action; }
-        void ExitAction( std::ostream& out ) { if ( exitAction ) exitAction( out ); }
+        void ExitAction( const std::function< void(std::ostream&)>& action ) { exitAction = action; }
+        void ExitAction( std::ostream& out )
+        {
+            if ( exitAction )
+                exitAction( out );
+        }
+        void StdExceptionHandler(const std::function< void(std::ostream&, const std::string& cmd, const std::exception&) >& handler)
+        {
+            exceptionHandler = handler;
+        }
+        void StdExceptionHandler(std::ostream& out, const std::string& cmd, const std::exception& e)
+        {
+            if (exceptionHandler)
+                exceptionHandler(out, cmd, e);
+            else
+                out << e.what() << '\n';
+        }
 
         static void Register(std::ostream& o) { cout().Register(o); }
         static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
@@ -169,6 +184,7 @@ namespace cli
         std::unique_ptr<HistoryStorage> globalHistoryStorage;
         std::unique_ptr<Menu> rootMenu; // just to keep it alive
         std::function<void(std::ostream&)> exitAction;
+        std::function<void(std::ostream&, const std::string& cmd, const std::exception& )> exceptionHandler;
     };
 
     // ********************************************************************
@@ -246,7 +262,7 @@ namespace cli
 
         void Exit()
         {
-            if (exitAction) exitAction(out);
+            exitAction(out);
             cli.ExitAction(out);
 
             auto cmds = history.GetCommands();
@@ -278,7 +294,7 @@ namespace cli
         Menu* current;
         std::unique_ptr<Menu> globalScopeMenu;
         std::ostream& out;
-        std::function< void(std::ostream&)> exitAction;
+        std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
     };
 
@@ -956,14 +972,28 @@ namespace cli
 
         history.NewCommand(cmd); // add anyway to history
 
-        // global cmds check
-        bool found = globalScopeMenu->ScanCmds(strs, *this);
+        try
+        {
 
-        // root menu recursive cmds check
-        if (!found) found = current -> ScanCmds(std::move(strs), *this); // last use of strs
+            // global cmds check
+            bool found = globalScopeMenu->ScanCmds(strs, *this);
 
-        if (!found) // error msg if not found
-            out << "wrong command: " << cmd << "\n";
+            // root menu recursive cmds check
+            if (!found) found = current->ScanCmds(std::move(strs), *this); // last use of strs
+
+            if (!found) // error msg if not found
+                out << "wrong command: " << cmd << '\n';
+        }
+        catch(const std::exception& e)
+        {
+            cli.StdExceptionHandler(out, cmd, e);
+        }
+        catch(...)
+        {
+            out << "Cli. Unknown exception caught handling command line \""
+                << cmd
+                << "\"\n";
+        }
 
         return;
     }
