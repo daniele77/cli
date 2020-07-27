@@ -35,6 +35,8 @@
 #include <cli/cli.h>
 #include <cli/filehistorystorage.h>
 
+#define ENABLE_TELNET_SERVER
+
 using namespace cli;
 using namespace std;
 
@@ -175,9 +177,22 @@ int main()
 
     // setup server
 
+#ifdef ENABLE_TELNET_SERVER
+
     CliTelnetServer server(ios, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
+
+#else // ENABLE_TELNET_SERVER
+
+#if BOOST_VERSION < 106600
+    boost::asio::io_service::work work(ios);
+#else
+        auto work = boost::asio::make_work_guard(ios);
+#endif  
+
+#endif // ENABLE_TELNET_SERVER
+
     ios.run();
 
     return 0;
