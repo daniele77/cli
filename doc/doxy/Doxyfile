@@ -34,7 +34,7 @@ EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_STATIC         = YES
 #---------------------------------------------------------------------------
-INPUT                  = ../../cli
+INPUT                  = ../../include/cli
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
 INLINE_SOURCES         = YES
