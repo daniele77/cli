@@ -30,6 +30,10 @@
 #ifndef CLI_DETAIL_NEWBOOSTASIO_H_
 #define CLI_DETAIL_NEWBOOSTASIO_H_
 
+#if BOOST_VERSION >= 107400
+#   define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
+#endif
+
 #include <boost/asio.hpp>
 
 namespace cli {
