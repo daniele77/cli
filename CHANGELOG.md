@@ -3,6 +3,7 @@
 ## Unreleased
 
  - Standard and custom exception handler for cli commands (issue #74)
+ - With Boost >= 1.74 use TS exectuor by default (issue #79)
 
 ## [1.2.0] - 2020-06-27
 
