@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-project(cli VERSION 1.2.0 LANGUAGES CXX)
+project(cli VERSION 1.2.1 LANGUAGES CXX)
 
 option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
