@@ -410,4 +410,48 @@ BOOST_AUTO_TEST_CASE(Exceptions)
     BOOST_CHECK_NO_THROW( UserInput(cli, oss, "customexception") );
 }
 
+BOOST_AUTO_TEST_CASE(NoMatch)
+{
+    Cli cli{make_unique<Menu>("cli")};
+
+    stringstream iss, oss;
+    auto reset = [&iss, &oss](const char* iss_content) {
+      oss.str({});
+      oss.clear();
+
+      iss.clear();
+      iss.str(iss_content);
+    };
+
+    reset("asdf\n");
+    CliFileSession sess{cli, iss, oss};
+    sess.Start();
+
+    // Check default handler works
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "wrong command: asdf");
+
+    reset("bsdf\n");
+    CliFileSession sess2{cli, iss, oss};
+    auto orig = sess2.NoMatchHandler([](std::ostream& out, const std::string& cmd) { out << "custom handler " << cmd << '\n'; });
+
+    sess2.Start();
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "custom handler bsdf");
+
+    // Verify chaining
+    reset("csdf\n");
+    CliFileSession sess3{cli, iss, oss};
+    sess3.NoMatchHandler([&orig](std::ostream& out, const std::string& cmd) { out << "intercept "; orig(out, "prefix-" + cmd); });
+
+    sess3.Start();
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "intercept wrong command: prefix-csdf");
+
+    // Returned handler should be last installed handler (i.e. custom handler for sess2)
+    reset("dsdf\n");
+    CliFileSession sess4{cli, iss, oss};
+    sess4.NoMatchHandler(sess2.NoMatchHandler(nullptr));
+
+    sess4.Start();
+    BOOST_CHECK_EQUAL(ExtractContent(oss), "custom handler dsdf");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
+#include <utility>
 #include "colorprofile.h"
 #include "detail/history.h"
 #include "detail/split.h"
@@ -242,7 +243,14 @@ namespace cli
 
     class CliSession
     {
+        static void DefaultNoMatchHandler(std::ostream& out, const std::string& cmd)
+        {
+            out << "wrong command: " << cmd << '\n';
+        }
+
     public:
+        using NoMatchHandler_t = std::function<void(std::ostream&, const std::string&)>;
+
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
         virtual ~CliSession() { cli.UnRegister(out); }
 
@@ -274,6 +282,13 @@ namespace cli
             exitAction = action;
         }
 
+        NoMatchHandler_t NoMatchHandler(NoMatchHandler_t handler)
+        {
+            using std::swap;
+            swap(handler, noMatchHandler);
+            return std::move(handler);
+        }
+
         void ShowHistory() const { history.Show(out); }
 
         std::string PreviousCmd(const std::string& line)
@@ -296,6 +311,7 @@ namespace cli
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
+        NoMatchHandler_t noMatchHandler = &CliSession::DefaultNoMatchHandler;
     };
 
     // ********************************************************************
@@ -982,7 +998,7 @@ namespace cli
             if (!found) found = current->ScanCmds(std::move(strs), *this); // last use of strs
 
             if (!found) // error msg if not found
-                out << "wrong command: " << cmd << '\n';
+                noMatchHandler(out, cmd);
         }
         catch(const std::exception& e)
         {
