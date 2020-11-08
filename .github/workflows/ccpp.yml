@@ -13,6 +13,7 @@ jobs:
       run: |
         sudo apt-get -y update
         sudo apt-get -y install libboost-all-dev
+        sudo apt-get -y install libasio-dev
     - name: run cmake
       run: |
         mkdir build
