@@ -43,19 +43,19 @@ namespace newboost {
 class BoostExecutor
 {
 public:
-    using ContextType = asio::io_context;
+    using ContextType = boost::asio::io_context;
     explicit BoostExecutor(ContextType& ios) :
         executor(ios.get_executor()) {}
-    explicit BoostExecutor(asio::ip::tcp::socket& socket) :
+    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
         executor(socket.get_executor()) {}
-    template <typename T> void Post(T&& t) { asio::post(executor, std::forward<T>(t)); }
+    template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
 private:
-    asio::executor executor;
+    boost::asio::executor executor;
 };
 
-inline asio::ip::address IpAddressFromString(const std::string& address)
+inline boost::asio::ip::address IpAddressFromString(const std::string& address)
 {
-    return asio::ip::make_address(address);
+    return boost::asio::ip::make_address(address);
 }
 
 } // namespace newboost
@@ -63,4 +63,3 @@ inline asio::ip::address IpAddressFromString(const std::string& address)
 } // namespace cli
 
 #endif // CLI_DETAIL_NEWBOOSTASIO_H_
-

@@ -39,19 +39,19 @@ namespace oldboost {
 class BoostExecutor
 {
 public:
-    using ContextType = asio::io_service;
+    using ContextType = boost::asio::io_service;
     explicit BoostExecutor(ContextType& _ios) :
         ios(_ios) {}
-    explicit BoostExecutor(asio::ip::tcp::socket& socket) :
+    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
         ios(socket.get_io_service()) {}
     template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
 private:
     ContextType& ios;
 };
 
-inline asio::ip::address IpAddressFromString(const std::string& address)
+inline boost::asio::ip::address IpAddressFromString(const std::string& address)
 {
-    return asio::ip::address::from_string(address);
+    return boost::asio::ip::address::from_string(address);
 }
 
 } // namespace oldboost
@@ -59,4 +59,3 @@ inline asio::ip::address IpAddressFromString(const std::string& address)
 } // namespace cli
 
 #endif // CLI_DETAIL_OLDBOOSTASIO_H_
-
