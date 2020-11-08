@@ -35,7 +35,7 @@ option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
 
 set(Boost_NO_BOOST_CMAKE ON)
-#find_package(Boost 1.55 REQUIRED COMPONENTS system)
+find_package(Boost 1.55 REQUIRED COMPONENTS system)
 find_package(asio CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
