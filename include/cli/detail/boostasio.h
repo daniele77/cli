@@ -30,22 +30,36 @@
 #ifndef CLI_DETAIL_BOOSTIO_H_
 #define CLI_DETAIL_BOOSTIO_H_
 
+#define USE_ASIO_INSTEAD
+#ifdef USE_ASIO_INSTEAD
+
+#include "notboostasio.h"
+
+namespace cli {
+    namespace detail {
+        //namespace asio = notboost;
+    }
+}
+
+#else
 #include <boost/version.hpp>
 
 #if BOOST_VERSION < 106600
-    #include "oldboostasio.h"
-    namespace cli {
+#include "oldboostasio.h"
+namespace cli {
     namespace detail {
         namespace asio = oldboost;
     }
-    }
+}
 #else
-    #include "newboostasio.h"
-    namespace cli {
+#include "newboostasio.h"
+namespace cli {
     namespace detail {
         namespace asio = newboost;
     }
-    }
+}
 #endif
+
+#endif // USE_ASIO_INSTEAD
 
 #endif // CLI_DETAIL_BOOSTIO_H_

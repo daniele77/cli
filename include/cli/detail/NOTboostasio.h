@@ -27,36 +27,40 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_OLDBOOSTASIO_H_
-#define CLI_DETAIL_OLDBOOSTASIO_H_
+#ifndef CLI_DETAIL_NEWBOOSTASIO_H_
+#define CLI_DETAIL_NEWBOOSTASIO_H_
 
-#include <boost/asio.hpp>
+#if BOOST_VERSION >= 107400
+#   define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
+#endif
+
+#include "asio.hpp"
 
 namespace cli {
 namespace detail {
-namespace oldboost {
+namespace notboost {
 
 class BoostExecutor
 {
 public:
-    using ContextType = asio::io_service;
-    explicit BoostExecutor(ContextType& _ios) :
-        ios(_ios) {}
+    using ContextType = asio::io_context;
+    explicit BoostExecutor(ContextType& ios) :
+        executor(ios.get_executor()) {}
     explicit BoostExecutor(asio::ip::tcp::socket& socket) :
-        ios(socket.get_io_service()) {}
-    template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+        executor(socket.get_executor()) {}
+    template <typename T> void Post(T&& t) { asio::post(executor, std::forward<T>(t)); }
 private:
-    ContextType& ios;
+    asio::executor executor;
 };
 
 inline asio::ip::address IpAddressFromString(const std::string& address)
 {
-    return asio::ip::address::from_string(address);
+    return asio::ip::make_address(address);
 }
 
-} // namespace oldboost
+} // namespace newboost
 } // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_OLDBOOSTASIO_H_
+#endif // CLI_DETAIL_NEWBOOSTASIO_H_
 

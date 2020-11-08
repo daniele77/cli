@@ -32,10 +32,10 @@ project(cli_test)
 enable_testing()
 
 # replace XX with the version you have
-set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
+set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0" "1.73.0")
 
 # finds boost, triggers an error otherwise
-find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 # creates the executable
 add_executable(
