@@ -34,7 +34,7 @@
 #include "detail/boostasio.h"
 #include "cli.h" // CliSession
 
-#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
+#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR) && !defined(USE_ASIO_INSTEAD)
 #    error Async session is not supported on this platform.
 #endif
 
