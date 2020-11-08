@@ -71,7 +71,7 @@ private:
         );
     }
 
-    void NewLine( const boost::system::error_code& error, std::size_t length )
+    void NewLine( const std::error_code& error, std::size_t length )
     {
         if ( !error || error == asio::error::not_found )
         {
