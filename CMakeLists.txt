@@ -31,6 +31,8 @@ cmake_minimum_required(VERSION 3.8)
 
 project(cli VERSION 1.2.1 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+
 option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
 
@@ -45,7 +47,7 @@ add_library(cli::cli ALIAS cli)
 
 target_include_directories(cli
         INTERFACE
-        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
@@ -65,16 +67,15 @@ if (CLI_BuildTests)
 endif()
 
 # Install
-install(DIRECTORY include DESTINATION .)
+install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
 	"cliConfig.cmake.in"
 	"${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-	INSTALL_DESTINATION "lib/cmake/cli"
+	INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
 )
 
-include(GNUInstallDirs)
 # Generate pkg-config .pc file
 set(PKGCONFIG_INSTALL_DIR
 	${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
@@ -86,12 +87,12 @@ configure_file(
 	@ONLY
 )
 
-install(TARGETS cli EXPORT cliTargets DESTINATION lib)
-install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION lib/cmake/cli)
+install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
 
 install(
 	FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-	DESTINATION "lib/cmake/cli"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
 )
 install(
       FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
