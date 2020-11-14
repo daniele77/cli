@@ -467,7 +467,7 @@ namespace cli
             return false;
         }
 
-        std::string Prompt() const
+        virtual std::string Prompt() const
         {
             return Name();
         }
