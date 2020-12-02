@@ -40,56 +40,42 @@ class BoostAsioScheduler : public Scheduler
 {
 public:
 
-#if BOOST_VERSION < 106600
-    using ContextType = boost::asio::io_service;
-#else
-    using ContextType = boost::asio::io_context;
-#endif
+    using ContextType = detail::asio::BoostExecutor::ContextType;
 
-    BoostAsioScheduler() = default;
+    BoostAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
+
+    BoostAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
+
+    ~BoostAsioScheduler() { if (owned) delete context; }
+
     // non copyable
     BoostAsioScheduler(const BoostAsioScheduler&) = delete;
     BoostAsioScheduler& operator=(const BoostAsioScheduler&) = delete;
 
-    void Stop()
-    {
-        context.stop();
-    }
+    void Stop() { context->stop(); }
 
     void Run()
     {
-#if BOOST_VERSION < 106600
-        boost::asio::io_service::work work(context);
-#else
-        auto work = boost::asio::make_work_guard(context);
-#endif    
-        context.run();
+        auto work = detail::asio::MakeWorkGuard(*context);
+        context->run();
     }
 
-    void ExecOne()
-    {
-        context.run_one();
-    }
+    void ExecOne() { context->run_one(); }
 
     void Post(const std::function<void()>& f) override
     {
-#if BOOST_VERSION < 106600
-        context.post(f);
-#else
-        auto executor = context.get_executor();
-        boost::asio::post(executor, f);
-#endif
+        executor.Post(f);
     }
 
-    ContextType& AsioContext()
-    {
-        return context;
-    }
+    ContextType& AsioContext() { return *context; }
 
 private:
 
-    ContextType context;
+    bool owned = false;
+    ContextType* context;
+    detail::asio::BoostExecutor executor;
 };
+
 
 } // namespace cli
 

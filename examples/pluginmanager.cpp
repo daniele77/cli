@@ -233,7 +233,7 @@ private:
 #endif
 #ifdef POLLING_SCHEDULER
     #include <cli/pollingscheduler.h>
-    using MainScheduler = LocalPollingScheduler;
+    using MainScheduler = PollingScheduler;
 #endif
 #ifdef SIMPLE_SCHEDULER
     #include <cli/simplescheduler.h>

@@ -31,6 +31,7 @@
 #include "cli/simplescheduler.h"
 #include "cli/pollingscheduler.h"
 #include "cli/boostasioscheduler.h"
+#include "cli/detail/boostasio.h"
 
 using namespace std;
 using namespace cli;
@@ -79,6 +80,8 @@ void ExceptionTest()
     BOOST_CHECK_THROW( scheduler.ExecOne(), int );
 }
 
+// start tests
+
 BOOST_AUTO_TEST_CASE(Basics)
 {
     SchedulingTest<SimpleScheduler>();
@@ -99,5 +102,16 @@ BOOST_AUTO_TEST_CASE(Exceptions)
     ExceptionTest<PollingScheduler>();
     ExceptionTest<BoostAsioScheduler>();
 }
+
+BOOST_AUTO_TEST_CASE(BoostAsioNonOwner)
+{
+    detail::asio::BoostExecutor::ContextType ioc;
+    BoostAsioScheduler scheduler(ioc);
+    bool done = false;
+    scheduler.Post( [&done](){ done = true; } );
+    ioc.run_one();
+    BOOST_CHECK(done);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()

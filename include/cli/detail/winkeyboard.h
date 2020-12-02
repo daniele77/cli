@@ -49,8 +49,7 @@ namespace detail
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(asio::BoostExecutor ex) :
-        InputDevice(ex)
+    explicit WinKeyboard(Scheduler& s) : InputDevice(s)
     {
         servant = std::make_unique<std::thread>([this]() { Read(); });
         servant->detach();

@@ -54,6 +54,12 @@ inline boost::asio::ip::address IpAddressFromString(const std::string& address)
     return boost::asio::ip::address::from_string(address);
 }
 
+inline boost::asio::io_service::work MakeWorkGuard(boost::asio::io_service& context)
+{
+    boost::asio::io_service::work work(context);
+    return work;
+}
+
 } // namespace oldboost
 } // namespace detail
 } // namespace cli

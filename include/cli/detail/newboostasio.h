@@ -58,6 +58,11 @@ inline boost::asio::ip::address IpAddressFromString(const std::string& address)
     return boost::asio::ip::make_address(address);
 }
 
+inline auto MakeWorkGuard(boost::asio::io_context& context)
+{
+    return boost::asio::make_work_guard(context);
+}
+
 } // namespace newboost
 } // namespace detail
 } // namespace cli
