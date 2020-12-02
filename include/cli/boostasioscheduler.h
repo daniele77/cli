@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,46 +27,70 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_INPUTDEVICE_H_
-#define CLI_DETAIL_INPUTDEVICE_H_
+#ifndef CLI_BOOSTASIOSCHEDULER_H_
+#define CLI_BOOSTASIOSCHEDULER_H_
 
-#include <functional>
-#include <string>
-#include "../scheduler.h"
+#include "detail/boostasio.h"
+#include "scheduler.h"
 
 namespace cli
 {
-namespace detail
-{
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof, ignored };
-
-class InputDevice
+class BoostAsioScheduler : public Scheduler
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
-    virtual ~InputDevice() = default;
+#if BOOST_VERSION < 106600
+    using ContextType = boost::asio::io_service;
+#else
+    using ContextType = boost::asio::io_context;
+#endif
 
-    template <typename H>
-    void Register(H&& h) { handler = std::forward<H>(h); }
+    BoostAsioScheduler() = default;
+    // non copyable
+    BoostAsioScheduler(const BoostAsioScheduler&) = delete;
+    BoostAsioScheduler& operator=(const BoostAsioScheduler&) = delete;
 
-protected:
-
-    void Notify(std::pair<KeyType,char> k)
+    void Stop()
     {
-        scheduler.Post([this,k](){ if (handler) handler(k); });
+        context.stop();
+    }
+
+    void Run()
+    {
+#if BOOST_VERSION < 106600
+        boost::asio::io_service::work work(context);
+#else
+        auto work = boost::asio::make_work_guard(context);
+#endif    
+        context.run();
+    }
+
+    void ExecOne()
+    {
+        context.run_one();
+    }
+
+    void Post(const std::function<void()>& f) override
+    {
+#if BOOST_VERSION < 106600
+        context.post(f);
+#else
+        auto executor = context.get_executor();
+        boost::asio::post(executor, f);
+#endif
+    }
+
+    ContextType& AsioContext()
+    {
+        return context;
     }
 
 private:
 
-    Scheduler& scheduler;
-    Handler handler;
+    ContextType context;
 };
 
-} // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_INPUTDEVICE_H_
-
+#endif // CLI_BOOSTASIOSCHEDULER_H_

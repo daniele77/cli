@@ -36,6 +36,7 @@
 #include "detail/server.h"
 #include "detail/inputdevice.h"
 #include "detail/boostasio.h"
+#include "boostasioscheduler.h"
 
 namespace cli
 {
@@ -442,8 +443,8 @@ class CliTelnetSession : public detail::InputDevice, public TelnetSession, publi
 {
 public:
 
-    CliTelnetSession(boost::asio::ip::tcp::socket _socket, Cli& _cli, std::function< void(std::ostream&)> _exitAction, std::size_t historySize ) :
-        InputDevice(detail::asio::BoostExecutor(_socket)),
+    CliTelnetSession(BoostAsioScheduler& _scheduler, boost::asio::ip::tcp::socket _socket, Cli& _cli, std::function< void(std::ostream&)> _exitAction, std::size_t historySize ) :
+        InputDevice(_scheduler),
         TelnetSession(std::move(_socket)),
         CliSession(_cli, TelnetSession::OutStream(), historySize),
         poll(*this, *this)
@@ -540,13 +541,15 @@ private:
 class CliTelnetServer : public detail::Server
 {
 public:
-    CliTelnetServer(detail::asio::BoostExecutor::ContextType& ios, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
-        detail::Server(ios, port),
+    CliTelnetServer(BoostAsioScheduler& _scheduler, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+        detail::Server(_scheduler.AsioContext(), port),
+        scheduler(_scheduler),
         cli(_cli),
         historySize(_historySize)
     {}
-    CliTelnetServer(detail::asio::BoostExecutor::ContextType& ios, std::string address, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
-        detail::Server(ios, address, port),
+    CliTelnetServer(BoostAsioScheduler& _scheduler, std::string address, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+        detail::Server(_scheduler.AsioContext(), address, port),
+        scheduler(_scheduler),
         cli(_cli),
         historySize(_historySize)
     {}
@@ -556,9 +559,10 @@ public:
     }
     virtual std::shared_ptr<detail::Session> CreateSession(boost::asio::ip::tcp::socket _socket) override
     {
-        return std::make_shared<CliTelnetSession>(std::move(_socket), cli, exitAction, historySize);
+        return std::make_shared<CliTelnetSession>(scheduler, std::move(_socket), cli, exitAction, historySize);
     }
 private:
+    BoostAsioScheduler& scheduler;
     Cli& cli;
     std::function< void(std::ostream&)> exitAction;
     std::size_t historySize;

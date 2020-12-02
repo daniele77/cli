@@ -70,6 +70,7 @@ EXE_OBJ_FILES= \
     test_commonprefix.obj \
     test_menu.obj \
     test_cli.obj \
+    test_scheduler.obj \
     driver.obj
 
 .PHONY: all mainapp test clean

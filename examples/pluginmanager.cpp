@@ -27,7 +27,7 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include "cli/clilocalsession.h" // include boost asio
+#include "cli/clilocalsession.h"
 #include "cli/cli.h"
 #include <vector>
 
@@ -225,13 +225,23 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point
 
+#define SIMPLE_SCHEDULER
+
+#ifdef BOOST_SCHEDULER
+    #include <cli/boostasioscheduler.h>
+    using MainScheduler = BoostAsioScheduler;
+#endif
+#ifdef POLLING_SCHEDULER
+    #include <cli/pollingscheduler.h>
+    using MainScheduler = LocalPollingScheduler;
+#endif
+#ifdef SIMPLE_SCHEDULER
+    #include <cli/simplescheduler.h>
+    using MainScheduler = SimpleScheduler;
+#endif
+
 int main()
 {
-#if BOOST_VERSION < 106600
-    boost::asio::io_service ioc;
-#else
-    boost::asio::io_context ioc;
-#endif
     CmdHandler colorCmd;
     CmdHandler nocolorCmd;    
 
@@ -290,21 +300,17 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-    CliLocalTerminalSession localSession(cli, ioc, std::cout, 200);
+    MainScheduler scheduler;
+    CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
     localSession.ExitAction(
-        [&ioc](auto& out) // session exit action
+        [&scheduler](auto& out) // session exit action
         {
             out << "Closing App...\n";
-            ioc.stop();
+            scheduler.Stop();
         }
     );
 
-#if BOOST_VERSION < 106600
-    boost::asio::io_service::work work(ioc);
-#else
-    auto work = boost::asio::make_work_guard(ioc);
-#endif    
-    ioc.run();
+    scheduler.Run();
 
     return 0;
 }

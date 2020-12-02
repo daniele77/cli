@@ -48,6 +48,7 @@ add_executable(
 	test_commonprefix.cpp
 	test_menu.cpp
 	test_cli.cpp
+	test_scheduler.cpp
 )
 # indicates the include paths
 target_include_directories(test_suite PRIVATE ${Boost_INCLUDE_DIRS})

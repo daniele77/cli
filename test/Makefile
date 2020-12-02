@@ -45,6 +45,7 @@ OBJ := test_history.o \
        test_commonprefix.o \
 	   test_menu.o \
 	   test_cli.o \
+	   test_scheduler.o \
        driver.o
 
 EXE := test_suite

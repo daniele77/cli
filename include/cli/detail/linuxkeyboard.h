@@ -33,7 +33,6 @@
 #include <thread>
 #include <memory>
 #include <atomic>
-#include "boostasio.h"
 
 #include <stdio.h>
 #include <termios.h>
@@ -52,8 +51,8 @@ namespace detail
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(asio::BoostExecutor ex) :
-        InputDevice(ex)
+    explicit LinuxKeyboard(Scheduler& _scheduler) :
+        InputDevice(_scheduler)
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );

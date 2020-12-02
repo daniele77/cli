@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,46 +27,66 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_INPUTDEVICE_H_
-#define CLI_DETAIL_INPUTDEVICE_H_
+#ifndef CLI_LOCALSCHEDULER_H_
+#define CLI_LOCALSCHEDULER_H_
 
-#include <functional>
-#include <string>
-#include "../scheduler.h"
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include "scheduler.h"
 
 namespace cli
 {
-namespace detail
-{
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof, ignored };
-
-class InputDevice
+class SimpleScheduler : public Scheduler
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
+    SimpleScheduler() = default;
+    // non copyable
+    SimpleScheduler(const SimpleScheduler&) = delete;
+    SimpleScheduler& operator=(const SimpleScheduler&) = delete;
 
-    InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
-    virtual ~InputDevice() = default;
-
-    template <typename H>
-    void Register(H&& h) { handler = std::forward<H>(h); }
-
-protected:
-
-    void Notify(std::pair<KeyType,char> k)
+    void Stop()
     {
-        scheduler.Post([this,k](){ if (handler) handler(k); });
+        std::lock_guard<std::mutex> lck (mtx);
+        running = false;
+        cv.notify_all();
     }
+    void Run()
+    {
+        while( ExecOne() ) {};
+    }
+    void Post(const std::function<void()>& f) override
+    {
+        std::lock_guard<std::mutex> lck (mtx);
+        tasks.push(f);
+        cv.notify_all();
+    }
+    bool ExecOne()
+    {
+        std::function<void()> task;
+        {
+            std::unique_lock<std::mutex> lck(mtx);
+            cv.wait(lck, [this](){ return !running || !tasks.empty(); });
+            if (!running)
+                return false;
+            task = tasks.front();
+            tasks.pop();
+        }
 
+        if (task)
+            task();
+
+        return true;
+    }
 private:
-
-    Scheduler& scheduler;
-    Handler handler;
+    std::queue<std::function<void()>> tasks;
+    bool running{ true };
+    std::mutex mtx;
+    std::condition_variable cv;
 };
 
-} // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_INPUTDEVICE_H_
-
+#endif // CLI_LOCALSCHEDULER_H_

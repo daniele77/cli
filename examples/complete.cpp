@@ -27,26 +27,25 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include <cli/clilocalsession.h> // include boost asio
+#define ENABLE_TELNET_SERVER
+
+#include <cli/clilocalsession.h>
+#ifdef ENABLE_TELNET_SERVER
 #include <cli/remotecli.h>
+#endif
 // TODO. NB: remotecli.h and clilocalsession.h both includes boost asio,
 // so in Windows it should appear before cli.h that include rang
 // (consider to provide a global header file for the library)
 #include <cli/cli.h>
 #include <cli/filehistorystorage.h>
+#include <cli/boostasioscheduler.h>
 
-#define ENABLE_TELNET_SERVER
 
 using namespace cli;
 using namespace std;
 
 int main()
 {
-#if BOOST_VERSION < 106600
-    boost::asio::io_service ios;
-#else
-    boost::asio::io_context ios;
-#endif
     CmdHandler colorCmd;
     CmdHandler nocolorCmd;
 
@@ -184,12 +183,14 @@ int main()
         }
     );
 
-    CliLocalTerminalSession localSession(cli, ios, std::cout, 200);
+    using MainScheduler = BoostAsioScheduler;
+    MainScheduler scheduler;
+    CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
     localSession.ExitAction(
-        [&ios](auto& out) // session exit action
+        [&scheduler](auto& out) // session exit action
         {
             out << "Closing App...\n";
-            ios.stop();
+            scheduler.Stop();
         }
     );
 
@@ -197,21 +198,13 @@ int main()
 
 #ifdef ENABLE_TELNET_SERVER
 
-    CliTelnetServer server(ios, 5000, cli);
+    CliTelnetServer server(scheduler, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
 
-#else // ENABLE_TELNET_SERVER
-
-#if BOOST_VERSION < 106600
-    boost::asio::io_service::work work(ios);
-#else
-        auto work = boost::asio::make_work_guard(ios);
-#endif  
-
 #endif // ENABLE_TELNET_SERVER
 
-    ios.run();
+    scheduler.Run();
 
     return 0;
 }

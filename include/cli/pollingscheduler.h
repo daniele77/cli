@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,46 +27,65 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_INPUTDEVICE_H_
-#define CLI_DETAIL_INPUTDEVICE_H_
+#ifndef CLI_POLLINGSCHEDULER_H_
+#define CLI_POLLINGSCHEDULER_H_
 
-#include <functional>
-#include <string>
-#include "../scheduler.h"
+#include "scheduler.h"
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <chrono>
 
 namespace cli
 {
-namespace detail
-{
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof, ignored };
-
-class InputDevice
+class PollingScheduler : public Scheduler
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
+    PollingScheduler() { running.test_and_set(); }
+    // non copyable
+    PollingScheduler(const PollingScheduler&) = delete;
+    PollingScheduler& operator=(const PollingScheduler&) = delete;
 
-    InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
-    virtual ~InputDevice() = default;
-
-    template <typename H>
-    void Register(H&& h) { handler = std::forward<H>(h); }
-
-protected:
-
-    void Notify(std::pair<KeyType,char> k)
+    void Stop()
     {
-        scheduler.Post([this,k](){ if (handler) handler(k); });
+        running.clear();
     }
+    void Run()
+    {
+        while(running.test_and_set())
+        {
+            ExecOne();
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+    void Post(const std::function<void()>& f) override
+    {
+        std::lock_guard<std::recursive_mutex> lck (mtx);
+        tasks.push(f);
+    }
+    void ExecOne()
+    {
+        std::function<void()> task;
+        
+        {
+            std::lock_guard<std::recursive_mutex> lck(mtx);
 
+            if (tasks.empty())
+                return;
+            task = tasks.front();
+            tasks.pop();
+        }
+
+        if (task)
+            task();
+    }
 private:
-
-    Scheduler& scheduler;
-    Handler handler;
+    std::queue<std::function<void()>> tasks;
+    std::atomic_flag running = ATOMIC_FLAG_INIT;
+    std::recursive_mutex mtx;
 };
 
-} // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_INPUTDEVICE_H_
-
+#endif // CLI_POLLINGSCHEDULER_H_

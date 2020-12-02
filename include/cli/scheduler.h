@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,46 +27,21 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_INPUTDEVICE_H_
-#define CLI_DETAIL_INPUTDEVICE_H_
+#ifndef CLI_SCHEDULER_H_
+#define CLI_SCHEDULER_H_
 
 #include <functional>
-#include <string>
-#include "../scheduler.h"
 
 namespace cli
 {
-namespace detail
-{
 
-enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof, ignored };
-
-class InputDevice
+class Scheduler
 {
 public:
-    using Handler = std::function< void( std::pair<KeyType,char> ) >;
-
-    InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
-    virtual ~InputDevice() = default;
-
-    template <typename H>
-    void Register(H&& h) { handler = std::forward<H>(h); }
-
-protected:
-
-    void Notify(std::pair<KeyType,char> k)
-    {
-        scheduler.Post([this,k](){ if (handler) handler(k); });
-    }
-
-private:
-
-    Scheduler& scheduler;
-    Handler handler;
+    virtual ~Scheduler() = default;
+    virtual void Post(const std::function<void()>& f) = 0;
 };
 
-} // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_INPUTDEVICE_H_
-
+#endif // CLI_SCHEDULER_H_
