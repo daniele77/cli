@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+ - Fix missing echo after ctrl-v paste of command (issue #72)
+
 ## [1.2.1] - 2020-08-27
 
  - With Boost >= 1.74 use TS exectuor by default (issue #79)
