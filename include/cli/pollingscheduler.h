@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -43,6 +43,7 @@ class PollingScheduler : public Scheduler
 {
 public:
     PollingScheduler() { running.test_and_set(); }
+    ~PollingScheduler() { Stop(); }
     // non copyable
     PollingScheduler(const PollingScheduler&) = delete;
     PollingScheduler& operator=(const PollingScheduler&) = delete;

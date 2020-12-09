@@ -27,21 +27,56 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_SCHEDULER_H_
-#define CLI_SCHEDULER_H_
+#ifndef CLI_GENERICASIOSCHEDULER_H_
+#define CLI_GENERICASIOSCHEDULER_H_
 
-#include <functional>
+#include "detail/asiolib.h"
+#include "scheduler.h"
 
 namespace cli
 {
 
-class Scheduler
+class GenericAsioScheduler : public Scheduler
 {
 public:
-    virtual ~Scheduler() = default;
-    virtual void Post(const std::function<void()>& f) = 0;
+
+    using ContextType = detail::asiocontext::Executor::ContextType;
+
+    GenericAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
+
+    GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
+
+    ~GenericAsioScheduler() { if (owned) delete context; }
+
+    // non copyable
+    GenericAsioScheduler(const GenericAsioScheduler&) = delete;
+    GenericAsioScheduler& operator=(const GenericAsioScheduler&) = delete;
+
+    void Stop() { context->stop(); }
+
+    void Run()
+    {
+        auto work = detail::asiocontext::MakeWorkGuard(*context);
+        context->run();
+    }
+
+    void ExecOne() { context->run_one(); }
+
+    void Post(const std::function<void()>& f) override
+    {
+        executor.Post(f);
+    }
+
+    ContextType& AsioContext() { return *context; }
+
+private:
+
+    bool owned = false;
+    ContextType* context;
+    detail::asiocontext::Executor executor;
 };
+
 
 } // namespace cli
 
-#endif // CLI_SCHEDULER_H_
+#endif // CLI_GENERICASIOSCHEDULER_H_

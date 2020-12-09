@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -56,7 +56,7 @@ public:
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
+        servant->detach();
     }
     ~LinuxKeyboard()
     {

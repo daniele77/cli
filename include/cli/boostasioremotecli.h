@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,45 +27,14 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_NEWBOOSTASIO_H_
-#define CLI_DETAIL_NEWBOOSTASIO_H_
+#ifndef CLI_BOOSTASIOREMOTECLI_H_
+#define CLI_BOOSTASIOREMOTECLI_H_
 
-#if BOOST_VERSION >= 107400
-#   define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-#endif
+#define CLI_INTERNAL_USE_BOOST_ASIO
 
-#include <boost/asio.hpp>
+#include "genericasioremotecli.h"
 
-namespace cli {
-namespace detail {
-namespace newboost {
+namespace cli { using CliTelnetServer = CliGenericTelnetServer; }
 
-class BoostExecutor
-{
-public:
-    using ContextType = boost::asio::io_context;
-    explicit BoostExecutor(ContextType& ios) :
-        executor(ios.get_executor()) {}
-    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
-        executor(socket.get_executor()) {}
-    template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
-private:
-    boost::asio::executor executor;
-};
-
-inline boost::asio::ip::address IpAddressFromString(const std::string& address)
-{
-    return boost::asio::ip::make_address(address);
-}
-
-inline auto MakeWorkGuard(boost::asio::io_context& context)
-{
-    return boost::asio::make_work_guard(context);
-}
-
-} // namespace newboost
-} // namespace detail
-} // namespace cli
-
-#endif // CLI_DETAIL_NEWBOOSTASIO_H_
+#endif // CLI_BOOSTASIOREMOTECLI_H_
 

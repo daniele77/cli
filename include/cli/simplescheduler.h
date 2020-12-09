@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -43,6 +43,11 @@ class SimpleScheduler : public Scheduler
 {
 public:
     SimpleScheduler() = default;
+    ~SimpleScheduler()
+    {
+        Stop();
+    }
+
     // non copyable
     SimpleScheduler(const SimpleScheduler&) = delete;
     SimpleScheduler& operator=(const SimpleScheduler&) = delete;

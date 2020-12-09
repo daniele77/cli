@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,25 +27,64 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_BOOSTIO_H_
-#define CLI_DETAIL_BOOSTIO_H_
+#ifndef CLI_DETAIL_ASIOLIB_H_
+#define CLI_DETAIL_ASIOLIB_H_
 
-#include <boost/version.hpp>
+#ifdef CLI_INTERNAL_USE_BOOST_ASIO
 
-#if BOOST_VERSION < 106600
-    #include "oldboostasio.h"
-    namespace cli {
-    namespace detail {
-        namespace asio = oldboost;
-    }
-    }
-#else
-    #include "newboostasio.h"
-    namespace cli {
-    namespace detail {
-        namespace asio = newboost;
-    }
-    }
+    #include <boost/version.hpp>
+
+    #if BOOST_VERSION >= 107400
+        #define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
+    #endif
+
+    #include <boost/asio.hpp>
+
+    namespace cli { namespace detail { namespace asiolib = boost::asio; } }
+
+    using boost::system::error_code;
+
+    #define CLI_DETAIL_ASIO_HAS_POSIX_STREAM_DESCRIPTOR BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
+
+    #if BOOST_VERSION < 106600
+        #include "oldboostasiocontext.h"
+        namespace cli {
+        namespace detail {
+            namespace asiocontext = oldboostcontainer;
+        }
+        }
+    #else
+        #include "genericasiocontext.h"
+        namespace cli {
+        namespace detail {
+            namespace asiocontext = genericasiocontainer;
+        }
+        }
+    #endif
+
 #endif
 
-#endif // CLI_DETAIL_BOOSTIO_H_
+
+#ifdef CLI_INTERNAL_USE_STANDALONE_ASIO
+
+    #define ASIO_USE_TS_EXECUTOR_AS_DEFAULT
+
+    #include <asio.hpp>
+
+    namespace cli { namespace detail { namespace asiolib = asio; } }
+
+    using ::std::error_code;
+
+    #define CLI_DETAIL_ASIO_HAS_POSIX_STREAM_DESCRIPTOR ASIO_HAS_POSIX_STREAM_DESCRIPTOR
+
+    #include "genericasiocontext.h"
+    namespace cli {
+    namespace detail {
+        namespace asiocontext = genericasiocontainer;
+    }
+    }
+
+#endif
+
+
+#endif // CLI_DETAIL_ASIOLIB_H_

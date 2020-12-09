@@ -27,21 +27,13 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_SCHEDULER_H_
-#define CLI_SCHEDULER_H_
+#ifndef CLI_STANDALONEASIOSCHEDULER_H_
+#define CLI_STANDALONEASIOSCHEDULER_H_
 
-#include <functional>
+#define CLI_INTERNAL_USE_STANDALONE_ASIO
 
-namespace cli
-{
+#include "genericasioscheduler.h"
 
-class Scheduler
-{
-public:
-    virtual ~Scheduler() = default;
-    virtual void Post(const std::function<void()>& f) = 0;
-};
+namespace cli { using StandaloneAsioScheduler = GenericAsioScheduler; }
 
-} // namespace cli
-
-#endif // CLI_SCHEDULER_H_
+#endif // CLI_STANDALONEASIOSCHEDULER_H_

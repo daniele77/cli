@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -31,7 +31,6 @@
 #include "cli/simplescheduler.h"
 #include "cli/pollingscheduler.h"
 #include "cli/boostasioscheduler.h"
-#include "cli/detail/boostasio.h"
 
 using namespace std;
 using namespace cli;

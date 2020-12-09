@@ -27,21 +27,15 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_SCHEDULER_H_
-#define CLI_SCHEDULER_H_
+#ifndef CLI_STANDALONEASIOREMOTECLI_H_
+#define CLI_STANDALONEASIOREMOTECLI_H_
 
-#include <functional>
+#define CLI_INTERNAL_USE_STANDALONE_ASIO
 
-namespace cli
-{
+#include "genericasioremotecli.h"
 
-class Scheduler
-{
-public:
-    virtual ~Scheduler() = default;
-    virtual void Post(const std::function<void()>& f) = 0;
-};
+namespace cli { using CliTelnetServer = CliGenericTelnetServer; }
 
-} // namespace cli
 
-#endif // CLI_SCHEDULER_H_
+#endif // CLI_STANDALONEASIOREMOTECLI_H_
+

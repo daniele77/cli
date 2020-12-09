@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -225,11 +225,16 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point
 
-#define SIMPLE_SCHEDULER
+// #define ASIO_SCHEDULER
+#define BOOST_SCHEDULER
 
 #ifdef BOOST_SCHEDULER
     #include <cli/boostasioscheduler.h>
     using MainScheduler = BoostAsioScheduler;
+#endif
+#ifdef ASIO_SCHEDULER
+    #include <cli/standaloneasioscheduler.h>
+    using MainScheduler = StandaloneAsioScheduler;
 #endif
 #ifdef POLLING_SCHEDULER
     #include <cli/pollingscheduler.h>

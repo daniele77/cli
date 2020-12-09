@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016, 2018 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -31,12 +31,9 @@
 #define CLI_ASYNCSESSION_H_
 
 #include <string>
-#include "detail/boostasio.h"
 #include "cli.h" // CliSession
-
-#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-#    error Async session is not supported on this platform.
-#endif
+#include "detail/asiolib.h"
+#include "genericasioscheduler.h"
 
 namespace cli
 {
@@ -44,9 +41,9 @@ namespace cli
 class CliAsyncSession : public CliSession
 {
 public:
-    CliAsyncSession(detail::asio::BoostExecutor::ContextType& ios, Cli& _cli) :
+    CliAsyncSession(GenericAsioScheduler& _scheduler, Cli& _cli) :
         CliSession(_cli, std::cout, 1),
-        input(ios, ::dup( STDIN_FILENO))
+        input(_scheduler.AsioContext(), ::dup(STDIN_FILENO))
     {
         Read();
     }
@@ -61,7 +58,7 @@ private:
     {
         Prompt();
         // Read a line of input entered by the user.
-        boost::asio::async_read_until(
+        detail::asiolib::async_read_until(
             input,
             inputBuffer,
             '\n',
@@ -71,14 +68,14 @@ private:
         );
     }
 
-    void NewLine( const boost::system::error_code& error, std::size_t length )
+    void NewLine( const error_code& error, std::size_t length )
     {
-        if ( !error || error == boost::asio::error::not_found )
+        if ( !error || error == detail::asiolib::error::not_found )
         {
             auto bufs = inputBuffer.data();
             auto size = static_cast<long>(length);
             if ( !error ) --size; // remove \n
-            std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
+            std::string s( detail::asiolib::buffers_begin( bufs ), detail::asiolib::buffers_begin( bufs ) + size );
             inputBuffer.consume( length );
 
             Feed( s );
@@ -90,8 +87,8 @@ private:
         }
     }
 
-    boost::asio::streambuf inputBuffer;
-    boost::asio::posix::stream_descriptor input;
+    detail::asiolib::streambuf inputBuffer;
+    detail::asiolib::posix::stream_descriptor input;
 };
 
 } // namespace

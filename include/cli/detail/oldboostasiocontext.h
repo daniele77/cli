@@ -27,21 +27,42 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_SCHEDULER_H_
-#define CLI_SCHEDULER_H_
+#ifndef CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
+#define CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
 
-#include <functional>
+#include <boost/asio.hpp>
 
-namespace cli
-{
+namespace cli {
+namespace detail {
+namespace oldboostcontainer {
 
-class Scheduler
+class Executor
 {
 public:
-    virtual ~Scheduler() = default;
-    virtual void Post(const std::function<void()>& f) = 0;
+    using ContextType = boost::asio::io_service;
+    explicit Executor(ContextType& _ios) :
+        ios(_ios) {}
+    explicit Executor(boost::asio::ip::tcp::socket& socket) :
+        ios(socket.get_io_service()) {}
+    template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+private:
+    ContextType& ios;
 };
 
+inline boost::asio::ip::address IpAddressFromString(const std::string& address)
+{
+    return boost::asio::ip::address::from_string(address);
+}
+
+inline boost::asio::io_service::work MakeWorkGuard(boost::asio::io_service& context)
+{
+    boost::asio::io_service::work work(context);
+    return work;
+}
+
+} // namespace oldboostcontainer
+} // namespace detail
 } // namespace cli
 
-#endif // CLI_SCHEDULER_H_
+#endif // CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
+

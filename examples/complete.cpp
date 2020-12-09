@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -29,16 +29,26 @@
 
 #define ENABLE_TELNET_SERVER
 
+#define USE_BOOST_ASIO
+
 #include <cli/clilocalsession.h>
-#ifdef ENABLE_TELNET_SERVER
-#include <cli/remotecli.h>
+#ifdef USE_BOOST_ASIO
+    #include <cli/boostasioscheduler.h>
+#else
+    #include <cli/standaloneasioscheduler.h>
 #endif
-// TODO. NB: remotecli.h and clilocalsession.h both includes boost asio,
+#ifdef ENABLE_TELNET_SERVER
+    #ifdef USE_BOOST_ASIO
+        #include <cli/boostasioremotecli.h>
+    #else
+        #include <cli/standaloneasioremotecli.h>
+    #endif
+#endif
+// TODO. NB: *remotecli.h and clilocalsession.h both includes boost asio,
 // so in Windows it should appear before cli.h that include rang
 // (consider to provide a global header file for the library)
 #include <cli/cli.h>
 #include <cli/filehistorystorage.h>
-#include <cli/boostasioscheduler.h>
 
 
 using namespace cli;
@@ -183,7 +193,11 @@ int main()
         }
     );
 
+#ifdef USE_BOOST_ASIO
     using MainScheduler = BoostAsioScheduler;
+#else
+    using MainScheduler = StandaloneAsioScheduler;
+#endif
     MainScheduler scheduler;
     CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
     localSession.ExitAction(

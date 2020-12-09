@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -35,8 +35,6 @@
 #include <thread>
 #include <memory>
 #include <atomic>
-#include "boostasio.h"
-
 #include <conio.h>
 
 #include "inputdevice.h"
@@ -49,9 +47,9 @@ namespace detail
 class WinKeyboard : public InputDevice
 {
 public:
-    explicit WinKeyboard(Scheduler& s) : InputDevice(s)
+    explicit WinKeyboard(Scheduler& _scheduler) : InputDevice(_scheduler)
     {
-        servant = std::make_unique<std::thread>([this]() { Read(); });
+        servant = std::make_unique<std::thread>( [this](){ Read(); } );
         servant->detach();
     }
     ~WinKeyboard()

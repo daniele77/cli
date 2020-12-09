@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,42 +27,39 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_OLDBOOSTASIO_H_
-#define CLI_DETAIL_OLDBOOSTASIO_H_
-
-#include <boost/asio.hpp>
+#ifndef CLI_DETAIL_GENERICASIOCONTAINER_H_
+#define CLI_DETAIL_GENERICASIOCONTAINER_H_
 
 namespace cli {
 namespace detail {
-namespace oldboost {
+namespace genericasiocontainer {
 
-class BoostExecutor
+class Executor
 {
 public:
-    using ContextType = boost::asio::io_service;
-    explicit BoostExecutor(ContextType& _ios) :
-        ios(_ios) {}
-    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
-        ios(socket.get_io_service()) {}
-    template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+    using ContextType = asiolib::io_context;
+    explicit Executor(ContextType& ios) :
+        executor(ios.get_executor()) {}
+    explicit Executor(asiolib::ip::tcp::socket& socket) :
+        executor(socket.get_executor()) {}
+    template <typename T> void Post(T&& t) { asiolib::post(executor, std::forward<T>(t)); }
 private:
-    ContextType& ios;
+    asiolib::executor executor;
 };
 
-inline boost::asio::ip::address IpAddressFromString(const std::string& address)
+inline asiolib::ip::address IpAddressFromString(const std::string& address)
 {
-    return boost::asio::ip::address::from_string(address);
+    return asiolib::ip::make_address(address);
 }
 
-inline boost::asio::io_service::work MakeWorkGuard(boost::asio::io_service& context)
+inline auto MakeWorkGuard(asiolib::io_context& context)
 {
-    boost::asio::io_service::work work(context);
-    return work;
+    return asiolib::make_work_guard(context);
 }
 
-} // namespace oldboost
+} // namespace genericasiocontainer
 } // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_OLDBOOSTASIO_H_
+#endif // CLI_DETAIL_GENERICASIOCONTAINER_H_
 

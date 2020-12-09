@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -30,53 +30,10 @@
 #ifndef CLI_BOOSTASIOSCHEDULER_H_
 #define CLI_BOOSTASIOSCHEDULER_H_
 
-#include "detail/boostasio.h"
-#include "scheduler.h"
+#define CLI_INTERNAL_USE_BOOST_ASIO
 
-namespace cli
-{
+#include "genericasioscheduler.h"
 
-class BoostAsioScheduler : public Scheduler
-{
-public:
-
-    using ContextType = detail::asio::BoostExecutor::ContextType;
-
-    BoostAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
-
-    BoostAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
-
-    ~BoostAsioScheduler() { if (owned) delete context; }
-
-    // non copyable
-    BoostAsioScheduler(const BoostAsioScheduler&) = delete;
-    BoostAsioScheduler& operator=(const BoostAsioScheduler&) = delete;
-
-    void Stop() { context->stop(); }
-
-    void Run()
-    {
-        auto work = detail::asio::MakeWorkGuard(*context);
-        context->run();
-    }
-
-    void ExecOne() { context->run_one(); }
-
-    void Post(const std::function<void()>& f) override
-    {
-        executor.Post(f);
-    }
-
-    ContextType& AsioContext() { return *context; }
-
-private:
-
-    bool owned = false;
-    ContextType* context;
-    detail::asio::BoostExecutor executor;
-};
-
-
-} // namespace cli
+namespace cli { using BoostAsioScheduler = GenericAsioScheduler; }
 
 #endif // CLI_BOOSTASIOSCHEDULER_H_

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2018 Daniele Pallastrelli
+ * Copyright (C) 2016-2020 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -32,6 +32,18 @@
 
 using namespace cli;
 using namespace std;
+
+// #define ASIO_SCHEDULER
+#define BOOST_SCHEDULER
+
+#ifdef BOOST_SCHEDULER
+    #include <cli/boostasioscheduler.h>
+    using MainScheduler = BoostAsioScheduler;
+#endif
+#ifdef ASIO_SCHEDULER
+    #include <cli/standaloneasioscheduler.h>
+    using MainScheduler = StandaloneAsioScheduler;
+#endif
 
 
 int main()
@@ -84,20 +96,16 @@ int main()
     // global exit action
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
-#if BOOST_VERSION < 106600
-    boost::asio::io_service ios;
-#else
-    boost::asio::io_context ios;
-#endif
-    CliAsyncSession session(ios, cli);
+    MainScheduler scheduler;
+    CliAsyncSession session(scheduler, cli);
     session.ExitAction(
-        [&ios](auto& out) // session exit action
+        [&scheduler](auto& out) // session exit action
         {
             out << "Closing App...\n";
-            ios.stop();
+            scheduler.Stop();
         }
     );    
-    ios.run();
+    scheduler.Run();
 
     return 0;
 }
