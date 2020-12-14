@@ -62,7 +62,7 @@ protected:
     {
       auto self( shared_from_this() );
       socket.async_read_some(asiolib::buffer( data, max_length ),
-          [ this, self ]( error_code ec, std::size_t length )
+          [ this, self ]( asiolibec::error_code ec, std::size_t length )
           {
               if ( !socket.is_open() || ( ec == asiolib::error::eof ) || ( ec == asiolib::error::connection_reset ) )
                   OnDisconnect();
@@ -78,7 +78,7 @@ protected:
 
     virtual void Send(const std::string& msg)
     {
-        error_code ec;
+        asiolibec::error_code ec;
         asiolib::write(socket, asiolib::buffer(msg), ec);
         if ((ec == asiolib::error::eof) || (ec == asiolib::error::connection_reset))
             OnDisconnect();
@@ -116,6 +116,7 @@ private:
 };
 
 
+template <typename ASIOLIB>
 class Server
 {
 public:
@@ -123,14 +124,14 @@ public:
     Server( const Server& ) = delete;
     Server& operator = ( const Server& ) = delete;
 
-    Server(asiocontext::Executor::ContextType& ios, unsigned short port) :
+    Server(typename ASIOLIB::ContextType& ios, unsigned short port) :
         acceptor(ios, asiolib::ip::tcp::endpoint(asiolib::ip::tcp::v4(), port)),
         socket(ios)
     {
         Accept();
     }
-    Server(asiocontext::Executor::ContextType& ios, std::string address, unsigned short port) :
-        acceptor(ios, asiolib::ip::tcp::endpoint(asiocontext::IpAddressFromString(address), port)),
+    Server(typename ASIOLIB::ContextType& ios, std::string address, unsigned short port) :
+        acceptor(ios, asiolib::ip::tcp::endpoint(ASIOLIB::IpAddressFromString(address), port)),
         socket(ios)
     {
         Accept();
@@ -141,7 +142,7 @@ public:
 private:
     void Accept()
     {
-        acceptor.async_accept(socket, [this](error_code ec)
+        acceptor.async_accept(socket, [this](asiolibec::error_code ec)
             {
                 if (!ec) CreateSession(std::move(socket))->Start();
                 Accept();

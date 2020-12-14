@@ -27,71 +27,61 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_ASYNCSESSION_H_
-#define CLI_ASYNCSESSION_H_
+#ifndef CLI_DETAIL_GENERICASIOSCHEDULER_H_
+#define CLI_DETAIL_GENERICASIOSCHEDULER_H_
 
-#include <string>
-#include "cli.h" // CliSession
-#include "detail/asiolib.h"
-#include "genericasioscheduler.h"
+#include "../scheduler.h"
 
 namespace cli
 {
+namespace detail
+{
 
-class CliAsyncSession : public CliSession
+template <typename ASIOLIB>
+class GenericAsioScheduler : public Scheduler
 {
 public:
-    CliAsyncSession(GenericAsioScheduler& _scheduler, Cli& _cli) :
-        CliSession(_cli, std::cout, 1),
-        input(_scheduler.AsioContext(), ::dup(STDIN_FILENO))
+
+    using ContextType = typename ASIOLIB::ContextType;
+
+    GenericAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
+
+    GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
+
+    ~GenericAsioScheduler() { if (owned) delete context; }
+
+    // non copyable
+    GenericAsioScheduler(const GenericAsioScheduler&) = delete;
+    GenericAsioScheduler& operator=(const GenericAsioScheduler&) = delete;
+
+    void Stop() { context->stop(); }
+
+    void Run()
     {
-        Read();
+        auto work = ASIOLIB::MakeWorkGuard(*context);
+        context->run();
     }
-    ~CliAsyncSession()
+
+    void ExecOne() { context->run_one(); }
+
+    void Post(const std::function<void()>& f) override
     {
-        input.close();
+        executor.Post(f);
     }
+
+    ContextType& AsioContext() { return *context; }
 
 private:
 
-    void Read()
-    {
-        Prompt();
-        // Read a line of input entered by the user.
-        detail::asiolib::async_read_until(
-            input,
-            inputBuffer,
-            '\n',
-            std::bind( &CliAsyncSession::NewLine, this,
-                       std::placeholders::_1,
-                       std::placeholders::_2 )
-        );
-    }
+    using ExecutorType = typename ASIOLIB::Executor;
 
-    void NewLine( const error_code& error, std::size_t length )
-    {
-        if ( !error || error == detail::asiolib::error::not_found )
-        {
-            auto bufs = inputBuffer.data();
-            auto size = static_cast<long>(length);
-            if ( !error ) --size; // remove \n
-            std::string s( detail::asiolib::buffers_begin( bufs ), detail::asiolib::buffers_begin( bufs ) + size );
-            inputBuffer.consume( length );
-
-            Feed( s );
-            Read();
-        }
-        else
-        {
-            input.close();
-        }
-    }
-
-    detail::asiolib::streambuf inputBuffer;
-    detail::asiolib::posix::stream_descriptor input;
+    bool owned = false;
+    ContextType* context;
+    ExecutorType executor;
 };
 
-} // namespace
 
-#endif // CLI_ASYNCSESSION_H_
+} // namespace detail
+} // namespace cli
 
+#endif // CLI_DETAIL_GENERICASIOSCHEDULER_H_

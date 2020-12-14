@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 
 BOOST_AUTO_TEST_CASE(BoostAsioNonOwner)
 {
-    detail::asio::BoostExecutor::ContextType ioc;
+    detail::BoostAsioLib::ContextType ioc;
     BoostAsioScheduler scheduler(ioc);
     bool done = false;
     scheduler.Post( [&done](){ done = true; } );

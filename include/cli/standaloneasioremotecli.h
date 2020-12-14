@@ -30,11 +30,10 @@
 #ifndef CLI_STANDALONEASIOREMOTECLI_H_
 #define CLI_STANDALONEASIOREMOTECLI_H_
 
-#define CLI_INTERNAL_USE_STANDALONE_ASIO
+#include "detail/genericasioremotecli.h"
+#include "detail/standaloneasiolib.h"
 
-#include "genericasioremotecli.h"
-
-namespace cli { using CliTelnetServer = CliGenericTelnetServer; }
+namespace cli { using StandaloneAsioCliTelnetServer = detail::CliGenericTelnetServer<detail::StandaloneAsioLib>; }
 
 
 #endif // CLI_STANDALONEASIOREMOTECLI_H_

@@ -27,12 +27,14 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_BOOSTASIOSCHEDULER_H_
-#define CLI_BOOSTASIOSCHEDULER_H_
+#ifndef CLI_STANDALONEASIOCLIASYNCSESSION_H_
+#define CLI_STANDALONEASIOCLIASYNCSESSION_H_
 
-#include "detail/genericasioscheduler.h"
-#include "detail/boostasiolib.h"
+#include "detail/genericcliasyncsession.h"
+#include "detail/standaloneasiolib.h"
 
-namespace cli { using BoostAsioScheduler = detail::GenericAsioScheduler<detail::BoostAsioLib>; }
 
-#endif // CLI_BOOSTASIOSCHEDULER_H_
+namespace cli { using StandaloneAsioCliAsyncSession = detail::GenericCliAsyncSession<detail::StandaloneAsioLib>; }
+
+#endif // CLI_STANDALONEASIOCLIASYNCSESSION_H_
+

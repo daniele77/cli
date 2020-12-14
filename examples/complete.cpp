@@ -27,22 +27,15 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#define ENABLE_TELNET_SERVER
-
 #define USE_BOOST_ASIO
 
 #include <cli/clilocalsession.h>
 #ifdef USE_BOOST_ASIO
     #include <cli/boostasioscheduler.h>
+    #include <cli/boostasioremotecli.h>
 #else
     #include <cli/standaloneasioscheduler.h>
-#endif
-#ifdef ENABLE_TELNET_SERVER
-    #ifdef USE_BOOST_ASIO
-        #include <cli/boostasioremotecli.h>
-    #else
-        #include <cli/standaloneasioremotecli.h>
-    #endif
+    #include <cli/standaloneasioremotecli.h>
 #endif
 // TODO. NB: *remotecli.h and clilocalsession.h both includes boost asio,
 // so in Windows it should appear before cli.h that include rang
@@ -195,8 +188,10 @@ int main()
 
 #ifdef USE_BOOST_ASIO
     using MainScheduler = BoostAsioScheduler;
+    using CliTelnetServer = BoostAsioCliTelnetServer;
 #else
     using MainScheduler = StandaloneAsioScheduler;
+    using CliTelnetServer = StandaloneAsioCliTelnetServer;
 #endif
     MainScheduler scheduler;
     CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
@@ -210,13 +205,9 @@ int main()
 
     // setup server
 
-#ifdef ENABLE_TELNET_SERVER
-
     CliTelnetServer server(scheduler, 5000, cli);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
-
-#endif // ENABLE_TELNET_SERVER
 
     scheduler.Run();
 

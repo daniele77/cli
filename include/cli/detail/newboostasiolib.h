@@ -27,56 +27,57 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_GENERICASIOSCHEDULER_H_
-#define CLI_GENERICASIOSCHEDULER_H_
+#ifndef CLI_DETAIL_NEWBOOSTASIOLIB_H_
+#define CLI_DETAIL_NEWBOOSTASIOLIB_H_
 
-#include "detail/asiolib.h"
-#include "scheduler.h"
+#include <boost/version.hpp>
+
+#if BOOST_VERSION >= 107400
+    #define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
+#endif
+
+#include <boost/asio.hpp>
 
 namespace cli
 {
+namespace detail
+{
 
-class GenericAsioScheduler : public Scheduler
+namespace asiolib = boost::asio;
+namespace asiolibec = boost::system;
+
+class NewBoostAsioLib
 {
 public:
 
-    using ContextType = detail::asiocontext::Executor::ContextType;
+    using ContextType = boost::asio::io_context;
 
-    GenericAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
-
-    GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
-
-    ~GenericAsioScheduler() { if (owned) delete context; }
-
-    // non copyable
-    GenericAsioScheduler(const GenericAsioScheduler&) = delete;
-    GenericAsioScheduler& operator=(const GenericAsioScheduler&) = delete;
-
-    void Stop() { context->stop(); }
-
-    void Run()
+    class Executor
     {
-        auto work = detail::asiocontext::MakeWorkGuard(*context);
-        context->run();
+    public:
+        explicit Executor(ContextType& ios) :
+            executor(ios.get_executor()) {}
+        explicit Executor(boost::asio::ip::tcp::socket& socket) :
+            executor(socket.get_executor()) {}
+        template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
+    private:
+        boost::asio::executor executor;
+    };
+
+    static boost::asio::ip::address IpAddressFromString(const std::string& address)
+    {
+        return boost::asio::ip::make_address(address);
     }
 
-    void ExecOne() { context->run_one(); }
-
-    void Post(const std::function<void()>& f) override
+    static auto MakeWorkGuard(ContextType& context)
     {
-        executor.Post(f);
+        return boost::asio::make_work_guard(context);
     }
 
-    ContextType& AsioContext() { return *context; }
-
-private:
-
-    bool owned = false;
-    ContextType* context;
-    detail::asiocontext::Executor executor;
 };
 
-
+} // namespace detail
 } // namespace cli
 
-#endif // CLI_GENERICASIOSCHEDULER_H_
+#endif // CLI_DETAIL_NEWBOOSTASIOLIB_H_
+

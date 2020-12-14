@@ -27,42 +27,74 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
-#define CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
+#ifndef CLI_DETAIL_GENERICCLIASYNCSESSION_H_
+#define CLI_DETAIL_GENERICCLIASYNCSESSION_H_
 
-#include <boost/asio.hpp>
+#include <string>
+#include "../cli.h" // CliSession
+#include "genericasioscheduler.h"
 
-namespace cli {
-namespace detail {
-namespace oldboostcontainer {
+namespace cli
+{
+namespace detail
+{
 
-class Executor
+template <typename ASIOLIB>
+class GenericCliAsyncSession : public CliSession
 {
 public:
-    using ContextType = boost::asio::io_service;
-    explicit Executor(ContextType& _ios) :
-        ios(_ios) {}
-    explicit Executor(boost::asio::ip::tcp::socket& socket) :
-        ios(socket.get_io_service()) {}
-    template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+    GenericCliAsyncSession(GenericAsioScheduler<ASIOLIB>& _scheduler, Cli& _cli) :
+        CliSession(_cli, std::cout, 1),
+        input(_scheduler.AsioContext(), ::dup(STDIN_FILENO))
+    {
+        Read();
+    }
+    ~GenericCliAsyncSession()
+    {
+        input.close();
+    }
+
 private:
-    ContextType& ios;
+
+    void Read()
+    {
+        Prompt();
+        // Read a line of input entered by the user.
+        asiolib::async_read_until(
+            input,
+            inputBuffer,
+            '\n',
+            std::bind( &GenericCliAsyncSession::NewLine, this,
+                       std::placeholders::_1,
+                       std::placeholders::_2 )
+        );
+    }
+
+    void NewLine(const asiolibec::error_code& error, std::size_t length )
+    {
+        if ( !error || error == asiolib::error::not_found )
+        {
+            auto bufs = inputBuffer.data();
+            auto size = static_cast<long>(length);
+            if ( !error ) --size; // remove \n
+            std::string s(asiolib::buffers_begin( bufs ), asiolib::buffers_begin( bufs ) + size);
+            inputBuffer.consume( length );
+
+            Feed( s );
+            Read();
+        }
+        else
+        {
+            input.close();
+        }
+    }
+
+    asiolib::streambuf inputBuffer;
+    asiolib::posix::stream_descriptor input;
 };
 
-inline boost::asio::ip::address IpAddressFromString(const std::string& address)
-{
-    return boost::asio::ip::address::from_string(address);
-}
-
-inline boost::asio::io_service::work MakeWorkGuard(boost::asio::io_service& context)
-{
-    boost::asio::io_service::work work(context);
-    return work;
-}
-
-} // namespace oldboostcontainer
 } // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_OLDBOOSTASIOCONTEXT_H_
+#endif // CLI_DETAIL_GENERICCLIASYNCSESSION_H_
 

@@ -27,7 +27,6 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include <cli/cliasyncsession.h>
 #include <cli/cli.h>
 
 using namespace cli;
@@ -38,11 +37,15 @@ using namespace std;
 
 #ifdef BOOST_SCHEDULER
     #include <cli/boostasioscheduler.h>
+    #include <cli/boostasiocliasyncsession.h>
     using MainScheduler = BoostAsioScheduler;
+    using CliAsyncSession = BoostAsioCliAsyncSession;
 #endif
 #ifdef ASIO_SCHEDULER
     #include <cli/standaloneasioscheduler.h>
+    #include <cli/standaloneasiocliasyncsession.h>
     using MainScheduler = StandaloneAsioScheduler;
+    using CliAsyncSession = StandaloneAsioCliAsyncSession;
 #endif
 
 

@@ -27,12 +27,51 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_BOOSTASIOSCHEDULER_H_
-#define CLI_BOOSTASIOSCHEDULER_H_
+#ifndef CLI_DETAIL_OLDBOOSTASIOLIB_H_
+#define CLI_DETAIL_OLDBOOSTASIOLIB_H_
 
-#include "detail/genericasioscheduler.h"
-#include "detail/boostasiolib.h"
+#include <boost/asio.hpp>
 
-namespace cli { using BoostAsioScheduler = detail::GenericAsioScheduler<detail::BoostAsioLib>; }
+namespace cli
+{
+namespace detail
+{
 
-#endif // CLI_BOOSTASIOSCHEDULER_H_
+namespace asiolib = boost::asio;
+namespace asiolibec = boost::system;
+
+class OldBoostAsioLib
+{
+public:
+    using ContextType = boost::asio::io_service;
+
+    class Executor
+    {
+    public:
+        explicit Executor(ContextType& _ios) :
+            ios(_ios) {}
+        explicit Executor(boost::asio::ip::tcp::socket& socket) :
+            ios(socket.get_io_service()) {}
+        template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+    private:
+        ContextType& ios;
+    };
+
+    static boost::asio::ip::address IpAddressFromString(const std::string& address)
+    {
+        return boost::asio::ip::address::from_string(address);
+    }
+
+    static auto MakeWorkGuard(ContextType& context)
+    {
+        boost::asio::io_service::work work(context);
+        return work;
+    }
+
+};
+
+} // namespace detail
+} // namespace cli
+
+#endif // CLI_DETAIL_OLDBOOSTASIOLIB_H_
+

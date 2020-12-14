@@ -27,39 +27,51 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_GENERICASIOCONTAINER_H_
-#define CLI_DETAIL_GENERICASIOCONTAINER_H_
+#ifndef CLI_DETAIL_STANDALONEASIOLIB_H_
+#define CLI_DETAIL_STANDALONEASIOLIB_H_
 
-namespace cli {
-namespace detail {
-namespace genericasiocontainer {
+#define ASIO_USE_TS_EXECUTOR_AS_DEFAULT
 
-class Executor
+#include <asio.hpp>
+
+namespace cli
+{
+namespace detail
+{
+
+namespace asiolib = asio;
+namespace asiolibec = asio;
+
+class StandaloneAsioLib
 {
 public:
-    using ContextType = asiolib::io_context;
-    explicit Executor(ContextType& ios) :
-        executor(ios.get_executor()) {}
-    explicit Executor(asiolib::ip::tcp::socket& socket) :
-        executor(socket.get_executor()) {}
-    template <typename T> void Post(T&& t) { asiolib::post(executor, std::forward<T>(t)); }
-private:
-    asiolib::executor executor;
+    using ContextType = asio::io_context;
+
+    class Executor
+    {
+    public:
+        explicit Executor(ContextType& ios) :
+            executor(ios.get_executor()) {}
+        explicit Executor(asio::ip::tcp::socket& socket) :
+            executor(socket.get_executor()) {}
+        template <typename T> void Post(T&& t) { asio::post(executor, std::forward<T>(t)); }
+    private:
+        asio::executor executor;
+    };
+
+    static asio::ip::address IpAddressFromString(const std::string& address)
+    {
+        return asio::ip::make_address(address);
+    }
+
+    static auto MakeWorkGuard(ContextType& context)
+    {
+        return asio::make_work_guard(context);
+    }
 };
 
-inline asiolib::ip::address IpAddressFromString(const std::string& address)
-{
-    return asiolib::ip::make_address(address);
-}
-
-inline auto MakeWorkGuard(asiolib::io_context& context)
-{
-    return asiolib::make_work_guard(context);
-}
-
-} // namespace genericasiocontainer
 } // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_GENERICASIOCONTAINER_H_
+#endif // CLI_DETAIL_STANDALONEASIOLIB_H_
 

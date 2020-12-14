@@ -227,6 +227,8 @@ private:
 
 // #define ASIO_SCHEDULER
 #define BOOST_SCHEDULER
+// #define POLLING_SCHEDULER
+// #define SIMPLE_SCHEDULER
 
 #ifdef BOOST_SCHEDULER
     #include <cli/boostasioscheduler.h>

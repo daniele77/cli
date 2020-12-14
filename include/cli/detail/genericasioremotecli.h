@@ -27,26 +27,27 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_GENERICASIOREMOTECLI_H_
-#define CLI_GENERICASIOREMOTECLI_H_
+#ifndef CLI_DETAIL_GENERICASIOREMOTECLI_H_
+#define CLI_DETAIL_GENERICASIOREMOTECLI_H_
 
-#include <cli/detail/inputhandler.h>
 #include <memory>
-#include "cli.h"
-#include "detail/server.h"
-#include "detail/inputdevice.h"
-#include "detail/asiolib.h"
+#include "../cli.h"
+#include "inputhandler.h"
+#include "server.h"
+#include "inputdevice.h"
 
 namespace cli
+{
+namespace detail
 {
 
 // *******************************************************************************
 
-class TelnetSession : public detail::Session
+class TelnetSession : public Session
 {
 public:
-    TelnetSession(detail::asiolib::ip::tcp::socket _socket) :
-        detail::Session(std::move(_socket))
+    TelnetSession(asiolib::ip::tcp::socket _socket) :
+        Session(std::move(_socket))
     {}
 
 protected:
@@ -424,13 +425,14 @@ private:
     //bool waitAck = false;
 };
 
-class TelnetServer : public detail::Server
+template <typename ASIOLIB>
+class TelnetServer : public Server<ASIOLIB>
 {
 public:
-    TelnetServer(detail::asiocontext::Executor::ContextType& ios, unsigned short port) :
-        detail::Server(ios, port)
+    TelnetServer(typename ASIOLIB::ContextType& ios, unsigned short port) :
+        Server<ASIOLIB>(ios, port)
     {}
-    virtual std::shared_ptr<detail::Session> CreateSession(detail::asiolib::ip::tcp::socket _socket) override
+    virtual std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
     {
         return std::make_shared<TelnetSession>(std::move(_socket));
     }
@@ -438,11 +440,11 @@ public:
 
 //////////////
 
-class CliTelnetSession : public detail::InputDevice, public TelnetSession, public CliSession
+class CliTelnetSession : public InputDevice, public TelnetSession, public CliSession
 {
 public:
 
-    CliTelnetSession(Scheduler& _scheduler, detail::asiolib::ip::tcp::socket _socket, Cli& _cli, std::function< void(std::ostream&)> _exitAction, std::size_t historySize ) :
+    CliTelnetSession(Scheduler& _scheduler, asiolib::ip::tcp::socket _socket, Cli& _cli, std::function< void(std::ostream&)> _exitAction, std::size_t historySize ) :
         InputDevice(_scheduler),
         TelnetSession(std::move(_socket)),
         CliSession(_cli, TelnetSession::OutStream(), historySize),
@@ -460,7 +462,6 @@ protected:
 
     void Output(char c) override
     {
-        using detail::KeyType;
         switch(step)
         {
             case Step::_1:
@@ -533,21 +534,21 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    detail::InputHandler poll;
+    InputHandler poll;
 };
 
-
-class CliGenericTelnetServer : public detail::Server
+template <typename ASIOLIB>
+class CliGenericTelnetServer : public Server<ASIOLIB>
 {
 public:
-    CliGenericTelnetServer(GenericAsioScheduler& _scheduler, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
-        detail::Server(_scheduler.AsioContext(), port),
+    CliGenericTelnetServer(GenericAsioScheduler<ASIOLIB>& _scheduler, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+        Server<ASIOLIB>(_scheduler.AsioContext(), port),
         scheduler(_scheduler),
         cli(_cli),
         historySize(_historySize)
     {}
-    CliGenericTelnetServer(GenericAsioScheduler& _scheduler, std::string address, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
-        detail::Server(_scheduler.AsioContext(), address, port),
+    CliGenericTelnetServer(GenericAsioScheduler<ASIOLIB>& _scheduler, std::string address, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+        Server<ASIOLIB>(_scheduler.AsioContext(), address, port),
         scheduler(_scheduler),
         cli(_cli),
         historySize(_historySize)
@@ -556,7 +557,7 @@ public:
     {
         exitAction = action;
     }
-    virtual std::shared_ptr<detail::Session> CreateSession(detail::asiolib::ip::tcp::socket _socket) override
+    virtual std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
     {
         return std::make_shared<CliTelnetSession>(scheduler, std::move(_socket), cli, exitAction, historySize);
     }
@@ -568,7 +569,8 @@ private:
 };
 
 
+} // namespace detail
 } // namespace cli
 
-#endif // CLI_GENERICASIOREMOTECLI_H_
+#endif // CLI_DETAIL_GENERICASIOREMOTECLI_H_
 

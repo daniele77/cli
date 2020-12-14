@@ -30,10 +30,9 @@
 #ifndef CLI_STANDALONEASIOSCHEDULER_H_
 #define CLI_STANDALONEASIOSCHEDULER_H_
 
-#define CLI_INTERNAL_USE_STANDALONE_ASIO
+#include "detail/genericasioscheduler.h"
+#include "detail/standaloneasiolib.h"
 
-#include "genericasioscheduler.h"
-
-namespace cli { using StandaloneAsioScheduler = GenericAsioScheduler; }
+namespace cli { using StandaloneAsioScheduler = detail::GenericAsioScheduler<detail::StandaloneAsioLib>; }
 
 #endif // CLI_STANDALONEASIOSCHEDULER_H_

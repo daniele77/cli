@@ -27,64 +27,23 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_ASIOLIB_H_
-#define CLI_DETAIL_ASIOLIB_H_
+#ifndef CLI_DETAIL_BOOSTASIOLIB_H_
+#define CLI_DETAIL_BOOSTASIOLIB_H_
 
-#ifdef CLI_INTERNAL_USE_BOOST_ASIO
+/**
+ * This header file provides the class `cli::BoostAsioLib`, using the right
+ * implementation according to the version of boost libraries included.
+ */
 
-    #include <boost/version.hpp>
+#include <boost/version.hpp>
 
-    #if BOOST_VERSION >= 107400
-        #define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-    #endif
-
-    #include <boost/asio.hpp>
-
-    namespace cli { namespace detail { namespace asiolib = boost::asio; } }
-
-    using boost::system::error_code;
-
-    #define CLI_DETAIL_ASIO_HAS_POSIX_STREAM_DESCRIPTOR BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR
-
-    #if BOOST_VERSION < 106600
-        #include "oldboostasiocontext.h"
-        namespace cli {
-        namespace detail {
-            namespace asiocontext = oldboostcontainer;
-        }
-        }
-    #else
-        #include "genericasiocontext.h"
-        namespace cli {
-        namespace detail {
-            namespace asiocontext = genericasiocontainer;
-        }
-        }
-    #endif
-
+#if BOOST_VERSION < 106600
+    #include "oldboostasiolib.h"
+    namespace cli { namespace detail { using BoostAsioLib = OldBoostAsioLib; } }
+#else
+    #include "newboostasiolib.h"
+    namespace cli { namespace detail { using BoostAsioLib = NewBoostAsioLib; } }
 #endif
 
+#endif // CLI_DETAIL_BOOSTASIOLIB_H_
 
-#ifdef CLI_INTERNAL_USE_STANDALONE_ASIO
-
-    #define ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-
-    #include <asio.hpp>
-
-    namespace cli { namespace detail { namespace asiolib = asio; } }
-
-    using ::std::error_code;
-
-    #define CLI_DETAIL_ASIO_HAS_POSIX_STREAM_DESCRIPTOR ASIO_HAS_POSIX_STREAM_DESCRIPTOR
-
-    #include "genericasiocontext.h"
-    namespace cli {
-    namespace detail {
-        namespace asiocontext = genericasiocontainer;
-    }
-    }
-
-#endif
-
-
-#endif // CLI_DETAIL_ASIOLIB_H_
