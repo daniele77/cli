@@ -16,7 +16,7 @@ A cross-platform header only C++14 library for interactive command line interfac
 * Cross-platform (linux and windows)
 * Menus and submenus
 * Remote sessions (telnet)
-* History (navigation with arrow keys)
+* Persistent history (navigation with arrow keys)
 * Autocompletion (with TAB key)
 * Async interface
 * Colors
@@ -128,10 +128,13 @@ Distributed under the Boost Software License, Version 1.0.
 
 ## Contact
 
-Please report issues or questions here:
+Please report issues here:
 <http://github.com/daniele77/cli/issues>
 
-You can contact me via twitter at @DPallastrelli
+and questions, feature requests, ideas, anything else here:
+<http://github.com/daniele77/cli/discussions>
+
+You can always contact me via twitter at @DPallastrelli
 
 ---
 
@@ -141,6 +144,8 @@ Any feedback from users and stakeholders, even simple questions about
 how things work or why they were done a certain way, carries value
 and can be used to improve the library.
 
-Even if you just have questions, asking them in issues provides valuable
-information that can be used to improve the library - do not hesitate,
+Even if you just have questions, asking them in [GitHub Discussions](http://github.com/daniele77/cli/discussions)
+provides valuable information that can be used to improve the library - do not hesitate,
 no question is insignificant or unimportant!
+
+If you or your company uses cli library, please consider becoming a sponsor to keep the project strong and dependable.
