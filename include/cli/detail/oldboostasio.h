@@ -59,4 +59,3 @@ inline boost::asio::ip::address IpAddressFromString(const std::string& address)
 } // namespace cli
 
 #endif // CLI_DETAIL_OLDBOOSTASIO_H_
-

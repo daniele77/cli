@@ -43,9 +43,9 @@ using namespace std;
 int main()
 {
 #if BOOST_VERSION < 106600
-    boost::asio::io_service ios;
+    asio::io_service ios;
 #else
-    boost::asio::io_context ios;
+    asio::io_context ios;
 #endif
     CmdHandler colorCmd;
     CmdHandler nocolorCmd;
@@ -204,9 +204,9 @@ int main()
 #else // ENABLE_TELNET_SERVER
 
 #if BOOST_VERSION < 106600
-    boost::asio::io_service::work work(ios);
+    asio::io_service::work work(ios);
 #else
-        auto work = boost::asio::make_work_guard(ios);
+        auto work = asio::make_work_guard(ios);
 #endif  
 
 #endif // ENABLE_TELNET_SERVER

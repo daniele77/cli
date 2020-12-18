@@ -36,8 +36,13 @@ include(GNUInstallDirs)
 option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
 
-set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost 1.55 REQUIRED COMPONENTS system)
+if(CLI_BuildTests)
+	set(Boost_NO_BOOST_CMAKE ON)
+	find_package(Boost 1.55 REQUIRED COMPONENTS system)
+endif()
+find_path(ASIO_INCLUDE_DIR asio.hpp)
+message("asio include dir: ${ASIO_INCLUDE_DIR}")
+#find_package(asio CONFIG REQUIRED)
 find_package(Threads REQUIRED)
 
 # Add Library
@@ -51,7 +56,8 @@ target_include_directories(cli
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(cli INTERFACE Boost::system Threads::Threads)
+target_link_libraries(cli INTERFACE Threads::Threads)
+target_include_directories(cli INTERFACE ${ASIO_INCLUDE_DIR})
 target_compile_features(cli INTERFACE cxx_std_14)
 target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
 

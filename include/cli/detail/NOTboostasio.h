@@ -27,39 +27,40 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_BOOSTIO_H_
-#define CLI_DETAIL_BOOSTIO_H_
+#ifndef CLI_DETAIL_NEWBOOSTASIO_H_
+#define CLI_DETAIL_NEWBOOSTASIO_H_
 
-#define USE_ASIO_INSTEAD
-#ifdef USE_ASIO_INSTEAD
-
-#include "NOTboostasio.h"
-
-namespace cli {
-    namespace detail {
-        //namespace asio = notboost;
-    }
-}
-
-#else
-#include <boost/version.hpp>
-
-#if BOOST_VERSION < 106600
-#include "oldboostasio.h"
-namespace cli {
-    namespace detail {
-        namespace asio = oldboost;
-    }
-}
-#else
-#include "newboostasio.h"
-namespace cli {
-    namespace detail {
-        namespace asio = newboost;
-    }
-}
+#if BOOST_VERSION >= 107400
+#   define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
 #endif
 
-#endif // USE_ASIO_INSTEAD
+#include "asio.hpp"
 
-#endif // CLI_DETAIL_BOOSTIO_H_
+namespace cli {
+namespace detail {
+namespace notboost {
+
+class BoostExecutor
+{
+public:
+    using ContextType = asio::io_context;
+    explicit BoostExecutor(ContextType& ios) :
+        executor(ios.get_executor()) {}
+    explicit BoostExecutor(asio::ip::tcp::socket& socket) :
+        executor(socket.get_executor()) {}
+    template <typename T> void Post(T&& t) { asio::post(executor, std::forward<T>(t)); }
+private:
+    asio::executor executor;
+};
+
+inline asio::ip::address IpAddressFromString(const std::string& address)
+{
+    return asio::ip::make_address(address);
+}
+
+} // namespace newboost
+} // namespace detail
+} // namespace cli
+
+#endif // CLI_DETAIL_NEWBOOSTASIO_H_
+

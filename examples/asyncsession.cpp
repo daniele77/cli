@@ -85,9 +85,9 @@ int main()
     cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
 
 #if BOOST_VERSION < 106600
-    boost::asio::io_service ios;
+    asio::io_service ios;
 #else
-    boost::asio::io_context ios;
+    asio::io_context ios;
 #endif
     CliAsyncSession session(ios, cli);
     session.ExitAction(
