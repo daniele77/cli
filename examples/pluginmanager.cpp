@@ -27,6 +27,24 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#ifdef CLI_EXAMPLES_USE_SIMPLE_SCHEDULER
+#include <cli/simplescheduler.h>
+using MainScheduler = cli::SimpleScheduler;
+#elif defined(CLI_EXAMPLES_USE_POLLING_SCHEDULER)
+#include <cli/pollingscheduler.h>
+using MainScheduler = cli::PollingScheduler;
+#elif defined(CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER)
+#include <cli/standaloneasioscheduler.h>
+using MainScheduler = cli::StandaloneAsioScheduler;
+#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+// TODO: NB boostasioscheduler.h includes boost asio
+// so in Windows it should appear before cli.h and clilocalsession.h that include rang,
+// because both include WinSock.h
+// (consider to provide a global header file for the library)
+#include <cli/boostasioscheduler.h>
+using MainScheduler = cli::BoostAsioScheduler;
+#endif
+
 #include "cli/clilocalsession.h"
 #include "cli/cli.h"
 #include <vector>
@@ -224,20 +242,6 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point
-
-#ifdef CLI_EXAMPLES_USE_SIMPLE_SCHEDULER
-    #include <cli/simplescheduler.h>
-    using MainScheduler = SimpleScheduler;
-#elif defined(CLI_EXAMPLES_USE_POLLING_SCHEDULER)
-    #include <cli/pollingscheduler.h>
-    using MainScheduler = PollingScheduler;
-#elif defined(CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER)
-    #include <cli/standaloneasioscheduler.h>
-    using MainScheduler = StandaloneAsioScheduler;
-#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
-    #include <cli/boostasioscheduler.h>
-    using MainScheduler = BoostAsioScheduler;
-#endif
 
 int main()
 {

@@ -27,8 +27,6 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include <cli/clilocalsession.h>
-
 #ifdef CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
     #include <cli/standaloneasioscheduler.h>
     #include <cli/standaloneasioremotecli.h>
@@ -38,6 +36,11 @@
         using CliTelnetServer = StandaloneAsioCliTelnetServer;
     }
 #else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+    // TODO: NB boostasioscheduler.h includes boost asio
+    // so in Windows it should appear before cli.h and clilocalsession.h that include rang,
+    // because both include WinSock.h
+    // (consider to provide a global header file for the library)
+
     #include <cli/boostasioscheduler.h>
     #include <cli/boostasioremotecli.h>
     namespace cli
@@ -47,10 +50,8 @@
     }
 #endif
 
-// TODO. NB: *remotecli.h and clilocalsession.h both includes boost asio,
-// so in Windows it should appear before cli.h that include rang
-// (consider to provide a global header file for the library)
 #include <cli/cli.h>
+#include <cli/clilocalsession.h>
 #include <cli/filehistorystorage.h>
 
 
