@@ -225,26 +225,18 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Entry point
 
-// #define ASIO_SCHEDULER
-#define BOOST_SCHEDULER
-// #define POLLING_SCHEDULER
-// #define SIMPLE_SCHEDULER
-
-#ifdef BOOST_SCHEDULER
-    #include <cli/boostasioscheduler.h>
-    using MainScheduler = BoostAsioScheduler;
-#endif
-#ifdef ASIO_SCHEDULER
-    #include <cli/standaloneasioscheduler.h>
-    using MainScheduler = StandaloneAsioScheduler;
-#endif
-#ifdef POLLING_SCHEDULER
-    #include <cli/pollingscheduler.h>
-    using MainScheduler = PollingScheduler;
-#endif
-#ifdef SIMPLE_SCHEDULER
+#ifdef CLI_EXAMPLES_USE_SIMPLE_SCHEDULER
     #include <cli/simplescheduler.h>
     using MainScheduler = SimpleScheduler;
+#elif defined(CLI_EXAMPLES_USE_POLLING_SCHEDULER)
+    #include <cli/pollingscheduler.h>
+    using MainScheduler = PollingScheduler;
+#elif defined(CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER)
+    #include <cli/standaloneasioscheduler.h>
+    using MainScheduler = StandaloneAsioScheduler;
+#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+    #include <cli/boostasioscheduler.h>
+    using MainScheduler = BoostAsioScheduler;
 #endif
 
 int main()

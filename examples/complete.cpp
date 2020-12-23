@@ -27,16 +27,26 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#define USE_BOOST_ASIO
-
 #include <cli/clilocalsession.h>
-#ifdef USE_BOOST_ASIO
-    #include <cli/boostasioscheduler.h>
-    #include <cli/boostasioremotecli.h>
-#else
+
+#ifdef CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
     #include <cli/standaloneasioscheduler.h>
     #include <cli/standaloneasioremotecli.h>
+    namespace cli
+    {    
+        using MainScheduler = StandaloneAsioScheduler;
+        using CliTelnetServer = StandaloneAsioCliTelnetServer;
+    }
+#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+    #include <cli/boostasioscheduler.h>
+    #include <cli/boostasioremotecli.h>
+    namespace cli
+    {    
+        using MainScheduler = BoostAsioScheduler;
+        using CliTelnetServer = BoostAsioCliTelnetServer;
+    }
 #endif
+
 // TODO. NB: *remotecli.h and clilocalsession.h both includes boost asio,
 // so in Windows it should appear before cli.h that include rang
 // (consider to provide a global header file for the library)
@@ -186,13 +196,6 @@ int main()
         }
     );
 
-#ifdef USE_BOOST_ASIO
-    using MainScheduler = BoostAsioScheduler;
-    using CliTelnetServer = BoostAsioCliTelnetServer;
-#else
-    using MainScheduler = StandaloneAsioScheduler;
-    using CliTelnetServer = StandaloneAsioCliTelnetServer;
-#endif
     MainScheduler scheduler;
     CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
     localSession.ExitAction(

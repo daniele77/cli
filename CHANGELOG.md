@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+ - Remove boost dependency for local only sessions (issue #83)
+ - Now you can use standalone asio library instead of boost asio for remote sessions (issue #41)
+
 ## [1.2.1] - 2020-08-27
 
  - With Boost >= 1.74 use TS exectuor by default (issue #79)

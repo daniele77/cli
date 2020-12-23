@@ -32,22 +32,17 @@
 using namespace cli;
 using namespace std;
 
-// #define ASIO_SCHEDULER
-#define BOOST_SCHEDULER
-
-#ifdef BOOST_SCHEDULER
+#ifdef CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
+    #include <cli/standaloneasioscheduler.h>
+    #include <cli/standaloneasiocliasyncsession.h>
+    using MainScheduler = StandaloneAsioScheduler;
+    using CliAsyncSession = StandaloneAsioCliAsyncSession;
+#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
     #include <cli/boostasioscheduler.h>
     #include <cli/boostasiocliasyncsession.h>
     using MainScheduler = BoostAsioScheduler;
     using CliAsyncSession = BoostAsioCliAsyncSession;
 #endif
-#ifdef ASIO_SCHEDULER
-    #include <cli/standaloneasioscheduler.h>
-    #include <cli/standaloneasiocliasyncsession.h>
-    using MainScheduler = StandaloneAsioScheduler;
-    using CliAsyncSession = StandaloneAsioCliAsyncSession;
-#endif
-
 
 int main()
 {
