@@ -34,11 +34,9 @@
 #include <memory>
 #include <atomic>
 
-#include <stdio.h>
+#include <cstdio>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
 
 #include "inputdevice.h"
 
@@ -77,8 +75,7 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        while ( !KbHit() ) {}
-        int ch = getchar();
+        int ch = std::getchar();
         switch( ch )
         {
             case EOF:
@@ -88,14 +85,14 @@ private:
             case 127: return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
-                ch = getchar();
+                ch = std::getchar();
                 if ( ch == 91 ) // arrow keys
                 {
-                    ch = getchar();
+                    ch = std::getchar();
                     switch( ch )
                     {
                         case 51:
-                            ch = getchar();
+                            ch = std::getchar();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
@@ -128,21 +125,6 @@ private:
     void ToStandardMode()
     {
         tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-    }
-
-    static int KbHit()
-    {
-      struct timeval tv;
-      fd_set rdfs;
-
-      tv.tv_sec = 1;
-      tv.tv_usec = 0;
-
-      FD_ZERO(&rdfs);
-      FD_SET (STDIN_FILENO, &rdfs);
-
-      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs);
     }
 
     termios oldt;
