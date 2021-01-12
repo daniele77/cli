@@ -28,7 +28,9 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ## Dependencies
 
-The library depends on boost asio (to provide telnet server)
+The library depends on asio (either the standalone version or the boost version)
+only to provide telnet server.
+Therefore, the library has no dependencies if you don't need remote sessions.
 
 ## Installation
 
@@ -38,7 +40,7 @@ library binaries or special treatment when linking.
 
 Extract the archive wherever you want.
 
-Now you must only remember to specify the cli and boost paths when
+Now you must only remember to specify the cli (and optionally asio or boost) paths when
 compiling your source code.
 
 If you fancy it, a Cmake script is provided. To install you can use:
@@ -57,7 +59,8 @@ and, if you want to specify the installation path:
 
 You can find some examples in the directory "examples".
 Each .cpp file corresponds to an executable. You can compile each example by including
-cli and boost header files and linking boost system (and pthread on linux).
+cli (and optionally asio/boost header files) 
+and linking pthread on linux (and optionally boost system).
 
 To compile the examples using cmake, use:
 

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_LOCALSCHEDULER_H_
-#define CLI_LOCALSCHEDULER_H_
+#ifndef CLI_LOOPSCHEDULER_H_
+#define CLI_LOOPSCHEDULER_H_
 
 #include <queue>
 #include <thread>
@@ -39,18 +39,22 @@
 namespace cli
 {
 
-class SimpleScheduler : public Scheduler
+/**
+ * @brief The LoopScheduler is a simple thread-safe scheduler
+ * 
+ */
+class LoopScheduler : public Scheduler
 {
 public:
-    SimpleScheduler() = default;
-    ~SimpleScheduler()
+    LoopScheduler() = default;
+    ~LoopScheduler()
     {
         Stop();
     }
 
     // non copyable
-    SimpleScheduler(const SimpleScheduler&) = delete;
-    SimpleScheduler& operator=(const SimpleScheduler&) = delete;
+    LoopScheduler(const LoopScheduler&) = delete;
+    LoopScheduler& operator=(const LoopScheduler&) = delete;
 
     void Stop()
     {
@@ -62,12 +66,14 @@ public:
     {
         while( ExecOne() ) {};
     }
+
     void Post(const std::function<void()>& f) override
     {
         std::lock_guard<std::mutex> lck (mtx);
         tasks.push(f);
         cv.notify_all();
     }
+
     bool ExecOne()
     {
         std::function<void()> task;
@@ -94,4 +100,4 @@ private:
 
 } // namespace cli
 
-#endif // CLI_LOCALSCHEDULER_H_
+#endif // CLI_LOOPSCHEDULER_H_

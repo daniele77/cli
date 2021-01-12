@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,12 +27,9 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifdef CLI_EXAMPLES_USE_SIMPLE_SCHEDULER
-#include <cli/simplescheduler.h>
-using MainScheduler = cli::SimpleScheduler;
-#elif defined(CLI_EXAMPLES_USE_POLLING_SCHEDULER)
-#include <cli/pollingscheduler.h>
-using MainScheduler = cli::PollingScheduler;
+#ifdef CLI_EXAMPLES_USE_LOOP_SCHEDULER
+#include <cli/loopscheduler.h>
+using MainScheduler = cli::LoopScheduler;
 #elif defined(CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER)
 #include <cli/standaloneasioscheduler.h>
 using MainScheduler = cli::StandaloneAsioScheduler;

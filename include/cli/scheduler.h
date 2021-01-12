@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -45,6 +45,8 @@ class Scheduler
 {
 public:
     virtual ~Scheduler() = default;
+
+    /// Submits a completion token or function object for execution.
     virtual void Post(const std::function<void()>& f) = 0;
 };
 

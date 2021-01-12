@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -28,8 +28,7 @@
  ******************************************************************************/
 
 #include <boost/test/unit_test.hpp>
-#include "cli/simplescheduler.h"
-#include "cli/pollingscheduler.h"
+#include "cli/loopscheduler.h"
 #include "cli/boostasioscheduler.h"
 
 using namespace std;
@@ -83,22 +82,19 @@ void ExceptionTest()
 
 BOOST_AUTO_TEST_CASE(Basics)
 {
-    SchedulingTest<SimpleScheduler>();
-    SchedulingTest<PollingScheduler>();
+    SchedulingTest<LoopScheduler>();
     SchedulingTest<BoostAsioScheduler>();
 }
 
 BOOST_AUTO_TEST_CASE(SameThread)
 {
-    SameThreadTest<SimpleScheduler>();
-    SameThreadTest<PollingScheduler>();
+    SameThreadTest<LoopScheduler>();
     SameThreadTest<BoostAsioScheduler>();
 }
 
 BOOST_AUTO_TEST_CASE(Exceptions)
 {
-    ExceptionTest<SimpleScheduler>();
-    ExceptionTest<PollingScheduler>();
+    ExceptionTest<LoopScheduler>();
     ExceptionTest<BoostAsioScheduler>();
 }
 
