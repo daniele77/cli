@@ -117,9 +117,12 @@ private:
 
     void ToManualMode()
     {
+        constexpr tcflag_t ICANON_FLAG = ICANON;
+        constexpr tcflag_t ECHO_FLAG = ECHO;
+
         tcgetattr( STDIN_FILENO, &oldt );
         newt = oldt;
-        newt.c_lflag &= ~( (tcflag_t)ICANON | (tcflag_t)ECHO );
+        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
         tcsetattr( STDIN_FILENO, TCSANOW, &newt );
     }
     void ToStandardMode()
