@@ -27,24 +27,14 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-add_executable(complete complete.cpp)
-
-target_link_libraries(complete cli::cli)
-
-if (NOT WIN32)
-    add_executable(asyncsession asyncsession.cpp)
-
-    target_link_libraries(asyncsession cli::cli)
+set(SOURCES complete filesession simplelocalsession pluginmanager)
+if(NOT WIN32)
+  list(APPEND SOURCES asyncsession)
+else()
+  message("asyncsession not built as it's not supported on Windows")
 endif()
 
-add_executable(filesession filesession.cpp)
-
-target_link_libraries(filesession cli::cli)
-
-add_executable(simplelocalsession simplelocalsession.cpp)
-
-target_link_libraries(simplelocalsession cli::cli)
-
-add_executable(pluginmanager pluginmanager.cpp)
-
-target_link_libraries(pluginmanager cli::cli)
+foreach(example ${SOURCES})
+  add_executable(${example} ${example}.cpp)    
+  target_link_libraries(${example} PRIVATE cli::cli)
+endforeach(example)
