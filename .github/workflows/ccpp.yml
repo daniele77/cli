@@ -17,7 +17,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
+        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
     - name: make
       run: |
         cd /home/runner/work/cli/cli/build
