@@ -35,12 +35,11 @@
         using MainScheduler = StandaloneAsioScheduler;
         using CliTelnetServer = StandaloneAsioCliTelnetServer;
     }
-#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+#elif defined(CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER)
     // TODO: NB boostasioscheduler.h includes boost asio
     // so in Windows it should appear before cli.h and clilocalsession.h that include rang,
     // because both include WinSock.h
     // (consider to provide a global header file for the library)
-
     #include <cli/boostasioscheduler.h>
     #include <cli/boostasioremotecli.h>
     namespace cli
@@ -48,6 +47,8 @@
         using MainScheduler = BoostAsioScheduler;
         using CliTelnetServer = BoostAsioCliTelnetServer;
     }
+#else
+    #error either CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER or CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER must be defined
 #endif
 
 #include <cli/cli.h>

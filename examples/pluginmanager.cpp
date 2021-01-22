@@ -27,19 +27,19 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifdef CLI_EXAMPLES_USE_LOOP_SCHEDULER
-#include <cli/loopscheduler.h>
-using MainScheduler = cli::LoopScheduler;
-#elif defined(CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER)
-#include <cli/standaloneasioscheduler.h>
-using MainScheduler = cli::StandaloneAsioScheduler;
-#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
-// TODO: NB boostasioscheduler.h includes boost asio
-// so in Windows it should appear before cli.h and clilocalsession.h that include rang,
-// because both include WinSock.h
-// (consider to provide a global header file for the library)
-#include <cli/boostasioscheduler.h>
-using MainScheduler = cli::BoostAsioScheduler;
+#ifdef CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
+    #include <cli/standaloneasioscheduler.h>
+    using MainScheduler = cli::StandaloneAsioScheduler;
+#elif defined(CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER)
+    // TODO: NB boostasioscheduler.h includes boost asio
+    // so in Windows it should appear before cli.h and clilocalsession.h that includes rang,
+    // because both include WinSock.h
+    // (consider to provide a global header file for the library)
+    #include <cli/boostasioscheduler.h>
+    using MainScheduler = cli::BoostAsioScheduler;
+#else // i.e. CLI_EXAMPLES_USE_LOOP_SCHEDULER (default is loop scheduler because it does not require external dependencies)
+    #include <cli/loopscheduler.h>
+    using MainScheduler = cli::LoopScheduler;
 #endif
 
 #include "cli/clilocalsession.h"

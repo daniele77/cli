@@ -27,14 +27,35 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-set(SOURCES complete filesession simplelocalsession pluginmanager)
-if(NOT WIN32)
-  list(APPEND SOURCES asyncsession)
+
+# pluginmanager, filesession and simplelocalsession can be compiled w/o asio
+set(SOURCES pluginmanager filesession simplelocalsession)
+
+if (CLI_UseBoostAsio OR CLI_UseStandaloneAsio)
+    if (CLI_UseBoostAsio)
+        add_definitions( -DCLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER )
+        # boostasio_nonowner_iocontext can only be compiled with boost asio
+        list(APPEND SOURCES boostasio_nonowner_iocontext)
+    endif()
+    if (CLI_UseStandaloneAsio)
+        add_definitions( -DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER )
+        # standaloneasio_nonowner_iocontext can only be compiled with standalone asio
+        list(APPEND SOURCES standaloneasio_nonowner_iocontext)
+    endif()
+    # asyncsession, and complete can be compiled if asio is available (either standalone or boost)
+    list(APPEND SOURCES complete)
+    # asyncsession only compiles on POSIX platforms
+    if(NOT WIN32)
+        list(APPEND SOURCES asyncsession)
+    else()
+        message("example `asyncsession` not built as it's not supported on Windows")
+    endif()
 else()
-  message("asyncsession not built as it's not supported on Windows")
+    add_definitions( -DCLI_EXAMPLES_USE_LOOP_SCHEDULER )
+    message("examples `nonowner_iocontext` and `complete` are not built because asio library is not available")
 endif()
 
 foreach(example ${SOURCES})
-  add_executable(${example} ${example}.cpp)    
-  target_link_libraries(${example} PRIVATE cli::cli)
+    add_executable(${example} ${example}.cpp)    
+    target_link_libraries(${example} PRIVATE cli::cli)
 endforeach(example)

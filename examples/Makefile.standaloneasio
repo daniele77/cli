@@ -27,77 +27,15 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-# usage:
-# set BOOST=<path to boost libraries>
-# set ASIO=<path to asio library>
-# nmake /f makefile.win
-# or
-# nmake /f makefile.win DEBUG=1
-# or
-# nmake /f makefile.win UNICODE=1
-# or
-# nmake /f makefile.win DEBUG=1 UNICODE=1
+override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include -DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
+override LDLIBS += -lpthread
 
-#define macros
-EXE_NAME = test_suite.exe
-DIR_INCLUDE = /I..\include /I%BOOST% /I%ASIO%
+EXAMPLES := complete asyncsession filesession simplelocalsession pluginmanager standaloneasio_nonowner_iocontext
 
-!ifdef DEBUG
-RUNTIME_LIB = /MDd
-!else
-RUNTIME_LIB = /MD
-!endif
+.PHONY: clean all
 
-!ifdef UNICODE
-CHAR_SET = /D "_UNICODE" /D "UNICODE"
-!else
-CHAR_SET = /D "_MBCS"
-!endif
+all: $(EXAMPLES)
 
-RUN_OPT = --build_info --report_level=short
-COMPILE_FLAGS = /nologo /EHsc /DBOOST_TEST_DYN_LINK $(RUNTIME_LIB) $(CHAR_SET) /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-LINK_FLAGS = /LIBPATH:%BOOST%\stage\lib /NOLOGO
-PATH = $(PATH);$(BOOST)\stage\lib\ # to run the test suite
-
-RM = del /F /Q 2> nul
-
-CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
-
-EXE_OBJ_FILES= \
-    test_history.obj \
-    test_volatilehistorystorage.obj \
-    test_filehistorystorage.obj \
-    test_split.obj \
-    test_commonprefix.obj \
-    test_menu.obj \
-    test_cli.obj \
-    test_loopscheduler.obj \
-    test_standaloneasioscheduler.obj \
-    test_boostasioscheduler.obj \
-    driver.obj
-
-.PHONY: all mainapp test clean
-
-# create directories and build application
-all: clean mainapp test
-
-$(EXE_NAME) : $(EXE_OBJ_FILES)
-    @echo Linking $(EXE_NAME)...
-    link $(LINK_FLAGS) /out:$(EXE_NAME) $(EXE_OBJ_FILES)
-
-# application
-
-mainapp: $(EXE_NAME)
-
-# run the test
-test:
-    $(EXE_NAME) $(RUN_OPT)
-    
-# delete output files
 clean:
-    @-$(RM) *.obj
-    @-$(RM) *.exp
-    @-$(RM) *.lib
-    @-$(RM) $(EXE_NAME)
-
+	@- $(RM) *.o *~ core $(EXAMPLES)
 

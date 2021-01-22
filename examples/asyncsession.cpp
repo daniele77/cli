@@ -27,22 +27,35 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#include <cli/cli.h>
+#if defined(WIN32) || defined(_WIN32) || defined(_WIN64)
+    #error "AsyncSession only works on POSIX platforms."
+#endif
 
-using namespace cli;
-using namespace std;
 
 #ifdef CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
     #include <cli/standaloneasioscheduler.h>
     #include <cli/standaloneasiocliasyncsession.h>
-    using MainScheduler = StandaloneAsioScheduler;
-    using CliAsyncSession = StandaloneAsioCliAsyncSession;
-#else // i.e. #ifdef CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+    namespace cli
+    {
+        using MainScheduler = StandaloneAsioScheduler;
+        using CliAsyncSession = StandaloneAsioCliAsyncSession;
+    }
+#elif defined(CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER)
     #include <cli/boostasioscheduler.h>
     #include <cli/boostasiocliasyncsession.h>
-    using MainScheduler = BoostAsioScheduler;
-    using CliAsyncSession = BoostAsioCliAsyncSession;
+    namespace cli
+    {    
+        using MainScheduler = BoostAsioScheduler;
+        using CliAsyncSession = BoostAsioCliAsyncSession;
+    }
+#else
+    #error either CLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER or CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER must be defined
 #endif
+
+#include <cli/cli.h>
+
+using namespace cli;
+using namespace std;
 
 int main()
 {

@@ -28,15 +28,15 @@
 ################################################################################
 
 # usage:
-# make BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR>
+# make CXXFLAGS="-isystem ${ASIO_INCLUDE_PATH}" BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR>
 # or
-# make BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR> CXXFLAGS=-std=c++0x
+# make CXXFLAGS="-isystem <ASIO_INCLUDE_PATH>" BOOST_INC=<BOOST_INCLUDE_DIR> BOOST_LIB=<BOOST_LIB_DIR> CXXFLAGS=-std=c++0x
 
 override RUN_OPT += --build_info --report_level=short
 
 override CXXFLAGS += -Wall -Wextra -Werror -I../include -DBOOST_TEST_DYN_LINK -isystem $(BOOST_INC) -std=c++1y
 override LDFLAGS += -L$(BOOST_LIB)
-override LDLIBS += -lboost_unit_test_framework -ldl
+override LDLIBS += -lboost_unit_test_framework -ldl -lpthread
 
 OBJ := test_history.o \
 	   test_volatilehistorystorage.o \
@@ -45,7 +45,9 @@ OBJ := test_history.o \
        test_commonprefix.o \
 	   test_menu.o \
 	   test_cli.o \
-	   test_scheduler.o \
+	   test_loopscheduler.o \
+	   test_standaloneasioscheduler.o \
+	   test_boostasioscheduler.o \
        driver.o
 
 EXE := test_suite

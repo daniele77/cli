@@ -91,9 +91,19 @@ example:
 
 ### Windows nmake
 
-Set the environment variable BOOST. Then, from a visual studio console, use the command:
+Optionally set the environment variable ASIO or BOOST to provide the library path.
+Then, from a visual studio console, start `nmake` passing one of the `makefile.*.win` files.
 
-    nmake /f makefile.win
+E.g., from a visual studio console, use one of the following commands:
+
+    # only compile examples that do not require asio
+    nmake /f makefile.noasio.win
+    # compile examples using boost asio
+    set BOOST=<path of boost libraries>
+    nmake /f makefile.boostasio.win
+    # compile examples using standalone asio
+    set ASIO=<path of asio library>
+    nmake /f makefile.standaloneasio.win
 
 ### Visual Studio solution
 

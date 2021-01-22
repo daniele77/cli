@@ -2,7 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(Boost REQUIRED COMPONENTS system)
+# find_dependency(Boost REQUIRED COMPONENTS system)
 find_dependency(Threads REQUIRED)
 
 if(NOT TARGET cli::cli)

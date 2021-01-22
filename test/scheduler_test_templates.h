@@ -27,14 +27,11 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
+#ifndef SCHEDULER_TEST_TEMPLATES_H_
+#define SCHEDULER_TEST_TEMPLATES_H_
+
 #include <boost/test/unit_test.hpp>
-#include "cli/loopscheduler.h"
-#include "cli/boostasioscheduler.h"
-
-using namespace std;
-using namespace cli;
-
-BOOST_AUTO_TEST_SUITE(SchedulerSuite)
+#include <thread>
 
 template <typename S>
 void SchedulingTest()
@@ -49,6 +46,8 @@ void SchedulingTest()
 template <typename S>
 void SameThreadTest()
 {
+    using namespace std;
+
     S scheduler;
     thread::id runThreadId;
     thread::id postThreadId;
@@ -78,35 +77,4 @@ void ExceptionTest()
     BOOST_CHECK_THROW( scheduler.ExecOne(), int );
 }
 
-// start tests
-
-BOOST_AUTO_TEST_CASE(Basics)
-{
-    SchedulingTest<LoopScheduler>();
-    SchedulingTest<BoostAsioScheduler>();
-}
-
-BOOST_AUTO_TEST_CASE(SameThread)
-{
-    SameThreadTest<LoopScheduler>();
-    SameThreadTest<BoostAsioScheduler>();
-}
-
-BOOST_AUTO_TEST_CASE(Exceptions)
-{
-    ExceptionTest<LoopScheduler>();
-    ExceptionTest<BoostAsioScheduler>();
-}
-
-BOOST_AUTO_TEST_CASE(BoostAsioNonOwner)
-{
-    detail::BoostAsioLib::ContextType ioc;
-    BoostAsioScheduler scheduler(ioc);
-    bool done = false;
-    scheduler.Post( [&done](){ done = true; } );
-    ioc.run_one();
-    BOOST_CHECK(done);
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()
+#endif // SCHEDULER_TEST_TEMPLATES_H_
