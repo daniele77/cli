@@ -27,23 +27,51 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_STANDALONEASIOLIB_H_
-#define CLI_DETAIL_STANDALONEASIOLIB_H_
+#ifndef CLI_DETAIL_OLDSTANDALONEASIOLIB_H_
+#define CLI_DETAIL_OLDSTANDALONEASIOLIB_H_
 
-/**
- * This header file provides the class `cli::StandaloneAsioLib`, using the right
- * implementation according to the version of asio libraries included.
- */
+#include <asio.hpp>
 
-#include <asio/version.hpp>
+namespace cli
+{
+namespace detail
+{
 
-#if ASIO_VERSION < 101300
-    #include "oldstandaloneasiolib.h"
-    namespace cli { namespace detail { using StandaloneAsioLib = OldStandaloneAsioLib; } }
-#else
-    #include "newstandaloneasiolib.h"
-    namespace cli { namespace detail { using StandaloneAsioLib = NewStandaloneAsioLib; } }
-#endif
+namespace asiolib = asio;
+namespace asiolibec = asio;
 
-#endif // CLI_DETAIL_STANDALONEASIOLIB_H_
+class OldStandaloneAsioLib
+{
+public:
+    using ContextType = asio::io_context;
+
+    class Executor
+    {
+    public:
+        explicit Executor(ContextType& _ios) :
+            ios(_ios) {}
+        explicit Executor(asio::ip::tcp::socket& socket) :
+            ios(socket.get_io_service()) {}
+        template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
+    private:
+        ContextType& ios;
+    };
+
+    static asio::ip::address IpAddressFromString(const std::string& address)
+    {
+        return asio::ip::address::from_string(address);
+    }
+
+    static auto MakeWorkGuard(ContextType& context)
+    {
+        asio::io_service::work work(context);
+        return work;
+    }
+
+};
+
+} // namespace detail
+} // namespace cli
+
+#endif // CLI_DETAIL_OLDSTANDALONEASIOLIB_H_
 
