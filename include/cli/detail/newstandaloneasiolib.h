@@ -32,7 +32,7 @@
 
 #include <asio/version.hpp>
 
-#if ASIO_VERSION >= 101800
+#if ASIO_VERSION >= 101700
     #define ASIO_USE_TS_EXECUTOR_AS_DEFAULT
 #endif
 

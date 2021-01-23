@@ -30,6 +30,8 @@
 #ifndef CLI_DETAIL_OLDSTANDALONEASIOLIB_H_
 #define CLI_DETAIL_OLDSTANDALONEASIOLIB_H_
 
+#define ASIO_STANDALONE 1
+
 #include <asio.hpp>
 
 namespace cli
