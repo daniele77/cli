@@ -31,11 +31,6 @@
 #define CLI_DETAIL_NEWSTANDALONEASIOLIB_H_
 
 #include <asio/version.hpp>
-
-#if ASIO_VERSION >= 101700
-    #define ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-#endif
-
 #include <asio.hpp>
 
 namespace cli
@@ -61,7 +56,12 @@ public:
             executor(socket.get_executor()) {}
         template <typename T> void Post(T&& t) { asio::post(executor, std::forward<T>(t)); }
     private:
-        asio::executor executor;
+#if ASIO_VERSION >= 101700
+    using AsioExecutor = asio::any_io_executor;
+#else
+    using AsioExecutor = asio::executor;
+#endif
+         AsioExecutor executor;
     };
 
     static asio::ip::address IpAddressFromString(const std::string& address)

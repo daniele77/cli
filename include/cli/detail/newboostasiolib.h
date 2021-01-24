@@ -31,11 +31,6 @@
 #define CLI_DETAIL_NEWBOOSTASIOLIB_H_
 
 #include <boost/version.hpp>
-
-#if BOOST_VERSION >= 107400
-    #define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-#endif
-
 #include <boost/asio.hpp>
 
 namespace cli
@@ -61,7 +56,12 @@ public:
             executor(socket.get_executor()) {}
         template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
     private:
-        boost::asio::executor executor;
+#if BOOST_VERSION >= 107400
+    using AsioExecutor = boost::asio::any_io_executor;
+#else
+    using AsioExecutor = boost::asio::executor;
+#endif
+         AsioExecutor executor;
     };
 
     static boost::asio::ip::address IpAddressFromString(const std::string& address)
