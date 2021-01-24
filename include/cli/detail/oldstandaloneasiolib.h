@@ -45,7 +45,8 @@ namespace asiolibec = asio;
 class OldStandaloneAsioLib
 {
 public:
-    using ContextType = asio::io_context;
+
+    using ContextType = asio::io_service;
 
     class Executor
     {
