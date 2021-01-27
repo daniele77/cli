@@ -801,7 +801,12 @@ namespace cli
         template <typename InputIt>
         static void Exec(const F& f, InputIt first, InputIt last)
         {
+            // silence the unused warning in release mode when assert is disabled
+            static_cast<void>(first);
+            static_cast<void>(last);
+
             assert(first == last);
+            
             f();
         }
     };

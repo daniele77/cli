@@ -5,6 +5,8 @@
  - Remove boost dependency for local only sessions (issue #83)
  - Now you can use standalone asio library instead of boost asio for remote sessions (issue #41)
  - Fix missing echo after ctrl-v paste of command (issue #72)
+ - Remove the symbol BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT (issue #89)
+ - Fix unused parameters warning in release mode (issue #90)
 
 ## [1.2.1] - 2020-08-27
 
