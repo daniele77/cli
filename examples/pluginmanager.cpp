@@ -226,7 +226,16 @@ public:
                     out << arg << "\n";
                 },
                 "Print the string in uppercase" );
-                
+        subMenu->Insert(
+            "sort", {"list of strings separated by space"},
+            [](std::ostream& out, std::vector<std::string> data)
+            {
+                std::sort(data.begin(), data.end());
+                out << "sorted list: ";
+                std::copy(data.begin(), data.end(), std::ostream_iterator<std::string>(out, " "));
+                out << "\n";
+            },
+            "Alphabetically sort a list of words" );
         menuHandler = menu->Insert(move(subMenu));
     }
     ~Strings()

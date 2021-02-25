@@ -53,7 +53,7 @@ GENERATE_AUTOGEN_DEF   = NO
 GENERATE_PERLMOD       = NO
 #---------------------------------------------------------------------------
 HAVE_DOT               = YES
-CLASS_DIAGRAMS         = NO
+CLASS_DIAGRAMS         = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = NO
 INCLUDE_GRAPH          = YES

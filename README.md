@@ -28,14 +28,15 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ## Dependencies
 
+The library has no dependencies if you don't need remote sessions.
+
 The library depends on asio (either the standalone version or the boost version)
-only to provide telnet server.
-Therefore, the library has no dependencies if you don't need remote sessions.
+*only* to provide telnet server (i.e., remote sessions).
 
 ## Installation
 
 The library is header-only: it consists entirely of header files
-containing templates and inline functions, and require no separately-compiled
+containing templates and inline functions, and requires no separately-compiled
 library binaries or special treatment when linking.
 
 Extract the archive wherever you want.
@@ -49,7 +50,7 @@ If you fancy it, a Cmake script is provided. To install you can use:
     cmake ..
     sudo make install
 
-and, if you want to specify the installation path:
+or, if you want to specify the installation path:
 
     mkdir build && cd build
     cmake .. -DCMAKE_INSTALL_PREFIX:PATH=<cli_install_location>
@@ -64,28 +65,46 @@ and linking pthread on linux (and optionally boost system).
 
 To compile the examples using cmake, use:
 
-    mkdir build
-    cd build
+    mkdir build && cd build
+
+    # compile only the examples that do not require boost/asio libraries
     cmake .. -DCLI_BuildExamples=ON
-    # or: cmake .. -DCLI_BuildExamples=ON -DBOOST_INCLUDEDIR=<boost_include_directory>
-    make all
-    # or: cmake --build .
+
+    # compile the examples by using boost asio libraries
+    cmake .. -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+    # or: cmake .. -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DBOOST_ROOT=<boost_path>
+
+    # compile the examples by using standalone asio library
+    cmake .. -DCLI_BuildExamples=ON -DCLI_UseStandaloneAsio=ON
+    # or: cmake .. -DCLI_BuildExamples=ON -DCLI_UseStandaloneAsio=ON -DASIO_INCLUDEDIR=<asio_path>
+
+    cmake --build .
 
 In the same directory you can also find:
 
-* a GNU make file (Makefile)
-* a Windows nmake file (makefile.win)
+* GNU make files (Makefile.noasio, Makefile.boostasio, Makefile.standaloneasio)
+* Windows nmake files (makefile.noasio.win, makefile.boostasio.win, makefile.standaloneasio.win)
 * a Visual Studio solution
 
-You can specify boost library path in the following ways:
+You can specify boost/asio library path in the following ways:
 
 ### GNU Make
+
+for boost:
 
     make CXXFLAGS="-isystem <boost_include>" LDFLAGS="-L<boost_lib>"
 
 example:
 
     make CXXFLAGS="-isystem /opt/boost_1_66_0/install/x86/include" LDFLAGS="-L/opt/boost_1_66_0/install/x86/lib"
+
+for standalone asio:
+
+    make CXXFLAGS="-isystem <asio_include>"
+
+example:
+
+    make CXXFLAGS="-isystem /opt/asio-1.18.0/include"
 
 (if you want to use clang instead of gcc, you can set the variable CXX=clang++)
 
@@ -132,6 +151,91 @@ Some example:
     you can escape 'single quotes' inside a parameter
     cli> echo "you can also show backslash \\ ... "                
     you can also show backslash \ ... 
+
+## Async programming and Schedulers
+
+`cli` is an asynchronous library, and the handlers of commands are executed
+by a scheduler, in a thread provided by the user (possibly the main thread),
+this allows you to develop a single thread application
+without need to worry about synchronization.
+
+So, your application must have a scheduler and pass it to `CliLocalTerminalSession`. 
+
+The library provides three schedulers:
+
+- `LoopScheduler`
+- `BoostAsioScheduler`
+- `StandaloneAsioScheduler`
+
+`LoopScheduler` is the simplest: it does not depend on other libraries
+and should be your first choice if you don't need remote sessions.
+
+`BoostAsioScheduler` and `StandaloneAsioScheduler` are wrappers around
+asio `io_context` objects.
+You should use one of them if you need a `BoostAsioCliTelnetServer` or a `StandaloneAsioCliTelnetServer`
+because they internally use `boost::asio` and `asio`.
+
+You should use one of them also if your application uses `asio` in some way.
+
+After setting up your application, you must call `Scheduler::Run()`
+to enter the scheduler loop. Each comamnd handler of the library
+will execute in the thread that called `Scheduler::Run()`.
+
+You can exit the scheduler loop by calling `Scheduler::Stop()`
+(e.g., as an action associated to the "exit" command).
+
+You can submit work to be executed by the scheduler invoking the method
+`Scheduler::Post(const std::function<void()>& f)`.
+Schedulers are thread safe, so that you can post function object
+from any thread, to be executed in the scheduler thread.
+
+This is an example of use of `LoopScheduler`:
+
+```C++
+...
+LoopScheduler scheduler;
+CliLocalTerminalSession localSession(cli, scheduler);
+...
+// in another thread you can do:
+scheduler.Post([](){ cout << "This will be executed in the scheduler thread" << endl; });
+...
+// start the scheduler main loop
+// it will exit from this method only when scheduler.Stop() is called
+// each cli callback will be executed in this thread
+scheduler.Run();
+...
+```
+
+This is an example of use of `BoostAsioScheduler`
+
+```C++
+...
+BoostAsioScheduler scheduler;
+CliLocalTerminalSession localSession(cli, scheduler);
+BoostAsioCliTelnetServer server(cli, scheduler, 5000);
+...
+scheduler.Run();
+...
+```
+
+Finally, this is an example of use of `BoostAsioScheduler`
+when your application already uses `boost::asio` and has
+a `boost::asio::io_context` object (the case of standalone asio is similar). 
+
+```C++
+...
+// somewhere else in your application
+boost::asio::io_context ioc;
+...
+// cli setup
+BoostAsioScheduler scheduler(ioc);
+CliLocalTerminalSession localSession(cli, scheduler);
+BoostAsioCliTelnetServer server(cli, scheduler, 5000);
+...
+// somewhere else in your application
+ioc.run();
+...
+```
 
 ## License
 

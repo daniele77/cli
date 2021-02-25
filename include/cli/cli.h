@@ -45,8 +45,6 @@
 #include "historystorage.h"
 #include "volatilehistorystorage.h"
 
-// #define CLI_DEPRECATED_API
-
 namespace cli
 {
 
@@ -69,6 +67,7 @@ namespace cli
     template <> struct TypeDesc< long double > { static const char* Name() { return "<long double>"; } };
     template <> struct TypeDesc< bool > { static const char* Name() { return "<bool>"; } };
     template <> struct TypeDesc< std::string > { static const char* Name() { return "<string>"; } };
+    template <> struct TypeDesc< std::vector<std::string> > { static const char* Name() { return "<list of strings>"; } };
 
     // ********************************************************************
 
@@ -378,31 +377,6 @@ namespace cli
             return Insert(cmdName, help, parDesc, f, &F::operator());
         }
 
-#ifdef CLI_DEPRECATED_API
-        template <typename F>
-        [[deprecated("Use the method Insert instead")]]
-        void Add(const std::string& cmdName, F f, const std::string& help = "")
-        {
-            // dispatch to private Add methods
-            Add(cmdName, help, f, &F::operator());
-        }
-
-        [[deprecated("Use the method Insert instead")]]
-        void Add(std::unique_ptr<Command>&& cmd)
-        {
-            std::shared_ptr<Command> s(std::move(cmd));
-            cmds->push_back(s);
-        }
-
-        [[deprecated("Use the method Insert instead")]]
-        void Add(std::unique_ptr<Menu>&& menu)
-        {
-            std::shared_ptr<Menu> s(std::move(menu));
-            s->parent = this;
-            cmds->push_back(s);
-        }
-#endif // CLI_DEPRECATED_API
-
         CmdHandler Insert(std::unique_ptr<Command>&& cmd)
         {
             std::shared_ptr<Command> scmd(std::move(cmd));
@@ -510,23 +484,6 @@ namespace cli
 
     private:
 
-#ifdef CLI_DEPRECATED_API
-        template <typename F, typename R>
-        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(std::ostream& out) const);
-
-        template <typename F, typename R, typename A1>
-        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, std::ostream& out) const);
-
-        template <typename F, typename R, typename A1, typename A2>
-        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, std::ostream& out) const);
-
-        template <typename F, typename R, typename A1, typename A2, typename A3>
-        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, std::ostream& out) const);
-
-        template <typename F, typename R, typename A1, typename A2, typename A3, typename A4>
-        void Add(const std::string& name, const std::string& help, F& f,R (F::*mf)(A1, A2, A3, A4, std::ostream& out) const);
-#endif // CLI_DEPRECATED_API
-
         template <typename F, typename R, typename ... Args>
         CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
 
@@ -545,238 +502,6 @@ namespace cli
     };
 
     // ********************************************************************
-
-#ifdef CLI_DEPRECATED_API
-
-    class FuncCmd : public Command
-    {
-    public:
-        // disable value semantics
-        FuncCmd( const FuncCmd& ) = delete;
-        FuncCmd& operator = ( const FuncCmd& ) = delete;
-
-        FuncCmd(
-            const std::string& _name,
-            std::function< void( std::ostream& )> _function,
-            const std::string& desc = ""
-        ) : Command( _name ), function( _function ), description( desc )
-        {
-        }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine.size() != 1 ) return false;
-            if ( cmdLine[ 0 ] == Name() )
-            {
-                function( session.OutStream() );
-                return true;
-            }
-
-            return false;
-        }
-        void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name() << "\n\t" << description << "\n";
-        }
-    private:
-        const std::function< void( std::ostream& ) > function;
-        const std::string description;
-    };
-
-    template < typename T >
-    class FuncCmd1 : public Command
-    {
-    public:
-        // disable value semantics
-        FuncCmd1( const FuncCmd1& ) = delete;
-        FuncCmd1& operator = ( const FuncCmd1& ) = delete;
-
-        FuncCmd1(
-            const std::string& _name,
-            std::function< void( T, std::ostream& ) > _function,
-            const std::string& desc = ""
-            ) : Command( _name ), function( _function ), description( desc )
-        {
-        }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine.size() != 2 ) return false;
-            if ( Name() == cmdLine[ 0 ] )
-            {
-                try
-                {
-                    T arg = detail::from_string<T>( cmdLine[ 1 ] );
-                    function( arg, session.OutStream() );
-                }
-                catch (std::bad_cast&)
-                {
-                    return false;
-                }
-                return true;
-            }
-
-            return false;
-        }
-        void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name()
-                << " " << TypeDesc< T >::Name()
-                << "\n\t" << description << "\n";
-        }
-    private:
-        const std::function< void( T, std::ostream& )> function;
-        const std::string description;
-    };
-
-    template < typename T1, typename T2 >
-    class FuncCmd2 : public Command
-    {
-    public:
-        // disable value semantics
-        FuncCmd2( const FuncCmd2& ) = delete;
-        FuncCmd2& operator = ( const FuncCmd2& ) = delete;
-
-        FuncCmd2(
-            const std::string& _name,
-            std::function< void( T1, T2, std::ostream& ) > _function,
-            const std::string& desc = "2 parameter command"
-            ) : Command( _name ), function( _function ), description( desc )
-        {
-        }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine.size() != 3 ) return false;
-            if ( Name() == cmdLine[ 0 ] )
-            {
-                try
-                {
-                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
-                    function( arg1, arg2, session.OutStream() );
-                }
-                catch (std::bad_cast&)
-                {
-                    return false;
-                }
-                return true;
-            }
-
-            return false;
-        }
-        void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
-                << "\n\t" << description << "\n";
-        }
-    private:
-        const std::function< void( T1, T2, std::ostream& )> function;
-        const std::string description;
-    };
-
-    template < typename T1, typename T2, typename T3 >
-    class FuncCmd3 : public Command
-    {
-    public:
-        // disable value semantics
-        FuncCmd3( const FuncCmd3& ) = delete;
-        FuncCmd3& operator = ( const FuncCmd3& ) = delete;
-
-        FuncCmd3(
-            const std::string& _name,
-            std::function< void( T1, T2, T3, std::ostream& ) > _function,
-            const std::string& desc = "3 parameters command"
-            ) : Command( _name ), function( _function ), description( desc )
-        {
-        }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine.size() != 4 ) return false;
-            if ( Name() == cmdLine[ 0 ] )
-            {
-                try
-                {
-                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = detail::from_string<T3>( cmdLine[ 3 ] );
-                    function( arg1, arg2, arg3, session.OutStream() );
-                }
-                catch (std::bad_cast&)
-                {
-                    return false;
-                }
-                return true;
-            }
-
-            return false;
-        }
-        void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
-                << " " << TypeDesc< T3 >::Name()
-                << "\n\t" << description << "\n";
-        }
-    private:
-        const std::function< void( T1, T2, T3, std::ostream& )> function;
-        const std::string description;
-    };
-
-    template < typename T1, typename T2, typename T3, typename T4 >
-    class FuncCmd4 : public Command
-    {
-    public:
-        // disable value semantics
-        FuncCmd4( const FuncCmd4& ) = delete;
-        FuncCmd4& operator = ( const FuncCmd4& ) = delete;
-
-        FuncCmd4(
-            const std::string& _name,
-            std::function< void( T1, T2, T3, T4, std::ostream& ) > _function,
-            const std::string& desc = "4 parameters command"
-            ) : Command( _name ), function( _function ), description( desc )
-        {
-        }
-        bool Exec( const std::vector< std::string >& cmdLine, CliSession& session ) override
-        {
-            if ( cmdLine.size() != 5 ) return false;
-            if ( Name() == cmdLine[ 0 ] )
-            {
-                try
-                {
-                    T1 arg1 = detail::from_string<T1>( cmdLine[ 1 ] );
-                    T2 arg2 = detail::from_string<T2>( cmdLine[ 2 ] );
-                    T3 arg3 = detail::from_string<T3>( cmdLine[ 3 ] );
-                    T4 arg4 = detail::from_string<T4>( cmdLine[ 4 ] );
-                    function( arg1, arg2, arg3, arg4, session.OutStream() );
-                }
-                catch (std::bad_cast&)
-                {
-                    return false;
-                }
-                return true;
-            }
-
-            return false;
-        }
-        void Help( std::ostream& out ) const override
-        {
-            out << " - " << Name()
-                << " " << TypeDesc< T1 >::Name()
-                << " " << TypeDesc< T2 >::Name()
-                << " " << TypeDesc< T3 >::Name()
-                << " " << TypeDesc< T4 >::Name()
-                << "\n\t" << description << "\n";
-        }
-    private:
-        const std::function< void( T1, T2, T3, T4, std::ostream& )> function;
-        const std::string description;
-    };
-
-#endif // CLI_DEPRECATED_API
-
-    // *******************************************
 
     template <typename F, typename ... Args>
     struct Select;
@@ -901,8 +626,8 @@ namespace cli
         FreeformCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc = "unknown command",
-            const std::vector<std::string>& parDesc = {}
+            const std::string& desc,
+            const std::vector<std::string>& parDesc
         )
             : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
         {
@@ -923,6 +648,8 @@ namespace cli
         {
             if (!IsEnabled()) return;
             out << " - " << Name();
+            if (parameterDesc.empty())
+                PrintDesc<std::vector<std::string>>::Dump(out);            
             for (auto& s: parameterDesc)
                 out << " <" << s << '>';
             out << "\n\t" << description << "\n";
@@ -1036,38 +763,6 @@ namespace cli
     }
 
     // Menu implementation
-
-#ifdef CLI_DEPRECATED_API
-    template < typename F, typename R >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(std::ostream& out) const )
-    {
-        cmds->push_back(std::make_shared<FuncCmd>(name, f, help));
-    }
-
-    template < typename F, typename R, typename A1 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, std::ostream& out) const )
-    {
-        cmds->push_back(std::make_shared<FuncCmd1<A1>>(name, f, help));
-    }
-
-    template < typename F, typename R, typename A1, typename A2 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, std::ostream& out) const )
-    {
-        cmds->push_back(std::make_shared<FuncCmd2<A1, A2>>(name, f, help));
-    }
-
-    template < typename F, typename R, typename A1, typename A2, typename A3 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, std::ostream& out) const )
-    {
-        cmds->push_back(std::make_shared<FuncCmd3<A1, A2, A3>>(name, f, help));
-    }
-
-    template < typename F, typename R, typename A1, typename A2, typename A3, typename A4 >
-    void Menu::Add( const std::string& name, const std::string& help, F& f,R (F::*)(A1, A2, A3, A4, std::ostream& out) const )
-    {
-        cmds->push_back(std::make_shared<FuncCmd4<A1, A2, A3, A4>>(name, f, help));
-    }
-#endif // CLI_DEPRECATED_API
 
     template <typename F, typename R, typename ... Args>
     CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )

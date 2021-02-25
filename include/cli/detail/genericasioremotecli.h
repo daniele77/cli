@@ -541,13 +541,13 @@ template <typename ASIOLIB>
 class CliGenericTelnetServer : public Server<ASIOLIB>
 {
 public:
-    CliGenericTelnetServer(GenericAsioScheduler<ASIOLIB>& _scheduler, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& _scheduler, unsigned short port, std::size_t _historySize=100 ) :
         Server<ASIOLIB>(_scheduler.AsioContext(), port),
         scheduler(_scheduler),
         cli(_cli),
         historySize(_historySize)
     {}
-    CliGenericTelnetServer(GenericAsioScheduler<ASIOLIB>& _scheduler, std::string address, unsigned short port, Cli& _cli, std::size_t _historySize=100 ) :
+    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& _scheduler, std::string address, unsigned short port, std::size_t _historySize=100 ) :
         Server<ASIOLIB>(_scheduler.AsioContext(), address, port),
         scheduler(_scheduler),
         cli(_cli),

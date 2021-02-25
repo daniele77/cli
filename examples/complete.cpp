@@ -55,6 +55,8 @@
 #include <cli/clilocalsession.h>
 #include <cli/filehistorystorage.h>
 
+#include <vector>
+#include <algorithm> // std::copy
 
 using namespace cli;
 using namespace std;
@@ -66,20 +68,20 @@ int main()
 
     // setup cli
 
-    auto rootMenu = make_unique< Menu >( "cli" );
-    rootMenu -> Insert(
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, world\n"; },
             "Print hello world" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "hello_everysession",
             [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
             "Print hello everybody on all open sessions" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "answer",
             [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
             "Print the answer to Life, the Universe and Everything" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "file",
             [](std::ostream& out, int fd)
             {
@@ -87,28 +89,28 @@ int main()
             },
             "Print the file descriptor specified",
             {"file_descriptor"} );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "echo", {"string to echo"},
             [](std::ostream& out, const string& arg)
             {
                 out << arg << "\n";
             },
             "Print the string passed as parameter" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "echo", {"first string to echo", "second string to echo"},
             [](std::ostream& out, const string& arg1, const string& arg2)
             {
                 out << arg1 << ' ' << arg2 << "\n";
             },
             "Print the strings passed as parameter" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "error",
             [](std::ostream&)
             {
                 throw std::logic_error("Error in cmd");
             },
             "Throw an exception in the command handler" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "reverse", {"string_to_revert"},
             [](std::ostream& out, const string& arg)
             {
@@ -117,21 +119,31 @@ int main()
                 out << copy << "\n";
             },
             "Print the reverse string" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "add", {"first_term", "second_term"},
             [](std::ostream& out, int x, int y)
             {
                 out << x << " + " << y << " = " << (x+y) << "\n";
             },
             "Print the sum of the two numbers" );
-    rootMenu -> Insert(
+    rootMenu->Insert(
             "add",
             [](std::ostream& out, int x, int y, int z)
             {
                 out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
             },
             "Print the sum of the three numbers" );
-    colorCmd = rootMenu -> Insert(
+    rootMenu->Insert(
+            "sort", {"list of strings separated by space"},
+            [](std::ostream& out, std::vector<std::string> data)
+            {
+                std::sort(data.begin(), data.end());
+                out << "sorted list: ";
+                std::copy(data.begin(), data.end(), std::ostream_iterator<std::string>(out, " "));
+                out << "\n";
+            },
+            "Alphabetically sort a list of words" );
+    colorCmd = rootMenu->Insert(
             "color",
             [&](std::ostream& out)
             {
@@ -141,7 +153,7 @@ int main()
                 nocolorCmd.Enable();
             },
             "Enable colors in the cli" );
-    nocolorCmd = rootMenu -> Insert(
+    nocolorCmd = rootMenu->Insert(
             "nocolor",
             [&](std::ostream& out)
             {
@@ -160,24 +172,24 @@ int main()
             }
     );
 
-    auto subMenu = make_unique< Menu >( "sub" );
-    subMenu -> Insert(
+    auto subMenu = make_unique<Menu>("sub");
+    subMenu->Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, submenu world\n"; },
             "Print hello world in the submenu" );
-    subMenu -> Insert(
+    subMenu->Insert(
             "demo",
             [](std::ostream& out){ out << "This is a sample!\n"; },
             "Print a demo string" );
 
-    auto subSubMenu = make_unique< Menu >( "subsub" );
-        subSubMenu -> Insert(
+    auto subSubMenu = make_unique<Menu>("subsub");
+        subSubMenu->Insert(
             "hello",
             [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
             "Print hello world in the sub-submenu" );
-    subMenu -> Insert( std::move(subSubMenu));
+    subMenu->Insert( std::move(subSubMenu) );
 
-    rootMenu -> Insert( std::move(subMenu) );
+    rootMenu->Insert( std::move(subMenu) );
 
     // create a cli with the given root menu and a persistent storage
     // you must pass to FileHistoryStorage the path of the history file
@@ -210,7 +222,7 @@ int main()
 
     // setup server
 
-    CliTelnetServer server(scheduler, 5000, cli);
+    CliTelnetServer server(cli, scheduler, 5000);
     // exit action for all the connections
     server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
 

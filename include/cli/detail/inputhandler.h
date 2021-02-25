@@ -60,7 +60,7 @@ private:
         NewCommand(s);
     }
 
-    void NewCommand(const std::pair< Symbol, std::string >& s)
+    void NewCommand(const std::pair<Symbol, std::string>& s)
     {
         switch (s.first)
         {
