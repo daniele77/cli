@@ -56,7 +56,7 @@ public:
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
         servant->detach();
     }
-    ~LinuxKeyboard()
+    ~LinuxKeyboard() override
     {
         run = false;
         ToStandardMode();

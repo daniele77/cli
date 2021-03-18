@@ -47,7 +47,7 @@ class LoopScheduler : public Scheduler
 {
 public:
     LoopScheduler() = default;
-    ~LoopScheduler()
+    ~LoopScheduler() override
     {
         Stop();
     }

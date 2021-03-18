@@ -188,7 +188,7 @@ public:
 
         menuHandler = menu->Insert(move(subMenu));
     }
-    ~Arithmetic()
+    ~Arithmetic() override
     {
         menuHandler.Remove();
     }
@@ -238,7 +238,7 @@ public:
             "Alphabetically sort a list of words" );
         menuHandler = menu->Insert(move(subMenu));
     }
-    ~Strings()
+    ~Strings() override
     {
         menuHandler.Remove();
     }

@@ -49,7 +49,7 @@ public:
     {
         Read();
     }
-    ~GenericCliAsyncSession()
+    ~GenericCliAsyncSession() override
     {
         input.close();
     }

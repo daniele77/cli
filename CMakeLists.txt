@@ -29,7 +29,9 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-project(cli VERSION 1.2.1 LANGUAGES CXX)
+project(cli VERSION 1.2.1 
+            # DESCRIPTION "A library for interactive command line interfaces in modern C++"
+            LANGUAGES CXX)
 
 include(GNUInstallDirs)
 

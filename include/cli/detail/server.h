@@ -41,7 +41,7 @@ namespace detail
 class Session : public std::enable_shared_from_this<Session>, public std::streambuf
 {
 public:
-    virtual ~Session() = default;
+    ~Session() override = default;
     virtual void Start()
     {
         OnConnect();

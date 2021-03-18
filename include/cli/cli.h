@@ -462,7 +462,7 @@ namespace cli
         // returns:
         // - the completion of this menu command
         // - the recursive completions of the subcommands
-        virtual std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
+        std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
             if (line.rfind(Name(), 0) == 0) // line starts_with Name()
             {

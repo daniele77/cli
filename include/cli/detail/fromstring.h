@@ -65,7 +65,7 @@ namespace cli
         class bad_conversion : public std::bad_cast
         {
             public:
-                virtual const char* what() const noexcept {
+                const char* what() const noexcept override {
                     return "bad from_string conversion: "
                         "source string value could not be interpreted as target";
                 }

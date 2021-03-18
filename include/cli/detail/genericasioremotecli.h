@@ -52,7 +52,7 @@ public:
 
 protected:
 
-    virtual std::string Encode(const std::string& _data) const override
+    std::string Encode(const std::string& _data) const override
     {
         std::string result;
         for (char c: _data)
@@ -63,7 +63,7 @@ protected:
         return result;
     }
 
-    virtual void OnConnect() override
+    void OnConnect() override
     {
         // to specify hexadecimal value as chars we use
         // the syntax \xVVV
@@ -93,8 +93,8 @@ protected:
 */
         //cliSession.Prompt();
     }
-    virtual void OnDisconnect() override {}
-    virtual void OnError() override {}
+    void OnDisconnect() override {}
+    void OnError() override {}
 #if 0
     virtual void OnDataReceived(const std::string& data) override
     {
@@ -203,7 +203,7 @@ protected:
     };
 
 
-    virtual void OnDataReceived(const std::string& _data) override
+    void OnDataReceived(const std::string& _data) override
     {
         for (char c: _data)
             Consume(c);
@@ -432,7 +432,7 @@ public:
     TelnetServer(typename ASIOLIB::ContextType& ios, unsigned short port) :
         Server<ASIOLIB>(ios, port)
     {}
-    virtual std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
+    std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
     {
         return std::make_shared<TelnetSession>(std::move(_socket));
     }
@@ -454,7 +454,7 @@ public:
     }
 protected:
 
-    virtual void OnConnect() override
+    void OnConnect() override
     {
         TelnetSession::OnConnect();
         Prompt();
@@ -557,7 +557,7 @@ public:
     {
         exitAction = action;
     }
-    virtual std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
+    std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
     {
         return std::make_shared<CliTelnetSession>(scheduler, std::move(_socket), cli, exitAction, historySize);
     }
