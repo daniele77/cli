@@ -30,7 +30,6 @@
 #ifndef CLI_H_
 #define CLI_H_
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
@@ -44,6 +43,8 @@
 #include "detail/fromstring.h"
 #include "historystorage.h"
 #include "volatilehistorystorage.h"
+#include <iostream>
+#include <utility>
 
 namespace cli
 {
@@ -128,7 +129,7 @@ namespace cli
         ) :
             globalHistoryStorage(std::move(historyStorage)),
             rootMenu(std::move(_rootMenu)),
-            exitAction(_exitAction)
+            exitAction(std::move(_exitAction))
         {
         }
 
@@ -191,7 +192,7 @@ namespace cli
     class Command
     {
     public:
-        explicit Command(const std::string& _name) : name(_name), enabled(true) {}
+        explicit Command(std::string _name) : name(std::move(_name)), enabled(true) {}
         virtual ~Command() = default;
         virtual void Enable() { enabled = true; }
         virtual void Disable() { enabled = false; }
@@ -313,9 +314,9 @@ namespace cli
     private:
         struct Descriptor
         {
-            Descriptor() {}
-            Descriptor(const std::weak_ptr<Command>& c, const std::weak_ptr<CmdVec>& v) :
-                cmd(c), cmds(v)
+            Descriptor() = default;
+            Descriptor(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) :
+                cmd(std::move(c)), cmds(std::move(v))
             {}
             void Enable()
             {
@@ -359,8 +360,8 @@ namespace cli
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
-        Menu(const std::string& _name, const std::string& desc = "(menu)") :
-            Command(_name), parent(nullptr), description(desc), cmds(std::make_shared<Cmds>())
+        Menu(const std::string& _name, std::string  desc = "(menu)") :
+            Command(_name), parent(nullptr), description(std::move(desc)), cmds(std::make_shared<Cmds>())
         {}
 
         template <typename F>
@@ -568,10 +569,10 @@ namespace cli
         VariadicFunctionCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc,
-            const std::vector<std::string>& parDesc
+            std::string desc,
+            std::vector<std::string> parDesc
         )
-            : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
+            : Command(_name), func(std::move(fun)), description(std::move(desc)), parameterDesc(std::move(parDesc))
         {
         }
 
@@ -626,10 +627,10 @@ namespace cli
         FreeformCommand(
             const std::string& _name,
             F fun,
-            const std::string& desc,
-            const std::vector<std::string>& parDesc
+            std::string desc,
+            std::vector<std::string> parDesc
         )
-            : Command(_name), func(std::move(fun)), description(desc), parameterDesc(parDesc)
+            : Command(_name), func(std::move(fun)), description(std::move(desc)), parameterDesc(std::move(parDesc))
         {
         }
 

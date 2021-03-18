@@ -44,6 +44,7 @@
 
 #include "cli/clilocalsession.h"
 #include "cli/cli.h"
+#include <utility>
 #include <vector>
 
 using namespace cli;
@@ -55,7 +56,7 @@ using namespace std;
 class Plugin
 {
 public:
-    Plugin(const string& _name) : name(_name) { cout << "Plugin " << name << " loaded" << endl; }
+    Plugin(string _name) : name(std::move(_name)) { cout << "Plugin " << name << " loaded" << endl; }
     virtual ~Plugin() { cout << "Plugin " << name << " unloaded" << endl; }
     const string& Name() const { return name; }
 private:

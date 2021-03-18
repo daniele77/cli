@@ -32,6 +32,7 @@
 
 #include "historystorage.h"
 #include <fstream>
+#include <utility>
 
 namespace cli
 {
@@ -39,9 +40,9 @@ namespace cli
 class FileHistoryStorage : public HistoryStorage
 {
 public:
-    FileHistoryStorage(const std::string& _fileName, std::size_t size = 1000) : 
+    FileHistoryStorage(std::string _fileName, std::size_t size = 1000) : 
         maxSize(size),
-        fileName(_fileName)
+        fileName(std::move(_fileName))
     {
     }
     void Store(const std::vector<std::string>& cmds) override

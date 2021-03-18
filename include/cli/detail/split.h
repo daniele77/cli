@@ -30,9 +30,10 @@
 #ifndef CLI_DETAIL_SPLIT_H_
 #define CLI_DETAIL_SPLIT_H_
 
-#include <string>
-#include <vector>
 #include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace cli
 {
@@ -42,7 +43,7 @@ namespace detail
 class Text
 {
 public:
-    explicit Text(const std::string& _input) : input(_input)
+    explicit Text(std::string _input) : input(std::move(_input))
     {
     }
     void SplitInto(std::vector<std::string>& strs)
