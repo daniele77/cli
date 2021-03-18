@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(SingleQuotedCases)
     BOOST_CHECK_EQUAL(strs[0], "first");
     BOOST_CHECK_EQUAL(strs[1], "foo \tbar");
 
-    split(strs, "first '\"second\" \"thirdh\"'"); // first '"second" "thirdh"'
+    split(strs, R"(first '"second" "thirdh"')"); // first '"second" "thirdh"'
     BOOST_CHECK_EQUAL(strs.size(), 2);
     BOOST_CHECK_EQUAL(strs[0], "first");
     BOOST_CHECK_EQUAL(strs[1], "\"second\" \"thirdh\"");

@@ -98,12 +98,12 @@ private:
             // Should come back into the word state after this.
             prev_state = State::word;
             state = State::escape;
-            splitResult.push_back("");
+            splitResult.emplace_back("");
         }
         else
         {
             state = State::word;
-            splitResult.push_back(std::string(1, c));
+            splitResult.emplace_back(1, c);
         }
     }
 
@@ -167,7 +167,7 @@ private:
     {
         state = State::sentence;
         sentence_type = ( c == '"' ? SentenceType::double_quote : SentenceType::quote);
-        splitResult.push_back("");
+        splitResult.emplace_back("");
     }
 
     void RemoveEmptyEntries()

@@ -69,7 +69,7 @@ class PluginRegistry
 {
 public:
     static PluginRegistry& Instance() { return instance; }
-    void Register(const string& name, Factory factory) { plugins.push_back(make_pair(name, factory)); }
+    void Register(const string& name, Factory factory) { plugins.emplace_back(name, factory); }
     void Print(ostream& out) const
     {
         for (auto& p: plugins)
@@ -140,7 +140,7 @@ public:
     RegisteredPlugin() : Plugin(NAME)
     {
         const Registration& dummy = registration;
-        do { (void)(dummy); } while (0); // silence unused variable warning
+        do { (void)(dummy); } while (false); // silence unused variable warning
     }
 private:
     static unique_ptr<Plugin> Create(Menu* menu) { return make_unique<T>(menu); }
