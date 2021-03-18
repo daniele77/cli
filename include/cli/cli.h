@@ -95,7 +95,7 @@ namespace cli
             // this is the type of std::cout
             typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
             // this is the function signature of std::endl
-            typedef CoutType& (*StandardEndLine)(CoutType&);
+            using StandardEndLine = CoutType &(*)(CoutType &);
 
             // takes << std::endl
             OutStream& operator << (StandardEndLine manip)
