@@ -129,7 +129,7 @@ class Registration
 public:
     Registration(const string& name, Factory factory)
     {
-        PluginRegistry::Instance().Register(name, factory);
+        PluginRegistry::Instance().Register(name, std::move(factory));
     }
 };
 

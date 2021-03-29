@@ -444,7 +444,7 @@ class CliTelnetSession : public InputDevice, public TelnetSession, public CliSes
 {
 public:
 
-    CliTelnetSession(Scheduler& _scheduler, asiolib::ip::tcp::socket _socket, Cli& _cli, std::function< void(std::ostream&)> _exitAction, std::size_t historySize ) :
+    CliTelnetSession(Scheduler& _scheduler, asiolib::ip::tcp::socket _socket, Cli& _cli, const std::function< void(std::ostream&)>& _exitAction, std::size_t historySize ) :
         InputDevice(_scheduler),
         TelnetSession(std::move(_socket)),
         CliSession(_cli, TelnetSession::OutStream(), historySize),

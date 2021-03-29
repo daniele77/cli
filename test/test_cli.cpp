@@ -40,7 +40,7 @@ namespace {
 string ExtractFirstPrompt(const stringstream& o)
 {
     auto content = o.str();
-    std::size_t pos = content.find_first_of(">");
+    std::size_t pos = content.find_first_of('>');
     return content.substr(0, pos);
 }
 
@@ -49,7 +49,7 @@ string ExtractLastPrompt(const stringstream& o)
     auto content = o.str();
     std::size_t pos = content.find_last_of('\n');
     content = content.substr(pos+1);
-    pos = content.find_last_of(">");
+    pos = content.find_last_of('>');
     return content.substr(0, pos);
 }
 
@@ -69,7 +69,7 @@ string ExtractContent(const stringstream& o)
 {
     auto content = o.str();
     // last line
-    auto lastNL = content.find_last_of("\n");
+    auto lastNL = content.find_last_of('\n');
     auto lastLine = content.substr(lastNL+1);
     content = content.substr(0, lastNL);
     auto pos = content.find(lastLine);

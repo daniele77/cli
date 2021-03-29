@@ -712,7 +712,7 @@ namespace cli
             bool found = globalScopeMenu->ScanCmds(strs, *this);
 
             // root menu recursive cmds check
-            if (!found) found = current->ScanCmds(std::move(strs), *this); // last use of strs
+            if (!found) found = current->ScanCmds(strs, *this);
 
             if (!found) // error msg if not found
                 out << "wrong command: " << cmd << '\n';
