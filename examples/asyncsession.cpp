@@ -39,7 +39,7 @@
     {
         using MainScheduler = StandaloneAsioScheduler;
         using CliAsyncSession = StandaloneAsioCliAsyncSession;
-    }
+    } // namespace cli
 #elif defined(CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER)
     #include <cli/boostasioscheduler.h>
     #include <cli/boostasiocliasyncsession.h>

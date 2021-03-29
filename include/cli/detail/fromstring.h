@@ -144,7 +144,7 @@ inline T signed_from_string(std::string s)
     return static_cast<T>(val);
 }
 
-} // detail
+} // namespace detail
 
 // signed
 
@@ -271,9 +271,9 @@ inline T from_string(const std::string& s)
     return result;
 }
 
-    } // detail
+    } // namespace detail
 
-} // cli
+} // namespace cli
 
 
 #endif // CLI_FROMSTRING_USE_BOOST

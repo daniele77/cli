@@ -87,7 +87,7 @@ void UserInput(Cli& cli, stringstream& oss, const string& input)
     session.Start();
 }
 
-}
+} // namespace
 
 BOOST_AUTO_TEST_SUITE(CliSuite)
 

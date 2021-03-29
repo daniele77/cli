@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_FILESESSION_H_
-#define CLI_FILESESSION_H_
+#ifndef CLI_CLIFILESESSION_H
+#define CLI_CLIFILESESSION_H
 
 #include <string>
 #include <iostream>
@@ -77,7 +77,7 @@ private:
     std::istream& in;
 };
 
-} // namespace
+} // namespace cli
 
-#endif // CLI_FILESESSION_H_
+#endif // CLI_CLIFILESESSION_H
 

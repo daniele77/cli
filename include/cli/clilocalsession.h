@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_LOCALSESSION_H_
-#define CLI_LOCALSESSION_H_
+#ifndef CLI_CLILOCALSESSION_H
+#define CLI_CLILOCALSESSION_H
 
 #include "detail/keyboard.h"
 #include "detail/inputhandler.h"
@@ -61,5 +61,5 @@ using CliLocalSession = CliLocalTerminalSession;
 
 } // namespace cli
 
-#endif // CLI_LOCALSESSION_H_
+#endif // CLI_CLILOCALSESSION_H
 

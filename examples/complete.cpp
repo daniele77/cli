@@ -34,7 +34,7 @@
     {    
         using MainScheduler = StandaloneAsioScheduler;
         using CliTelnetServer = StandaloneAsioCliTelnetServer;
-    }
+    } // namespace cli
 #elif defined(CLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER)
     // TODO: NB boostasioscheduler.h includes boost asio
     // so in Windows it should appear before cli.h and clilocalsession.h that include rang,

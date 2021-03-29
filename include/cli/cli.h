@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_H_
-#define CLI_H_
+#ifndef CLI_CLI_H
+#define CLI_CLI_H
 
 #include <string>
 #include <vector>
@@ -783,6 +783,6 @@ namespace cli
         return Insert(std::make_unique<FreeformCommand<F>>(cmdName, f, help, parDesc));
     }
 
-} // namespace
+} // namespace cli
 
-#endif
+#endif // CLI_CLI_H
