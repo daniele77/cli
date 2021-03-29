@@ -62,6 +62,7 @@ public:
         running = false;
         cv.notify_all();
     }
+
     void Run()
     {
         while( ExecOne() ) {};
@@ -91,6 +92,7 @@ public:
 
         return true;
     }
+
 private:
     std::queue<std::function<void()>> tasks;
     bool running{ true };

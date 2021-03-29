@@ -93,7 +93,7 @@ namespace cli
             }
 
             // this is the type of std::cout
-            typedef std::basic_ostream<char, std::char_traits<char> > CoutType;
+            using CoutType = std::basic_ostream<char, std::char_traits<char> >;
             // this is the function signature of std::endl
             using StandardEndLine = CoutType &(*)(CoutType &);
 
@@ -494,7 +494,7 @@ namespace cli
         template <typename F, typename R>
         CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string>) const);
 
-        Menu* parent;
+        Menu* parent{ nullptr };
         const std::string description;
         // using shared_ptr instead of unique_ptr to get a weak_ptr
         // for the CmdHandler::Descriptor

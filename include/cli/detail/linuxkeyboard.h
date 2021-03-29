@@ -125,6 +125,7 @@ private:
         newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
         tcsetattr( STDIN_FILENO, TCSANOW, &newt );
     }
+
     void ToStandardMode()
     {
         tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
