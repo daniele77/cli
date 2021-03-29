@@ -206,7 +206,7 @@ namespace cli
         {
             if (!enabled) return {};
             if (name.rfind(line, 0) == 0) return {name}; // name starts_with line
-            else return {};
+            return {};
         }
     protected:
         const std::string& Name() const { return name; }
@@ -244,7 +244,7 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        virtual ~CliSession() { cli.UnRegister(out); }
+        virtual ~CliSession() { Cli::UnRegister(out); }
 
         // disable value semantics
         CliSession(const CliSession&) = delete;
@@ -419,11 +419,12 @@ namespace cli
 
         bool ScanCmds(const std::vector<std::string>& cmdLine, CliSession& session)
         {
-            if (!IsEnabled()) return false;
+            if (!IsEnabled())
+                return false;
             for (auto& cmd: *cmds)
-                if (cmd->Exec(cmdLine, session)) return true;
-            if (parent && parent->Exec(cmdLine, session)) return true;
-            return false;
+                if (cmd->Exec(cmdLine, session))
+                    return true;
+            return (parent && parent->Exec(cmdLine, session));
         }
 
         std::string Prompt() const
@@ -436,7 +437,8 @@ namespace cli
             if (!IsEnabled()) return;
             for (const auto& cmd: *cmds)
                 cmd->Help(out);
-            if (parent) parent->Help(out);
+            if (parent != nullptr)
+                parent->Help(out);
         }
 
         void Help(std::ostream& out) const override
@@ -452,7 +454,7 @@ namespace cli
         std::vector<std::string> GetCompletions(const std::string& currentLine) const
         {
             auto result = cli::GetCompletions(cmds, currentLine);
-            if (parent)
+            if (parent != nullptr)
             {
                 auto c = parent->GetCompletionRecursive(currentLine);
                 result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
@@ -677,7 +679,7 @@ namespace cli
         {
             history.LoadCommands(cli.GetCommands());
 
-            cli.Register(out);
+            Cli::Register(out);
             globalScopeMenu->Insert(
                 "help",
                 [this](std::ostream&){ Help(); },
@@ -727,8 +729,6 @@ namespace cli
                 << cmd
                 << "\"\n";
         }
-
-        return;
     }
 
     inline void CliSession::Prompt()
