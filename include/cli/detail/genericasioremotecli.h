@@ -46,7 +46,7 @@ namespace detail
 class TelnetSession : public Session
 {
 public:
-    TelnetSession(asiolib::ip::tcp::socket _socket) :
+    explicit TelnetSession(asiolib::ip::tcp::socket _socket) :
         Session(std::move(_socket))
     {}
 

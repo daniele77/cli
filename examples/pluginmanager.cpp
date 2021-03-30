@@ -56,7 +56,7 @@ using namespace std;
 class Plugin
 {
 public:
-    Plugin(string _name) : name(std::move(_name)) { cout << "Plugin " << name << " loaded" << endl; }
+    explicit Plugin(string _name) : name(std::move(_name)) { cout << "Plugin " << name << " loaded" << endl; }
     virtual ~Plugin() { cout << "Plugin " << name << " unloaded" << endl; }
     const string& Name() const { return name; }
 private:
@@ -162,7 +162,7 @@ constexpr char ArithmeticName[] = "arithmetic";
 class Arithmetic : public RegisteredPlugin<Arithmetic, ArithmeticName>
 {
 public:
-    Arithmetic(Menu* menu)
+    explicit Arithmetic(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
         subMenu->Insert(
@@ -206,7 +206,7 @@ constexpr char StringsName[] = "strings";
 class Strings : public RegisteredPlugin<Strings, StringsName>
 {
 public:
-    Strings(Menu* menu)
+    explicit Strings(Menu* menu)
     {
         auto subMenu = make_unique<Menu>(Name());
         subMenu->Insert(
@@ -252,75 +252,87 @@ private:
 
 int main()
 {
-    CmdHandler colorCmd;
-    CmdHandler nocolorCmd;    
+    try
+    {
+        CmdHandler colorCmd;
+        CmdHandler nocolorCmd;    
 
-    // setup cli
+        // setup cli
 
-    auto rootMenu = make_unique< Menu >( "cli" );
-    PluginContainer::Instance().SetMenu(*rootMenu);
-    rootMenu->Insert(
-            "list",
-            [](std::ostream& out){ PluginRegistry::Instance().Print(out); },
-            "Print the plugin list" );
-    rootMenu->Insert(
-            "loaded",
-            [](std::ostream& out)
+        auto rootMenu = make_unique< Menu >( "cli" );
+        PluginContainer::Instance().SetMenu(*rootMenu);
+        rootMenu->Insert(
+                "list",
+                [](std::ostream& out){ PluginRegistry::Instance().Print(out); },
+                "Print the plugin list" );
+        rootMenu->Insert(
+                "loaded",
+                [](std::ostream& out)
+                {
+                    PluginContainer::Instance().PrintLoaded(out);
+                },
+                "Load the plugin specified" );
+        rootMenu->Insert(
+                "load", {"plugin_name"},
+                [](std::ostream&, const string& plugin)
+                {
+                    PluginContainer::Instance().Load(plugin);
+                },
+                "Load the plugin specified" );
+        rootMenu->Insert(
+                "unload", {"plugin_name"},
+                [](std::ostream&, const string& plugin)
+                {
+                    PluginContainer::Instance().Unload(plugin);
+                },
+                "Unload the plugin specified" );
+        colorCmd = rootMenu -> Insert(
+                "color",
+                [&](std::ostream& out)
+                {
+                    out << "Colors ON\n";
+                    SetColor();
+                    colorCmd.Disable();
+                    nocolorCmd.Enable();
+                },
+                "Enable colors in the cli" );
+        nocolorCmd = rootMenu -> Insert(
+                "nocolor",
+                [&](std::ostream& out)
+                {
+                    out << "Colors OFF\n";
+                    SetNoColor();
+                    colorCmd.Enable();
+                    nocolorCmd.Disable();                
+                },
+                "Disable colors in the cli" );
+
+
+        Cli cli( std::move(rootMenu) );
+        // global exit action
+        cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
+
+        MainScheduler scheduler;
+        CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
+        localSession.ExitAction(
+            [&scheduler](auto& out) // session exit action
             {
-                PluginContainer::Instance().PrintLoaded(out);
-            },
-            "Load the plugin specified" );
-    rootMenu->Insert(
-            "load", {"plugin_name"},
-            [](std::ostream&, const string& plugin)
-            {
-                PluginContainer::Instance().Load(plugin);
-            },
-            "Load the plugin specified" );
-    rootMenu->Insert(
-            "unload", {"plugin_name"},
-            [](std::ostream&, const string& plugin)
-            {
-                PluginContainer::Instance().Unload(plugin);
-            },
-            "Unload the plugin specified" );
-    colorCmd = rootMenu -> Insert(
-            "color",
-            [&](std::ostream& out)
-            {
-                out << "Colors ON\n";
-                SetColor();
-                colorCmd.Disable();
-                nocolorCmd.Enable();
-            },
-            "Enable colors in the cli" );
-    nocolorCmd = rootMenu -> Insert(
-            "nocolor",
-            [&](std::ostream& out)
-            {
-                out << "Colors OFF\n";
-                SetNoColor();
-                colorCmd.Enable();
-                nocolorCmd.Disable();                
-            },
-            "Disable colors in the cli" );
+                out << "Closing App...\n";
+                scheduler.Stop();
+            }
+        );
 
+        scheduler.Run();
 
-    Cli cli( std::move(rootMenu) );
-    // global exit action
-    cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
-
-    MainScheduler scheduler;
-    CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
-    localSession.ExitAction(
-        [&scheduler](auto& out) // session exit action
-        {
-            out << "Closing App...\n";
-            scheduler.Stop();
-        }
-    );
-
-    scheduler.Run();
-
-    return 0;
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Exception caugth in main: " << e.what() << endl;
+    }
+    catch (...)
+    {
+        cerr << "Unknown exception caugth in main." << endl;
+    }
+    return -1;
 }

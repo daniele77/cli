@@ -49,9 +49,9 @@ public:
     {
         Read();
     }
-    ~GenericCliAsyncSession() override
+    ~GenericCliAsyncSession() noexcept override
     {
-        input.close();
+        try { input.close(); } catch (const std::exception&) { /* do nothing */ }
     }
 
 private:

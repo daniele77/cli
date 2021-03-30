@@ -52,7 +52,7 @@ enum class Symbol
 class Terminal
 {
   public:
-    Terminal(std::ostream &_out) : out(_out) {}
+    explicit Terminal(std::ostream &_out) : out(_out) {}
 
     void ResetCursor() { position = 0; }
 

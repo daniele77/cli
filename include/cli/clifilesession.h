@@ -42,7 +42,7 @@ class CliFileSession : public CliSession
 {
 public:
     /// @throw std::invalid_argument if @c _in or @c out are invalid streams
-    CliFileSession(Cli& _cli, std::istream& _in=std::cin, std::ostream& _out=std::cout) :
+    explicit CliFileSession(Cli& _cli, std::istream& _in=std::cin, std::ostream& _out=std::cout) :
         CliSession(_cli, _out, 1),
         exit(false),
         in(_in)

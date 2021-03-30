@@ -46,7 +46,7 @@ public:
 
     GenericAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
 
-    GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
+    explicit GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
 
     ~GenericAsioScheduler() override { if (owned) delete context; }
 

@@ -37,7 +37,7 @@ using namespace std;
 class UserInterface
 {
 public:
-    UserInterface(asio::io_context& iocontext) : scheduler(iocontext)
+    explicit UserInterface(asio::io_context& iocontext) : scheduler(iocontext)
     {
         auto rootMenu = make_unique< Menu >("cli");
         rootMenu->Insert(
@@ -99,18 +99,29 @@ private:
 
 int main()
 {
+    try
+    {
+        // main application that creates an asio io_context and uses it
+        asio::io_context iocontext;
+        asio::steady_timer timer(iocontext, std::chrono::seconds(5));
+        timer.async_wait([](const error_code&){ cout << "Timer expired!\n"; });
 
-    // main application that creates an asio io_context and uses it
-    asio::io_context iocontext;
-    asio::steady_timer timer(iocontext, std::chrono::seconds(5));
-    timer.async_wait([](const error_code&){ cout << "Timer expired!\n"; });
+        // cli setup
+        UserInterface interface(iocontext);
 
-    // cli setup
-    UserInterface interface(iocontext);
+        // start the asio io_context
+        auto work =     asio::make_work_guard(iocontext);
+        iocontext.run();
 
-    // start the asio io_context
-    auto work =     asio::make_work_guard(iocontext);
-    iocontext.run();
-
-    return 0;
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Exception caugth in main: " << e.what() << endl;
+    }
+    catch (...)
+    {
+        cerr << "Unknown exception caugth in main." << endl;
+    }
+    return -1;
 }

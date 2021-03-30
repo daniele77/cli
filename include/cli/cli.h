@@ -122,7 +122,7 @@ namespace cli
         // end inner class
 
     public:
-        Cli(
+        explicit Cli(
             std::unique_ptr<Menu>&& _rootMenu,
             std::function< void(std::ostream&)> _exitAction = {},
             std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<VolatileHistoryStorage>()
@@ -138,9 +138,13 @@ namespace cli
         {
         }
 
+        ~Cli() = default;
         // disable value semantics
         Cli(const Cli&) = delete;
         Cli& operator = (const Cli&) = delete;
+        // enable move semantics
+        Cli(Cli&&) = default;
+        Cli& operator = (Cli&&) = default;
 
         Menu* RootMenu() { return rootMenu.get(); }
         void ExitAction( const std::function< void(std::ostream&)>& action ) { exitAction = action; }
@@ -360,7 +364,7 @@ namespace cli
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
-        Menu(const std::string& _name, std::string  desc = "(menu)") :
+        explicit Menu(const std::string& _name, std::string  desc = "(menu)") :
             Command(_name), parent(nullptr), description(std::move(desc)), cmds(std::make_shared<Cmds>())
         {}
 

@@ -50,7 +50,7 @@ public:
 
 protected:
 
-    Session(asiolib::ip::tcp::socket _socket) : socket(std::move(_socket)), outStream( this ) {}
+    explicit Session(asiolib::ip::tcp::socket _socket) : socket(std::move(_socket)), outStream( this ) {}
 
     virtual void Disconnect()
     {

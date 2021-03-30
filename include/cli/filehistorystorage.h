@@ -40,7 +40,7 @@ namespace cli
 class FileHistoryStorage : public HistoryStorage
 {
 public:
-    FileHistoryStorage(std::string _fileName, std::size_t size = 1000) : 
+    explicit FileHistoryStorage(std::string _fileName, std::size_t size = 1000) : 
         maxSize(size),
         fileName(std::move(_fileName))
     {
