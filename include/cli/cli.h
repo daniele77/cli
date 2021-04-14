@@ -197,7 +197,14 @@ namespace cli
     {
     public:
         explicit Command(std::string _name) : name(std::move(_name)), enabled(true) {}
-        virtual ~Command() = default;
+        virtual ~Command() noexcept = default;
+
+        // disable copy and move semantics
+        Command(const Command&) = delete;
+        Command(Command&&) = delete;
+        Command& operator=(const Command&) = delete;
+        Command& operator=(Command&&) = delete;
+
         virtual void Enable() { enabled = true; }
         virtual void Disable() { enabled = false; }
         virtual bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) = 0;
@@ -248,11 +255,14 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        virtual ~CliSession() { Cli::UnRegister(out); }
+        virtual ~CliSession() noexcept { Cli::UnRegister(out); }
 
         // disable value semantics
         CliSession(const CliSession&) = delete;
         CliSession& operator = (const CliSession&) = delete;
+        // disable move semantics
+        CliSession(CliSession&&) = delete;
+        CliSession& operator = (CliSession&&) = delete;
 
         void Feed( const std::string& cmd );
 
@@ -358,9 +368,11 @@ namespace cli
     class Menu : public Command
     {
     public:
-        // disable value semantics
+        // disable value and move semantics
         Menu(const Menu&) = delete;
         Menu& operator = (const Menu&) = delete;
+        Menu(Menu&&) = delete;
+        Menu& operator = (Menu&&) = delete;
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 

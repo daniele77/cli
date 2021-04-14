@@ -96,7 +96,7 @@ protected:
     void OnDisconnect() override {}
     void OnError() override {}
 #if 0
-    virtual void OnDataReceived(const std::string& data) override
+    void OnDataReceived(const std::string& data) override
     {
         if (waitAck)
         {
