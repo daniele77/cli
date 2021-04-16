@@ -35,6 +35,7 @@
 #include "inputhandler.h"
 #include "server.h"
 #include "inputdevice.h"
+#include "genericasioscheduler.h"
 
 namespace cli
 {

@@ -10,6 +10,12 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
 
+[:heart: Sponsor](https://github.com/sponsors/daniele77)
+
+**IMPORTANT: Breaking API changes** Version 2.0 of `cli` have made breaking changes in order to add more functionality.
+To migrate your application to new `cli` version your code, see the secion
+"Async programming and Schedulers" of this file, or the examples that come with the library.
+
 ## Features
 
 * Header only
@@ -128,6 +134,14 @@ E.g., from a visual studio console, use one of the following commands:
 
 Set the environment variable BOOST. Then, open the file
 `cli/examples/examples.sln`
+
+## Compilation of the Doxygen documentation
+
+If you have doxygen installed on your system, you can get the html documentation
+of the library in this way:
+
+    <enter the directory doc/doxy>
+    doxygen Doxyfile
 
 ## CLI usage
 

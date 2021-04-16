@@ -122,22 +122,6 @@ namespace cli
         // end inner class
 
     public:
-        explicit Cli(
-            std::unique_ptr<Menu>&& _rootMenu,
-            std::function< void(std::ostream&)> _exitAction = {},
-            std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<VolatileHistoryStorage>()
-        ) :
-            globalHistoryStorage(std::move(historyStorage)),
-            rootMenu(std::move(_rootMenu)),
-            exitAction(std::move(_exitAction))
-        {
-        }
-
-        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) :
-            Cli(std::move(_rootMenu), {}, std::move(historyStorage))
-        {
-        }
-
         ~Cli() = default;
         // disable value semantics
         Cli(const Cli&) = delete;
@@ -146,17 +130,80 @@ namespace cli
         Cli(Cli&&) = default;
         Cli& operator = (Cli&&) = default;
 
+        /// \deprecated Use the @c Cli::Cli(std::unique_ptr<Menu>,std::unique_ptr<HistoryStorage>) 
+        /// overload version and the method @c Cli::ExitAction instead
+        [[deprecated("Use the other overload of Cli constructor and the method Cli::ExitAction instead")]]
+        explicit Cli(
+            std::unique_ptr<Menu>&& _rootMenu,
+            std::function< void(std::ostream&)> _exitAction,
+            std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<VolatileHistoryStorage>()
+        ) :
+            globalHistoryStorage(std::move(historyStorage)),
+            rootMenu(std::move(_rootMenu)),
+            exitAction(std::move(_exitAction))
+        {
+        }
+
+        /**
+         * @brief Construct a new Cli object having a given root menu that contains the first level commands available.
+         * 
+         * @param _rootMenu is the @c Menu containing the first level commands available to the user.
+         * @param historyStorage is the policy for the storage of the cli commands history. You must pass an istance of
+         * a class derived from @c HistoryStorage. The library provides these policies:
+         *   - @c VolatileHistoryStorage
+         *   - @c FileHistoryStorage it's a persistent history. I.e., the command history is preserved after your application
+         *     is restarted.
+         * 
+         * However, you can develop your own, just derive a class from @c HistoryStorage .
+         */
+        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>()) :
+            globalHistoryStorage(std::move(historyStorage)),
+            rootMenu(std::move(_rootMenu)),
+            exitAction{}
+        {
+        }
+
+        /**
+         * @brief Add a global exit action that is called every time a session (local or remote) gets the "exit" command.
+         * 
+         * @param action the function to be called when a session exits, taking a @c std::ostream& parameter to write on that session console.
+         */
+        void ExitAction(const std::function< void(std::ostream&)>& action) { exitAction = action; }
+
+        /**
+         * @brief Add an handler that will be called when a @c std::exception (or derived) is thrown inside a command handler.
+         * If an exception handler is not set, the exception will be logget on the session output stream.
+         * 
+         * @param handler the function to be called when an exception is thrown, taking a @c std::ostream& parameter to write on that session console
+         * and the exception thrown.
+         */
+        void StdExceptionHandler(const std::function< void(std::ostream&, const std::string& cmd, const std::exception&) >& handler)
+        {
+            exceptionHandler = handler;
+        }
+
+        /**
+         * @brief Get a global out stream object that can be used to print on every session currently connected (local and remote)
+         * 
+         * @return OutStream& the reference to the global out stream writing on every session console. 
+         */
+        static OutStream& cout()
+        {
+            static OutStream s;
+            return s;
+        }
+
+    private:
+        friend class CliSession;
+
         Menu* RootMenu() { return rootMenu.get(); }
-        void ExitAction( const std::function< void(std::ostream&)>& action ) { exitAction = action; }
+
         void ExitAction( std::ostream& out )
         {
             if ( exitAction )
                 exitAction( out );
         }
-        void StdExceptionHandler(const std::function< void(std::ostream&, const std::string& cmd, const std::exception&) >& handler)
-        {
-            exceptionHandler = handler;
-        }
+
         void StdExceptionHandler(std::ostream& out, const std::string& cmd, const std::exception& e)
         {
             if (exceptionHandler)
@@ -166,13 +213,8 @@ namespace cli
         }
 
         static void Register(std::ostream& o) { cout().Register(o); }
-        static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
-        static OutStream& cout()
-        {
-            static OutStream s;
-            return s;
-        }
+        static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
         void StoreCommands(const std::vector<std::string>& cmds)
         {

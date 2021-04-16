@@ -7,6 +7,7 @@
  - Fix missing echo after ctrl-v paste of command (issue [#72](https://github.com/daniele77/cli/issues/72))
  - Remove the symbol BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT (issue [#89](https://github.com/daniele77/cli/issues/89))
  - Fix unused parameters warning in release mode (issue [#90](https://github.com/daniele77/cli/issues/90))
+ - Cli constructor revision (issue [#75](https://github.com/daniele77/cli/issues/75))
 
 ## [1.2.1] - 2020-08-27
 

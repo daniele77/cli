@@ -30,8 +30,8 @@
 #ifndef CLI_BOOSTASIOREMOTECLI_H_
 #define CLI_BOOSTASIOREMOTECLI_H_
 
-#include "detail/genericasioremotecli.h"
 #include "detail/boostasiolib.h"
+#include "detail/genericasioremotecli.h"
 
 namespace cli { using BoostAsioCliTelnetServer = detail::CliGenericTelnetServer<detail::BoostAsioLib>; }
 
