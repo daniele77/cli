@@ -8,6 +8,7 @@
  - Remove the symbol BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT (issue [#89](https://github.com/daniele77/cli/issues/89))
  - Fix unused parameters warning in release mode (issue [#90](https://github.com/daniele77/cli/issues/90))
  - Cli constructor revision (issue [#75](https://github.com/daniele77/cli/issues/75))
+ - Special keys not recognized behaves like backspace in windows (issue [#111](https://github.com/daniele77/cli/issues/111))
 
 ## [1.2.1] - 2020-08-27
 

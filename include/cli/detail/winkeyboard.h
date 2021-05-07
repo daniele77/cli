@@ -84,27 +84,14 @@ private:
                 c = _getch();
                 switch (c)
                 {
-                case 72:
-                    return std::make_pair(KeyType::up, ' ');
-                    break;
-                case 80:
-                    return std::make_pair(KeyType::down, ' ');
-                    break;
-                case 75:
-                    return std::make_pair(KeyType::left, ' ');
-                    break;
-                case 77:
-                    return std::make_pair(KeyType::right, ' ');
-                    break;
-                case 71:
-                    return std::make_pair(KeyType::home, ' ');
-                    break;
-                case 79:
-                    return std::make_pair(KeyType::end, ' ');
-                    break;
-                case 83:
-                    return std::make_pair(KeyType::canc, ' ');
-                    break;
+                    case 72: return std::make_pair(KeyType::up, ' ');
+                    case 80: return std::make_pair(KeyType::down, ' ');
+                    case 75: return std::make_pair(KeyType::left, ' ');
+                    case 77: return std::make_pair(KeyType::right, ' ');
+                    case 71: return std::make_pair(KeyType::home, ' ');
+                    case 79: return std::make_pair(KeyType::end, ' ');
+                    case 83: return std::make_pair(KeyType::canc, ' ');
+                    default: return std::make_pair(KeyType::ignored, ' ');
                 }
             }
             case 8:
