@@ -31,6 +31,7 @@
 #define CLI_DETAIL_HISTORY_H_
 
 #include <deque>
+#include <limits>
 #include <vector>
 #include <string>
 #include <algorithm>

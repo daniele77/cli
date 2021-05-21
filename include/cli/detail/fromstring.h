@@ -54,6 +54,7 @@ T from_string(const std::string& s)
 #else
 
 #include <exception>
+#include <limits>
 #include <string>
 #include <sstream>
 
