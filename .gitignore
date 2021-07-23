@@ -67,3 +67,6 @@ doc/doxy/html
 
 # Test files
 cli_test_history
+
+# Other
+*.sh
