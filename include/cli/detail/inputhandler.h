@@ -47,7 +47,7 @@ class InputHandler
 public:
     InputHandler(CliSession& _session, InputDevice& kb) :
         session(_session),
-        terminal(session.OutStream())
+        terminal(session.out, session.terminalProfile)
     {
         kb.Register( [this](auto key){ this->Keypressed(key); } );
     }
@@ -109,10 +109,10 @@ private:
                     terminal.SetLine(commonPrefix);
                     break;
                 }
-                session.OutStream() << '\n';
+                session.out << '\n';
                 std::string items;
                 std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
-                session.OutStream() << items << '\n';
+                session.out << items << '\n';
                 session.Prompt();
                 terminal.ResetCursor();
                 terminal.SetLine( line );

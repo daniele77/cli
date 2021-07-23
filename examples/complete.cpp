@@ -67,127 +67,164 @@ int main()
     {
         CmdHandler colorCmd;
         CmdHandler nocolorCmd;
+        CmdHandler enableCmd;
+        CmdHandler disableCmd;
 
         // setup cli
 
         auto rootMenu = make_unique<Menu>("cli");
         rootMenu->Insert(
                 "hello",
-                [](std::ostream& out){ out << "Hello, world\n"; },
+                [](UserSession& s){ s.out << "Hello, world\n"; },
                 "Print hello world" );
         rootMenu->Insert(
                 "hello_everysession",
-                [](std::ostream&){ Cli::cout() << "Hello, everybody" << std::endl; },
+                [](UserSession&){ Cli::cout() << "Hello, everybody" << std::endl; },
                 "Print hello everybody on all open sessions" );
         rootMenu->Insert(
                 "answer",
-                [](std::ostream& out, int x){ out << "The answer is: " << x << "\n"; },
+                [](UserSession& s, int x){ s.out << "The answer is: " << x << "\n"; },
                 "Print the answer to Life, the Universe and Everything" );
         rootMenu->Insert(
                 "file",
-                [](std::ostream& out, int fd)
+                [](UserSession& s, int fd)
                 {
-                    out << "file descriptor: " << fd << "\n";
+                    s.out << "file descriptor: " << fd << "\n";
                 },
                 "Print the file descriptor specified",
                 {"file_descriptor"} );
         rootMenu->Insert(
                 "echo", {"string to echo"},
-                [](std::ostream& out, const string& arg)
+                [](UserSession& s, const string& arg)
                 {
-                    out << arg << "\n";
+                    s.out << arg << "\n";
                 },
                 "Print the string passed as parameter" );
         rootMenu->Insert(
                 "echo", {"first string to echo", "second string to echo"},
-                [](std::ostream& out, const string& arg1, const string& arg2)
+                [](UserSession& s, const string& arg1, const string& arg2)
                 {
-                    out << arg1 << ' ' << arg2 << "\n";
+                    s.out << arg1 << ' ' << arg2 << "\n";
                 },
                 "Print the strings passed as parameter" );
         rootMenu->Insert(
                 "error",
-                [](std::ostream&)
+                [](UserSession&)
                 {
                     throw std::logic_error("Error in cmd");
                 },
                 "Throw an exception in the command handler" );
         rootMenu->Insert(
                 "reverse", {"string_to_revert"},
-                [](std::ostream& out, const string& arg)
+                [](UserSession& s, const string& arg)
                 {
                     string copy(arg);
                     std::reverse(copy.begin(), copy.end());
-                    out << copy << "\n";
+                    s.out << copy << "\n";
                 },
                 "Print the reverse string" );
         rootMenu->Insert(
                 "add", {"first_term", "second_term"},
-                [](std::ostream& out, int x, int y)
+                [](UserSession& s, int x, int y)
                 {
-                    out << x << " + " << y << " = " << (x+y) << "\n";
+                    s.out << x << " + " << y << " = " << (x+y) << "\n";
                 },
                 "Print the sum of the two numbers" );
         rootMenu->Insert(
                 "add",
-                [](std::ostream& out, int x, int y, int z)
+                [](UserSession& s, int x, int y, int z)
                 {
-                    out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
+                    s.out << x << " + " << y << " + " << z << " = " << (x+y+z) << "\n";
                 },
                 "Print the sum of the three numbers" );
         rootMenu->Insert(
                 "sort", {"list of strings separated by space"},
-                [](std::ostream& out, std::vector<std::string> data)
+                [](UserSession& s, std::vector<std::string> data)
                 {
                     std::sort(data.begin(), data.end());
-                    out << "sorted list: ";
-                    std::copy(data.begin(), data.end(), std::ostream_iterator<std::string>(out, " "));
-                    out << "\n";
+                    s.out << "sorted list: ";
+                    std::copy(data.begin(), data.end(), std::ostream_iterator<std::string>(s.out, " "));
+                    s.out << "\n";
                 },
                 "Alphabetically sort a list of words" );
         colorCmd = rootMenu->Insert(
                 "color",
-                [&](std::ostream& out)
+                [&](UserSession& s)
                 {
-                    out << "Colors ON\n";
-                    SetColor();
-                    colorCmd.Disable();
-                    nocolorCmd.Enable();
+                    if (s["color"] == "yes")
+                        return;
+
+                    s["color"] = "yes";
+                    s.out << "Colors ON\n";
+                    s.terminalProfile.SetColor();
+                    //colorCmd.Disable();
+                    //nocolorCmd.Enable();
                 },
                 "Enable colors in the cli" );
         nocolorCmd = rootMenu->Insert(
                 "nocolor",
-                [&](std::ostream& out)
+                [&](UserSession& s)
                 {
-                    out << "Colors OFF\n";
-                    SetNoColor();
-                    colorCmd.Enable();
-                    nocolorCmd.Disable();
+                    if (s["color"] == "no")
+                        return;
+
+                    s["color"] = "no";
+
+                    s.out << "Colors OFF\n";
+                    s.terminalProfile.SetNoColor();
+                    //colorCmd.Enable();
+                    //nocolorCmd.Disable();
                 },
                 "Disable colors in the cli" );
-        rootMenu->Insert(
-                "removecmds",
-                [&](std::ostream&)
+        auto fakeCmd = rootMenu->Insert(
+                "fake",
+                [&](UserSession& s)
                 {
-                    colorCmd.Remove();
-                    nocolorCmd.Remove();
-                }
-        );
+                    s.out << "Done!" << std::endl;
+                },
+                "Prints a nice message" );
+        rootMenu->Insert(
+                "removecmd",
+                [&](UserSession&)
+                {
+                    fakeCmd.Remove();
+                    disableCmd.Disable();
+                    enableCmd.Disable();
+                },
+                "Remove the fake command from the menu" );
+        disableCmd = rootMenu->Insert(
+                "disablecmd",
+                [&](UserSession&)
+                {
+                    fakeCmd.Disable();
+                    disableCmd.Disable();
+                    enableCmd.Enable();
+                },
+                "Disable the fake command" );
+        enableCmd = rootMenu->Insert(
+                "enablecmd",
+                [&](UserSession&)
+                {
+                    fakeCmd.Enable();
+                    disableCmd.Enable();
+                    enableCmd.Disable();
+                },
+                "Enable the fake command" );
 
         auto subMenu = make_unique<Menu>("sub");
         subMenu->Insert(
                 "hello",
-                [](std::ostream& out){ out << "Hello, submenu world\n"; },
+                [](UserSession& s){ s.out << "Hello, submenu world\n"; },
                 "Print hello world in the submenu" );
         subMenu->Insert(
                 "demo",
-                [](std::ostream& out){ out << "This is a sample!\n"; },
+                [](UserSession& s){ s.out << "This is a sample!\n"; },
                 "Print a demo string" );
 
         auto subSubMenu = make_unique<Menu>("subsub");
             subSubMenu->Insert(
                 "hello",
-                [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
+                [](UserSession& s){ s.out << "Hello, subsubmenu world\n"; },
                 "Print hello world in the sub-submenu" );
         subMenu->Insert( std::move(subSubMenu) );
 

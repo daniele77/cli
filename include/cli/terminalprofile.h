@@ -27,29 +27,24 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_COLORPROFILE_H_
-#define CLI_COLORPROFILE_H_
-
-#if 0
+#ifndef CLI_TERMINALPROFILE_H_
+#define CLI_TERMINALPROFILE_H_
 
 #include "detail/rang.h"
 
 namespace cli
 {
 
-inline bool& Color() { static bool color; return color; }
+struct BeforePrompt { bool& color; };
+struct AfterPrompt { bool& color; };
+struct BeforeInput { bool& color; };
+struct AfterInput { bool& color; };
 
-inline void SetColor() { Color() = true; }
-inline void SetNoColor() { Color() = false; }
 
-enum BeforePrompt { beforePrompt };
-enum AfterPrompt { afterPrompt };
-enum BeforeInput { beforeInput };
-enum AfterInput { afterInput };
 
-inline std::ostream& operator<<(std::ostream& os, BeforePrompt)
+inline std::ostream& operator<<(std::ostream& os, BeforePrompt bp)
 {
-    if ( Color() ) { os << rang::control::forceColor << rang::fg::green << rang::style::bold; }
+    if (bp.color) { os << rang::control::forceColor << rang::fg::green << rang::style::bold; }
     return os;
 }
 
@@ -59,9 +54,9 @@ inline std::ostream& operator<<(std::ostream& os, AfterPrompt)
     return os;
 }
 
-inline std::ostream& operator<<(std::ostream& os, BeforeInput)
+inline std::ostream& operator<<(std::ostream& os, BeforeInput bi)
 {
-    if ( Color() ) { os << rang::control::forceColor << rang::fgB::gray; }
+    if (bi.color) { os << rang::control::forceColor << rang::fgB::gray; }
     return os;
 }
 
@@ -71,10 +66,28 @@ inline std::ostream& operator<<(std::ostream& os, AfterInput)
     return os;
 }
 
+
+class TerminalProfile
+{
+public:
+    TerminalProfile() : 
+        beforePrompt{color},
+        afterPrompt{color},
+        beforeInput{color},
+        afterInput{color}
+    {}
+    void SetColor() { color = true; }
+    void SetNoColor() { color = false; }
+    //bool Color() const { return color; }
+
+    BeforePrompt beforePrompt;
+    AfterPrompt afterPrompt;
+    BeforeInput beforeInput;
+    AfterInput afterInput;
+private:
+    bool color;
+};
+
 } // namespace cli
 
-#endif
-
-#endif // CLI_COLORPROFILE_H_
-
-
+#endif // CLI_TERMINALPROFILE_H_

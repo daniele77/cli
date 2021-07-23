@@ -52,15 +52,15 @@ enum class Symbol
 class Terminal
 {
   public:
-    explicit Terminal(std::ostream &_out) : out(_out) {}
+    Terminal(std::ostream& _out, TerminalProfile& _profile) : out(_out), profile(_profile) {}
 
     void ResetCursor() { position = 0; }
 
     void SetLine(const std::string &newLine)
     {
-        out << beforeInput
+        out << profile.beforeInput
             << std::string(position, '\b') << newLine
-            << afterInput << std::flush;
+            << profile.afterInput << std::flush;
 
         // if newLine is shorter then currentLine, we have
         // to clear the rest of the string
@@ -120,9 +120,9 @@ class Terminal
             case KeyType::right:
                 if (position < currentLine.size())
                 {
-                    out << beforeInput
+                    out << profile.beforeInput
                         << currentLine[position]
-                        << afterInput << std::flush;
+                        << profile.afterInput << std::flush;
                     ++position;
                 }
                 break;
@@ -145,10 +145,10 @@ class Terminal
                     const auto pos = static_cast<std::string::difference_type>(position);
 
                     // output the new char:
-                    out << beforeInput << c;
+                    out << profile.beforeInput << c;
                     // and the rest of the string:
                     out << std::string(currentLine.begin() + pos, currentLine.end())
-                        << afterInput;
+                        << profile.afterInput;
 
                     // go back to the original position
                     out << std::string(currentLine.size() - position, '\b') << std::flush;
@@ -181,9 +181,9 @@ class Terminal
             {
                 const auto pos = static_cast<std::string::difference_type>(position);
 
-                out << beforeInput
+                out << profile.beforeInput
                     << std::string(currentLine.begin() + pos, currentLine.end())
-                    << afterInput << std::flush;
+                    << profile.afterInput << std::flush;
                 position = currentLine.size();
                 break;
             }
@@ -205,6 +205,7 @@ class Terminal
     std::string currentLine;
     std::size_t position = 0; // next writing position in currentLine
     std::ostream &out;
+    const TerminalProfile& profile;
 };
 
 } // namespace detail

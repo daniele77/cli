@@ -32,12 +32,14 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 #include <functional>
 #include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
 #include "colorprofile.h"
+#include "terminalprofile.h"
 #include "detail/history.h"
 #include "detail/split.h"
 #include "detail/fromstring.h"
@@ -293,7 +295,26 @@ namespace cli
 
     // ********************************************************************
 
-    class CliSession
+    // forward declaration
+    class CmdHandler;
+
+    class UserSession : public std::unordered_map<std::string, std::string>
+    {
+    public:
+        explicit UserSession(std::ostream& _out) noexcept : out(_out) {}
+        std::ostream& out;
+        TerminalProfile terminalProfile;
+
+        virtual ~UserSession() noexcept = default;
+        // disable value semantics
+        UserSession(const UserSession&) = delete;
+        UserSession& operator = (const UserSession&) = delete;
+        // disable move semantics
+        UserSession(UserSession&&) = delete;
+        UserSession& operator = (UserSession&&) = delete;
+    };
+
+    class CliSession : public UserSession
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
@@ -311,8 +332,6 @@ namespace cli
         void Prompt();
 
         void Current(Menu* menu) { current = menu; }
-
-        std::ostream& OutStream() { return out; }
 
         void Help() const;
 
@@ -349,7 +368,6 @@ namespace cli
         Cli& cli;
         Menu* current;
         std::unique_ptr<Menu> globalScopeMenu;
-        std::ostream& out;
         std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
     };
@@ -360,13 +378,13 @@ namespace cli
     {
     public:
         using CmdVec = std::vector<std::shared_ptr<Command>>;
-        CmdHandler() : descriptor(std::make_shared<Descriptor>()) {}
+        CmdHandler() = default;
         CmdHandler(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) :
-            descriptor(std::make_shared<Descriptor>(c, v))
+            descriptor(c, v)
         {}
-        void Enable() { if (descriptor) descriptor->Enable(); }
-        void Disable() { if (descriptor) descriptor->Disable(); }
-        void Remove() { if (descriptor) descriptor->Remove(); }
+        void Enable() { descriptor.Enable(); }
+        void Disable() { descriptor.Disable(); }
+        void Remove() { descriptor.Remove(); }
     private:
         struct Descriptor
         {
@@ -402,7 +420,7 @@ namespace cli
             std::weak_ptr<Command> cmd;
             std::weak_ptr<CmdVec> cmds;
         };
-        std::shared_ptr<Descriptor> descriptor;
+        Descriptor descriptor;
     };
 
     // ********************************************************************
@@ -546,13 +564,13 @@ namespace cli
     private:
 
         template <typename F, typename R, typename ... Args>
-        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
+        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, Args...) const);
 
         template <typename F, typename R>
-        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, const std::vector<std::string>&) const);
+        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, const std::vector<std::string>&) const);
 
         template <typename F, typename R>
-        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string>) const);
+        CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, std::vector<std::string>) const);
 
         Menu* parent{ nullptr };
         const std::string description;
@@ -645,7 +663,7 @@ namespace cli
             {
                 try
                 {
-                    auto g = [&](auto ... pars){ func( session.OutStream(), pars... ); };
+                    auto g = [&](auto ... pars){ func( session, pars... ); };
                     Select<decltype(g), Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
                 }
                 catch (std::bad_cast&)
@@ -700,7 +718,7 @@ namespace cli
             assert(!cmdLine.empty());
             if (Name() == cmdLine[0])
             {
-                func(session.OutStream(), std::vector<std::string>(std::next(cmdLine.begin()), cmdLine.end()));
+                func(session, std::vector<std::string>(std::next(cmdLine.begin()), cmdLine.end()));
                 return true;
             }
             return false;
@@ -729,10 +747,10 @@ namespace cli
     // CliSession implementation
 
     inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
+            UserSession(_out),
             cli(_cli),
             current(cli.RootMenu()),
             globalScopeMenu(std::make_unique< Menu >()),
-            out(_out),
             history(historySize)
         {
             history.LoadCommands(cli.GetCommands());
@@ -740,18 +758,18 @@ namespace cli
             Cli::Register(out);
             globalScopeMenu->Insert(
                 "help",
-                [this](std::ostream&){ Help(); },
+                [this](UserSession&){ Help(); },
                 "This help message"
             );
             globalScopeMenu->Insert(
                 "exit",
-                [this](std::ostream&){ Exit(); },
+                [this](UserSession&){ Exit(); },
                 "Quit the session"
             );
 #ifdef CLI_HISTORY_CMD
             globalScopeMenu->Insert(
                 "history",
-                [this](std::ostream&){ ShowHistory(); },
+                [this](UserSession&){ ShowHistory(); },
                 "Show the history"
             );
 #endif
@@ -791,9 +809,9 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
-        out << beforePrompt
+        out << terminalProfile.beforePrompt
             << current->Prompt()
-            << afterPrompt
+            << terminalProfile.afterPrompt
             << "> "
             << std::flush;
     }
@@ -802,7 +820,7 @@ namespace cli
     {
         out << "Commands available:\n";
         globalScopeMenu->MainHelp(out);
-        current -> MainHelp( out );
+        current->MainHelp( out );
     }
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const
@@ -824,19 +842,19 @@ namespace cli
     // Menu implementation
 
     template <typename F, typename R, typename ... Args>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
+    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, Args...) const )
     {
         return Insert(std::make_unique<VariadicFunctionCommand<F, Args ...>>(cmdName, f, help, parDesc));
     }
 
     template <typename F, typename R>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, const std::vector<std::string>& args) const )
+    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, const std::vector<std::string>& args) const )
     {
         return Insert(std::make_unique<FreeformCommand<F>>(cmdName, f, help, parDesc));
     }
 
     template <typename F, typename R>
-    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, std::vector<std::string> args) const )
+    CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(UserSession& s, std::vector<std::string> args) const )
     {
         return Insert(std::make_unique<FreeformCommand<F>>(cmdName, f, help, parDesc));
     }
