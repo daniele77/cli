@@ -31,7 +31,6 @@
 #define CLI_DETAIL_TERMINAL_H_
 
 #include <string>
-#include "../colorprofile.h"
 #include "inputdevice.h"
 
 namespace cli

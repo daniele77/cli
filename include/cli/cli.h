@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <cctype> // std::isspace
 #include <type_traits>
-#include "colorprofile.h"
 #include "terminalprofile.h"
 #include "detail/history.h"
 #include "detail/split.h"
