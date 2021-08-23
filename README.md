@@ -12,8 +12,8 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 [:heart: Sponsor](https://github.com/sponsors/daniele77)
 
-**IMPORTANT: Breaking API changes** Version 2.0 of `cli` have made breaking changes in order to add more functionality.
-To migrate your application to new `cli` version your code, see the secion
+**IMPORTANT: Breaking API changes!** Version 2.0 of `cli` has made breaking changes in order to add more functionality.
+To migrate your application to new `cli` version, see the section
 "Async programming and Schedulers" of this file, or the examples that come with the library.
 
 ## Features
@@ -142,7 +142,7 @@ Set the environment variable BOOST. Then, open the file
 If you have doxygen installed on your system, you can get the html documentation
 of the library in this way:
 
-    <enter the directory doc/doxy>
+    cd doc/doxy
     doxygen Doxyfile
 
 ## CLI usage
