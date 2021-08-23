@@ -132,6 +132,8 @@ E.g., from a visual studio console, use one of the following commands:
 
 ### Visual Studio solution
 
+Currently, the VS solution compiles the examples only with the BOOST dependency.
+
 Set the environment variable BOOST. Then, open the file
 `cli/examples/examples.sln`
 

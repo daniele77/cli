@@ -33,6 +33,9 @@ enable_testing()
 
 set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 
+set(Boost_NO_BOOST_CMAKE ON)
+add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
+
 # finds boost, triggers an error otherwise
 find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
 
