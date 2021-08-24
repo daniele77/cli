@@ -9,6 +9,7 @@
  - Fix unused parameters warning in release mode (issue [#90](https://github.com/daniele77/cli/issues/90))
  - Cli constructor revision (issue [#75](https://github.com/daniele77/cli/issues/75))
  - Special keys not recognized behaves like backspace in windows (issue [#111](https://github.com/daniele77/cli/issues/111))
+ - Fix cmake install dependencies (issue [#117](https://github.com/daniele77/cli/issues/117))
 
 ## [1.2.1] - 2020-08-27
 

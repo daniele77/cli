@@ -11,9 +11,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simplelocalsession", "simpl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pluginmanager", "pluginmanager_vsprj\pluginmanager.vcxproj", "{998A824A-CF12-4D78-ADF6-EFCAB931AE01}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boostasio_nonowner_iocontext", "boostasio_nonowner_iocontext\boostasio_nonowner_iocontext.vcxproj", "{5B123F81-785B-413E-AF10-C5B8B7C4C5E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boostasio_nonowner_iocontext", "boostasio_nonowner_iocontext_vsprj\boostasio_nonowner_iocontext.vcxproj", "{5B123F81-785B-413E-AF10-C5B8B7C4C5E9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standaloneasio_nonowner_iocontext", "standaloneasio_nonowner_iocontext\standaloneasio_nonowner_iocontext.vcxproj", "{611D1C07-FBD2-452E-AC91-AB19263EDD64}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "standaloneasio_nonowner_iocontext", "standaloneasio_nonowner_iocontext_vsprj\standaloneasio_nonowner_iocontext.vcxproj", "{611D1C07-FBD2-452E-AC91-AB19263EDD64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
