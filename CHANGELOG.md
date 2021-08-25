@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [2.0.0] - 2021-08-25
 
  - Remove boost dependency for local only sessions (issue [#83](https://github.com/daniele77/cli/issues/83))
  - Now you can use standalone asio library instead of boost asio for remote sessions (issue [#41](https://github.com/daniele77/cli/issues/41))
