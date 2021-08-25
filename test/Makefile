@@ -36,7 +36,7 @@ override RUN_OPT += --build_info --report_level=short
 
 override CXXFLAGS += -Wall -Wextra -Werror -I../include -DBOOST_TEST_DYN_LINK -isystem $(BOOST_INC) -std=c++1y
 override LDFLAGS += -L$(BOOST_LIB)
-override LDLIBS += -lboost_unit_test_framework -ldl -lpthread
+override LDLIBS += -lboost_unit_test_framework -lboost_system -ldl -lpthread
 
 OBJ := test_history.o \
 	   test_volatilehistorystorage.o \
