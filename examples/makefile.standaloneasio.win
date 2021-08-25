@@ -29,8 +29,8 @@
 
 #define macros
 EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe standaloneasio_nonowner_iocontext.exe
-DIR_INCLUDE = /I..\include /I%ASIO%
-COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE /DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
+DIR_INCLUDE = /I%ASIO% /I..\include
+COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
 CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
 RM = del /F /Q 2> nul
 
