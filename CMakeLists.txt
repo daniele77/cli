@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2019 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -29,13 +29,52 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-project(cli VERSION 1.2.1 LANGUAGES CXX)
+project(cli VERSION 2.0.0 
+            # DESCRIPTION "A library for interactive command line interfaces in modern C++"
+            LANGUAGES CXX)
+
+include(GNUInstallDirs)
 
 option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
+option(CLI_UseBoostAsio "Use the boost asio library." OFF)
+option(CLI_UseStandaloneAsio "Use the standalone asio library." OFF)
 
-set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost 1.55 REQUIRED COMPONENTS system)
+
+if(WIN32)
+    macro(get_WIN32_WINNT version)
+        if(CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
+            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
+            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
+            if("${verMajor}" MATCHES "10")
+                set(verMajor "A")
+                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
+            endif()
+            # Remove all remaining '.' characters.
+            string(REPLACE "." "" ver ${ver})
+            # Prepend each digit with a zero.
+            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
+            set(${version} "0x${ver}")
+        endif()
+    endmacro()
+
+    get_WIN32_WINNT(ver)
+    add_definitions(-D_WIN32_WINNT=${ver})
+endif()
+
+if (CLI_UseBoostAsio)
+    set(Boost_NO_BOOST_CMAKE ON)
+    add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
+    find_package(Boost 1.55 REQUIRED COMPONENTS system)
+endif()
+
+if (CLI_UseStandaloneAsio)
+    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
+endif()
+
 find_package(Threads REQUIRED)
 
 # Add Library
@@ -44,14 +83,26 @@ add_library(cli INTERFACE)
 add_library(cli::cli ALIAS cli)
 
 target_include_directories(cli
-        INTERFACE
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    INTERFACE
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(cli INTERFACE Boost::system Threads::Threads)
+target_link_libraries(cli INTERFACE Threads::Threads)
+if (CLI_UseBoostAsio)
+    target_link_libraries(cli INTERFACE Boost::system)
+    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
+endif()
+if (CLI_UseStandaloneAsio)
+	add_library(standalone_asio INTERFACE IMPORTED)
+	target_include_directories(standalone_asio SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+	target_link_libraries(standalone_asio INTERFACE Threads::Threads)
+    target_link_libraries(cli INTERFACE standalone_asio)
+
+	# alternative way:
+	# target_include_directories(cli SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+endif()
 target_compile_features(cli INTERFACE cxx_std_14)
-target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
 
 # Examples
 if (CLI_BuildExamples)
@@ -60,40 +111,39 @@ endif()
 
 # Tests
 if (CLI_BuildTests)
-	enable_testing()
-	add_subdirectory(test)
+    enable_testing()
+    add_subdirectory(test)
 endif()
 
 # Install
-install(DIRECTORY include DESTINATION .)
+install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
-	"cliConfig.cmake.in"
-	"${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-	INSTALL_DESTINATION "lib/cmake/cli"
+    "cliConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
 )
 
-include(GNUInstallDirs)
 # Generate pkg-config .pc file
 set(PKGCONFIG_INSTALL_DIR
-	${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
-	CACHE PATH "Installation directory for pkg-config (cli.pc) file"
+    ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+    CACHE PATH "Installation directory for pkg-config (cli.pc) file"
 )
 configure_file(
-	"cli.pc.in"
-	"cli.pc"
-	@ONLY
+    "cli.pc.in"
+    "cli.pc"
+    @ONLY
 )
 
-install(TARGETS cli EXPORT cliTargets DESTINATION lib)
-install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION lib/cmake/cli)
+install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
 
 install(
-	FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-	DESTINATION "lib/cmake/cli"
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
 )
 install(
-      FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
-      DESTINATION ${PKGCONFIG_INSTALL_DIR}
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
+    DESTINATION ${PKGCONFIG_INSTALL_DIR}
 )

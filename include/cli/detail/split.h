@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -30,9 +30,11 @@
 #ifndef CLI_DETAIL_SPLIT_H_
 #define CLI_DETAIL_SPLIT_H_
 
-#include <string>
-#include <vector>
 #include <algorithm>
+#include <string>
+#include <utility>
+#include <vector>
+#include <cassert>
 
 namespace cli
 {
@@ -42,7 +44,7 @@ namespace detail
 class Text
 {
 public:
-    explicit Text(const std::string& _input) : input(_input)
+    explicit Text(std::string _input) : input(std::move(_input))
     {
     }
     void SplitInto(std::vector<std::string>& strs)
@@ -97,12 +99,12 @@ private:
             // Should come back into the word state after this.
             prev_state = State::word;
             state = State::escape;
-            splitResult.push_back("");
+            splitResult.emplace_back("");
         }
         else
         {
             state = State::word;
-            splitResult.push_back(std::string(1, c));
+            splitResult.emplace_back(1, c);
         }
     }
 
@@ -166,7 +168,7 @@ private:
     {
         state = State::sentence;
         sentence_type = ( c == '"' ? SentenceType::double_quote : SentenceType::quote);
-        splitResult.push_back("");
+        splitResult.emplace_back("");
     }
 
     void RemoveEmptyEntries()

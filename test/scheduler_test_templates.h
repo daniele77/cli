@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,40 +27,54 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_NEWBOOSTASIO_H_
-#define CLI_DETAIL_NEWBOOSTASIO_H_
+#ifndef SCHEDULER_TEST_TEMPLATES_H_
+#define SCHEDULER_TEST_TEMPLATES_H_
 
-#if BOOST_VERSION >= 107400
-#   define BOOST_ASIO_USE_TS_EXECUTOR_AS_DEFAULT
-#endif
+#include <boost/test/unit_test.hpp>
+#include <thread>
 
-#include <boost/asio.hpp>
-
-namespace cli {
-namespace detail {
-namespace newboost {
-
-class BoostExecutor
+template <typename S>
+void SchedulingTest()
 {
-public:
-    using ContextType = boost::asio::io_context;
-    explicit BoostExecutor(ContextType& ios) :
-        executor(ios.get_executor()) {}
-    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
-        executor(socket.get_executor()) {}
-    template <typename T> void Post(T&& t) { boost::asio::post(executor, std::forward<T>(t)); }
-private:
-    boost::asio::executor executor;
-};
-
-inline boost::asio::ip::address IpAddressFromString(const std::string& address)
-{
-    return boost::asio::ip::make_address(address);
+    S scheduler;
+    bool done = false;
+    scheduler.Post( [&done](){ done = true; } );
+    scheduler.ExecOne();
+    BOOST_CHECK(done);
 }
 
-} // namespace newboost
-} // namespace detail
-} // namespace cli
+template <typename S>
+void SameThreadTest()
+{
+    using namespace std;
 
-#endif // CLI_DETAIL_NEWBOOSTASIO_H_
+    S scheduler;
+    thread::id runThreadId;
+    thread::id postThreadId;
+    thread th( 
+        [&]()
+        {
+            postThreadId = this_thread::get_id();
+            scheduler.Post( 
+                [&runThreadId]()
+                { 
+                    runThreadId = this_thread::get_id();
+                }
+            );
+        }
+    );
+    th.join();
+    scheduler.ExecOne();
+    BOOST_CHECK_NE( runThreadId, postThreadId );
+    BOOST_CHECK_EQUAL( runThreadId, this_thread::get_id() );
+}
 
+template <typename S>
+void ExceptionTest()
+{
+    S scheduler;
+    scheduler.Post( [](){ throw 42; } );
+    BOOST_CHECK_THROW( scheduler.ExecOne(), int );
+}
+
+#endif // SCHEDULER_TEST_TEMPLATES_H_

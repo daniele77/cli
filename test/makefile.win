@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2019 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -28,7 +28,8 @@
 ################################################################################
 
 # usage:
-# set env var BOOST to boost lib path
+# set BOOST=<path to boost libraries>
+# set ASIO=<path to asio library>
 # nmake /f makefile.win
 # or
 # nmake /f makefile.win DEBUG=1
@@ -39,7 +40,7 @@
 
 #define macros
 EXE_NAME = test_suite.exe
-DIR_INCLUDE = /I..\include /I%BOOST%
+DIR_INCLUDE = /I..\include /I%BOOST% /I%ASIO%
 
 !ifdef DEBUG
 RUNTIME_LIB = /MDd
@@ -70,6 +71,9 @@ EXE_OBJ_FILES= \
     test_commonprefix.obj \
     test_menu.obj \
     test_cli.obj \
+    test_loopscheduler.obj \
+    test_standaloneasioscheduler.obj \
+    test_boostasioscheduler.obj \
     driver.obj
 
 .PHONY: all mainapp test clean

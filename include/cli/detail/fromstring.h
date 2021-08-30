@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -54,6 +54,7 @@ T from_string(const std::string& s)
 #else
 
 #include <exception>
+#include <limits>
 #include <string>
 #include <sstream>
 
@@ -65,7 +66,7 @@ namespace cli
         class bad_conversion : public std::bad_cast
         {
             public:
-                virtual const char* what() const noexcept {
+                const char* what() const noexcept override {
                     return "bad from_string conversion: "
                         "source string value could not be interpreted as target";
                 }
@@ -144,7 +145,7 @@ inline T signed_from_string(std::string s)
     return static_cast<T>(val);
 }
 
-} // detail
+} // namespace detail
 
 // signed
 
@@ -271,9 +272,9 @@ inline T from_string(const std::string& s)
     return result;
 }
 
-    } // detail
+    } // namespace detail
 
-} // cli
+} // namespace cli
 
 
 #endif // CLI_FROMSTRING_USE_BOOST

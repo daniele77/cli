@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2018 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_FILESESSION_H_
-#define CLI_FILESESSION_H_
+#ifndef CLI_CLIFILESESSION_H
+#define CLI_CLIFILESESSION_H
 
 #include <string>
 #include <iostream>
@@ -42,7 +42,7 @@ class CliFileSession : public CliSession
 {
 public:
     /// @throw std::invalid_argument if @c _in or @c out are invalid streams
-    CliFileSession(Cli& _cli, std::istream& _in=std::cin, std::ostream& _out=std::cout) :
+    explicit CliFileSession(Cli& _cli, std::istream& _in=std::cin, std::ostream& _out=std::cout) :
         CliSession(_cli, _out, 1),
         exit(false),
         in(_in)
@@ -77,7 +77,7 @@ private:
     std::istream& in;
 };
 
-} // namespace
+} // namespace cli
 
-#endif // CLI_FILESESSION_H_
+#endif // CLI_CLIFILESESSION_H
 

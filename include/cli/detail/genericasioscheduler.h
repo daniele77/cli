@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,25 +27,61 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_BOOSTIO_H_
-#define CLI_DETAIL_BOOSTIO_H_
+#ifndef CLI_DETAIL_GENERICASIOSCHEDULER_H_
+#define CLI_DETAIL_GENERICASIOSCHEDULER_H_
 
-#include <boost/version.hpp>
+#include "../scheduler.h"
 
-#if BOOST_VERSION < 106600
-    #include "oldboostasio.h"
-    namespace cli {
-    namespace detail {
-        namespace asio = oldboost;
-    }
-    }
-#else
-    #include "newboostasio.h"
-    namespace cli {
-    namespace detail {
-        namespace asio = newboost;
-    }
-    }
-#endif
+namespace cli
+{
+namespace detail
+{
 
-#endif // CLI_DETAIL_BOOSTIO_H_
+template <typename ASIOLIB>
+class GenericAsioScheduler : public Scheduler
+{
+public:
+
+    using ContextType = typename ASIOLIB::ContextType;
+
+    GenericAsioScheduler() : owned{true}, context{new ContextType()}, executor{*context} {}
+
+    explicit GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
+
+    ~GenericAsioScheduler() override { if (owned) delete context; }
+
+    // non copyable
+    GenericAsioScheduler(const GenericAsioScheduler&) = delete;
+    GenericAsioScheduler& operator=(const GenericAsioScheduler&) = delete;
+
+    void Stop() { context->stop(); }
+
+    void Run()
+    {
+        auto work = ASIOLIB::MakeWorkGuard(*context);
+        context->run();
+    }
+
+    void ExecOne() { context->run_one(); }
+
+    void Post(const std::function<void()>& f) override
+    {
+        executor.Post(f);
+    }
+
+    ContextType& AsioContext() { return *context; }
+
+private:
+
+    using ExecutorType = typename ASIOLIB::Executor;
+
+    bool owned = false;
+    ContextType* context;
+    ExecutorType executor;
+};
+
+
+} // namespace detail
+} // namespace cli
+
+#endif // CLI_DETAIL_GENERICASIOSCHEDULER_H_

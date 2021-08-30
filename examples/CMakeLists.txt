@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2019 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -27,24 +27,35 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-add_executable(complete complete.cpp)
 
-target_link_libraries(complete cli::cli)
+# pluginmanager, filesession and simplelocalsession can be compiled w/o asio
+set(SOURCES pluginmanager filesession simplelocalsession)
 
-if (NOT WIN32)
-    add_executable(asyncsession asyncsession.cpp)
-
-    target_link_libraries(asyncsession cli::cli)
+if (CLI_UseBoostAsio OR CLI_UseStandaloneAsio)
+    if (CLI_UseBoostAsio)
+        add_definitions( -DCLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER )
+        # boostasio_nonowner_iocontext can only be compiled with boost asio
+        list(APPEND SOURCES boostasio_nonowner_iocontext)
+    endif()
+    if (CLI_UseStandaloneAsio)
+        add_definitions( -DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER )
+        # standaloneasio_nonowner_iocontext can only be compiled with standalone asio
+        list(APPEND SOURCES standaloneasio_nonowner_iocontext)
+    endif()
+    # asyncsession, and complete can be compiled if asio is available (either standalone or boost)
+    list(APPEND SOURCES complete)
+    # asyncsession only compiles on POSIX platforms
+    if(NOT WIN32)
+        list(APPEND SOURCES asyncsession)
+    else()
+        message("example `asyncsession` not built as it's not supported on Windows")
+    endif()
+else()
+    add_definitions( -DCLI_EXAMPLES_USE_LOOP_SCHEDULER )
+    message("examples `nonowner_iocontext` and `complete` are not built because asio library is not available")
 endif()
 
-add_executable(filesession filesession.cpp)
-
-target_link_libraries(filesession cli::cli)
-
-add_executable(simplelocalsession simplelocalsession.cpp)
-
-target_link_libraries(simplelocalsession cli::cli)
-
-add_executable(pluginmanager pluginmanager.cpp)
-
-target_link_libraries(pluginmanager cli::cli)
+foreach(example ${SOURCES})
+    add_executable(${example} ${example}.cpp)    
+    target_link_libraries(${example} PRIVATE cli::cli)
+endforeach(example)

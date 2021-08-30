@@ -1,5 +1,5 @@
-#ifndef RANG_DOT_HPP
-#define RANG_DOT_HPP
+#ifndef CLI_DETAIL_RANG_H
+#define CLI_DETAIL_RANG_H
 
 #if defined(__unix__) || defined(__unix) || defined(__linux__)
 #define OS_LINUX
@@ -257,7 +257,7 @@ namespace rang_implementation {
     using enableControl =
       typename std::enable_if<std::is_same<T, rang::control>::value,
         std::ostream &>::type;
-}
+} // namespace rang_implementation
 
 inline void init()
 {
@@ -289,10 +289,10 @@ inline rang_implementation::enableControl<T> operator<<(
     }
     return os;
 }
-}
+} // namespace rang
 
 #undef OS_LINUX
 #undef OS_WIN
 #undef OS_MAC
 
-#endif /* ifndef RANG_DOT_HPP */
+#endif // CLI_DETAIL_RANG_H

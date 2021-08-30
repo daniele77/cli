@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -33,13 +33,10 @@
 #include <thread>
 #include <memory>
 #include <atomic>
-#include "boostasio.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <termios.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/time.h>
 
 #include "inputdevice.h"
 
@@ -52,14 +49,14 @@ namespace detail
 class LinuxKeyboard : public InputDevice
 {
 public:
-    explicit LinuxKeyboard(asio::BoostExecutor ex) :
-        InputDevice(ex)
+    explicit LinuxKeyboard(Scheduler& _scheduler) :
+        InputDevice(_scheduler)
     {
         ToManualMode();
         servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant -> detach();
+        servant->detach();
     }
-    ~LinuxKeyboard()
+    ~LinuxKeyboard() override
     {
         run = false;
         ToStandardMode();
@@ -78,8 +75,7 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        while ( !KbHit() ) {}
-        int ch = getchar();
+        int ch = std::getchar();
         switch( ch )
         {
             case EOF:
@@ -89,14 +85,14 @@ private:
             case 127: return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
-                ch = getchar();
+                ch = std::getchar();
                 if ( ch == 91 ) // arrow keys
                 {
-                    ch = getchar();
+                    ch = std::getchar();
                     switch( ch )
                     {
                         case 51:
-                            ch = getchar();
+                            ch = std::getchar();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
@@ -121,29 +117,18 @@ private:
 
     void ToManualMode()
     {
+        constexpr tcflag_t ICANON_FLAG = ICANON;
+        constexpr tcflag_t ECHO_FLAG = ECHO;
+
         tcgetattr( STDIN_FILENO, &oldt );
         newt = oldt;
-        newt.c_lflag &= ~( (tcflag_t)ICANON | (tcflag_t)ECHO );
+        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
         tcsetattr( STDIN_FILENO, TCSANOW, &newt );
     }
+
     void ToStandardMode()
     {
         tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-    }
-
-    static int KbHit()
-    {
-      struct timeval tv;
-      fd_set rdfs;
-
-      tv.tv_sec = 1;
-      tv.tv_usec = 0;
-
-      FD_ZERO(&rdfs);
-      FD_SET (STDIN_FILENO, &rdfs);
-
-      select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
-      return FD_ISSET(STDIN_FILENO, &rdfs);
     }
 
     termios oldt;

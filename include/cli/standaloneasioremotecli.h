@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,36 +27,14 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_OLDBOOSTASIO_H_
-#define CLI_DETAIL_OLDBOOSTASIO_H_
+#ifndef CLI_STANDALONEASIOREMOTECLI_H_
+#define CLI_STANDALONEASIOREMOTECLI_H_
 
-#include <boost/asio.hpp>
+#include "detail/standaloneasiolib.h"
+#include "detail/genericasioremotecli.h"
 
-namespace cli {
-namespace detail {
-namespace oldboost {
+namespace cli { using StandaloneAsioCliTelnetServer = detail::CliGenericTelnetServer<detail::StandaloneAsioLib>; }
 
-class BoostExecutor
-{
-public:
-    using ContextType = boost::asio::io_service;
-    explicit BoostExecutor(ContextType& _ios) :
-        ios(_ios) {}
-    explicit BoostExecutor(boost::asio::ip::tcp::socket& socket) :
-        ios(socket.get_io_service()) {}
-    template <typename T> void Post(T&& t) { ios.post(std::forward<T>(t)); }
-private:
-    ContextType& ios;
-};
 
-inline boost::asio::ip::address IpAddressFromString(const std::string& address)
-{
-    return boost::asio::ip::address::from_string(address);
-}
-
-} // namespace oldboost
-} // namespace detail
-} // namespace cli
-
-#endif // CLI_DETAIL_OLDBOOSTASIO_H_
+#endif // CLI_STANDALONEASIOREMOTECLI_H_
 

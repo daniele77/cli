@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2020 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -32,6 +32,7 @@
 
 #include "historystorage.h"
 #include <fstream>
+#include <utility>
 
 namespace cli
 {
@@ -39,9 +40,9 @@ namespace cli
 class FileHistoryStorage : public HistoryStorage
 {
 public:
-    FileHistoryStorage(const std::string& _fileName, std::size_t size = 1000) : 
+    explicit FileHistoryStorage(std::string _fileName, std::size_t size = 1000) : 
         maxSize(size),
-        fileName(_fileName)
+        fileName(std::move(_fileName))
     {
     }
     void Store(const std::vector<std::string>& cmds) override

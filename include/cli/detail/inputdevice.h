@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -32,7 +32,7 @@
 
 #include <functional>
 #include <string>
-#include "boostasio.h"
+#include "../scheduler.h"
 
 namespace cli
 {
@@ -46,7 +46,7 @@ class InputDevice
 public:
     using Handler = std::function< void( std::pair<KeyType,char> ) >;
 
-    InputDevice(asio::BoostExecutor ex) : executor(ex) {}
+    explicit InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
     virtual ~InputDevice() = default;
 
     template <typename H>
@@ -56,12 +56,12 @@ protected:
 
     void Notify(std::pair<KeyType,char> k)
     {
-        executor.Post([this,k](){ if (handler) handler(k); });
+        scheduler.Post([this,k](){ if (handler) handler(k); });
     }
 
 private:
 
-    asio::BoostExecutor executor;
+    Scheduler& scheduler;
     Handler handler;
 };
 

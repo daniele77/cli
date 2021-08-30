@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2019 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -29,20 +29,25 @@
 
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "Interactive CLI"
+PROJECT_NUMBER         = 2.0
+#---------------------------------------------------------------------------
+FULL_PATH_NAMES        = NO
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
-EXTRACT_PRIVATE        = YES
-EXTRACT_STATIC         = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = NO
 #---------------------------------------------------------------------------
 INPUT                  = ../../include/cli
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
-INLINE_SOURCES         = YES
+VERBATIM_HEADERS       = NO
+INLINE_SOURCES         = NO
 #---------------------------------------------------------------------------
 GENERATE_HTML          = YES
-HTML_COLORSTYLE_HUE    = 58
-HTML_COLORSTYLE_SAT    = 150
-HTML_COLORSTYLE_GAMMA  = 240
+HTML_COLORSTYLE_HUE    = 220
+HTML_COLORSTYLE_SAT    = 100
+HTML_COLORSTYLE_GAMMA  = 80
+SEARCHENGINE           = YES
 #---------------------------------------------------------------------------
 GENERATE_LATEX         = NO
 GENERATE_RTF           = NO
@@ -53,7 +58,7 @@ GENERATE_AUTOGEN_DEF   = NO
 GENERATE_PERLMOD       = NO
 #---------------------------------------------------------------------------
 HAVE_DOT               = YES
-CLASS_DIAGRAMS         = NO
+CLASS_DIAGRAMS         = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = NO
 INCLUDE_GRAPH          = YES
@@ -62,3 +67,4 @@ CALL_GRAPH             = NO
 CALLER_GRAPH           = YES
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
+

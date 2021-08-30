@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016, 2018 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,74 +27,79 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_ASYNCSESSION_H_
-#define CLI_ASYNCSESSION_H_
+#ifndef CLI_LOOPSCHEDULER_H_
+#define CLI_LOOPSCHEDULER_H_
 
-#include <string>
-#include "detail/boostasio.h"
-#include "cli.h" // CliSession
-
-#if !defined(BOOST_ASIO_HAS_POSIX_STREAM_DESCRIPTOR)
-#    error Async session is not supported on this platform.
-#endif
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include "scheduler.h"
 
 namespace cli
 {
 
-class CliAsyncSession : public CliSession
+/**
+ * @brief The LoopScheduler is a simple thread-safe scheduler
+ * 
+ */
+class LoopScheduler : public Scheduler
 {
 public:
-    CliAsyncSession(detail::asio::BoostExecutor::ContextType& ios, Cli& _cli) :
-        CliSession(_cli, std::cout, 1),
-        input(ios, ::dup( STDIN_FILENO))
+    LoopScheduler() = default;
+    ~LoopScheduler() override
     {
-        Read();
+        Stop();
     }
-    ~CliAsyncSession()
+
+    // non copyable
+    LoopScheduler(const LoopScheduler&) = delete;
+    LoopScheduler& operator=(const LoopScheduler&) = delete;
+
+    void Stop()
     {
-        input.close();
+        std::lock_guard<std::mutex> lck (mtx);
+        running = false;
+        cv.notify_all();
+    }
+
+    void Run()
+    {
+        while( ExecOne() ) {};
+    }
+
+    void Post(const std::function<void()>& f) override
+    {
+        std::lock_guard<std::mutex> lck (mtx);
+        tasks.push(f);
+        cv.notify_all();
+    }
+
+    bool ExecOne()
+    {
+        std::function<void()> task;
+        {
+            std::unique_lock<std::mutex> lck(mtx);
+            cv.wait(lck, [this](){ return !running || !tasks.empty(); });
+            if (!running)
+                return false;
+            task = tasks.front();
+            tasks.pop();
+        }
+
+        if (task)
+            task();
+
+        return true;
     }
 
 private:
-
-    void Read()
-    {
-        Prompt();
-        // Read a line of input entered by the user.
-        boost::asio::async_read_until(
-            input,
-            inputBuffer,
-            '\n',
-            std::bind( &CliAsyncSession::NewLine, this,
-                       std::placeholders::_1,
-                       std::placeholders::_2 )
-        );
-    }
-
-    void NewLine( const boost::system::error_code& error, std::size_t length )
-    {
-        if ( !error || error == boost::asio::error::not_found )
-        {
-            auto bufs = inputBuffer.data();
-            auto size = static_cast<long>(length);
-            if ( !error ) --size; // remove \n
-            std::string s( boost::asio::buffers_begin( bufs ), boost::asio::buffers_begin( bufs ) + size );
-            inputBuffer.consume( length );
-
-            Feed( s );
-            Read();
-        }
-        else
-        {
-            input.close();
-        }
-    }
-
-    boost::asio::streambuf inputBuffer;
-    boost::asio::posix::stream_descriptor input;
+    std::queue<std::function<void()>> tasks;
+    bool running{ true };
+    std::mutex mtx;
+    std::condition_variable cv;
 };
 
-} // namespace
+} // namespace cli
 
-#endif // CLI_ASYNCSESSION_H_
-
+#endif // CLI_LOOPSCHEDULER_H_

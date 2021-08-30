@@ -49,6 +49,8 @@ complete
 filesession
 pluginmanager
 simplelocalsession
+boostasio_nonowner_iocontext
+standaloneasio_nonowner_iocontext
 
 # Project files
 .cproject
@@ -67,3 +69,6 @@ doc/doxy/html
 
 # Test files
 cli_test_history
+
+# Other
+*.sh

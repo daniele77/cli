@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -52,7 +52,7 @@ enum class Symbol
 class Terminal
 {
   public:
-    Terminal(std::ostream &_out) : out(_out) {}
+    explicit Terminal(std::ostream &_out) : out(_out) {}
 
     void ResetCursor() { position = 0; }
 

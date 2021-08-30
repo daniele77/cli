@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2019 Daniele Pallastrelli
+ * Copyright (C) 2016-2021 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(SingleQuotedCases)
     BOOST_CHECK_EQUAL(strs[0], "first");
     BOOST_CHECK_EQUAL(strs[1], "foo \tbar");
 
-    split(strs, "first '\"second\" \"thirdh\"'"); // first '"second" "thirdh"'
+    split(strs, R"(first '"second" "thirdh"')"); // first '"second" "thirdh"'
     BOOST_CHECK_EQUAL(strs.size(), 2);
     BOOST_CHECK_EQUAL(strs[0], "first");
     BOOST_CHECK_EQUAL(strs[1], "\"second\" \"thirdh\"");

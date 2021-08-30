@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2016 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -27,15 +27,29 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include
-override LDLIBS += -lboost_system -lpthread
+#define macros
+EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe boostasio_nonowner_iocontext.exe
+DIR_INCLUDE = /I..\include /I%BOOST%
+DIR_LINK = %BOOST%\stage\lib
+COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE /DCLI_EXAMPLES_USE_BOOSTASIO_SCHEDULER
+CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE) /link /LIBPATH:$(DIR_LINK)
+RM = del /F /Q 2> nul
 
-EXAMPLES := complete asyncsession filesession simplelocalsession pluginmanager
+.PHONY: all apps clean
+ 
+# clean and build examples
+all: clean apps
 
-.PHONY: clean all
+.cpp.exe:
+	@echo Compiling and linking: $<
+	$(CPP) $< $(CPPFLAGS)
 
-all: $(EXAMPLES)
-
+# applications
+apps: $(EXE_NAMES)
+    
+# delete output files
 clean:
-	@- $(RM) *.o *~ core $(EXAMPLES)
+	@-$(RM) *.obj
+	@-$(RM) $(EXE_NAMES)
+
 

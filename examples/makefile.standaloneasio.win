@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2018 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -28,11 +28,10 @@
 ################################################################################
 
 #define macros
-EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe
-DIR_INCLUDE = /I..\include /I%BOOST%
-DIR_LINK = %BOOST%\stage\lib
-COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
-CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE) /link /LIBPATH:$(DIR_LINK)
+EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe standaloneasio_nonowner_iocontext.exe
+DIR_INCLUDE = /I%ASIO% /I..\include
+COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
+CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)
 RM = del /F /Q 2> nul
 
 .PHONY: all apps clean

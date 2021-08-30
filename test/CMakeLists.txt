@@ -1,6 +1,6 @@
 ################################################################################
 # CLI - A simple command line interface.
-# Copyright (C) 2019 Daniele Pallastrelli
+# Copyright (C) 2016-2021 Daniele Pallastrelli
 #
 # Boost Software License - Version 1.0 - August 17th, 2003
 #
@@ -31,11 +31,20 @@ cmake_minimum_required(VERSION 3.8)
 project(cli_test)
 enable_testing()
 
-# replace XX with the version you have
 set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
+
+set(Boost_NO_BOOST_CMAKE ON)
+add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
 # finds boost, triggers an error otherwise
 find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
+
+# finds standalone asio, triggers an error otherwise
+find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
+add_library(standalone_asio_test INTERFACE)
+target_include_directories(standalone_asio_test SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+target_link_libraries(standalone_asio_test INTERFACE Threads::Threads)
 
 # creates the executable
 add_executable(
@@ -48,13 +57,16 @@ add_executable(
 	test_commonprefix.cpp
 	test_menu.cpp
 	test_cli.cpp
+	test_loopscheduler.cpp
+	test_standaloneasioscheduler.cpp
+	test_boostasioscheduler.cpp
 )
 # indicates the include paths
-target_include_directories(test_suite PRIVATE ${Boost_INCLUDE_DIRS})
+target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 # indicates the shared library variant
 target_compile_definitions(test_suite PRIVATE "BOOST_TEST_DYN_LINK=1")
 # indicates the link paths
-target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} cli::cli)
+target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} standalone_asio_test cli::cli)
 
 # declares a test with our executable
 add_test(NAME cli_test COMMAND test_suite)
