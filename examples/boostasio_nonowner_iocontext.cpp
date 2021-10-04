@@ -110,25 +110,36 @@ private:
 
 int main()
 {
+    try
+    {
+        // main application that creates an asio io_context and uses it
+        IoContext iocontext;
+        boost::asio::deadline_timer timer(
+            iocontext,
+            boost::posix_time::seconds(5)
+        );
+        timer.async_wait([](const boost::system::error_code&){ cout << "Timer expired!\n"; });
 
-    // main application that creates an asio io_context and uses it
-    IoContext iocontext;
-    boost::asio::deadline_timer timer(
-        iocontext,
-        boost::posix_time::seconds(5)
-    );
-    timer.async_wait([](const boost::system::error_code&){ cout << "Timer expired!\n"; });
+        // cli setup
+        UserInterface interface(iocontext);
 
-    // cli setup
-    UserInterface interface(iocontext);
-
-    // start the asio io_context
+        // start the asio io_context
 #if BOOST_VERSION < 106600
-    boost::asio::io_service::work work(iocontext);
+        boost::asio::io_service::work work(iocontext);
 #else
-    auto work = boost::asio::make_work_guard(iocontext);
+        auto work = boost::asio::make_work_guard(iocontext);
 #endif
-    iocontext.run();
+        iocontext.run();
 
-    return 0;
+        return 0;
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Exception caugth in main: " << e.what() << endl;
+    }
+    catch (...)
+    {
+        cerr << "Unknown exception caugth in main." << endl;
+    }
+    return -1;
 }

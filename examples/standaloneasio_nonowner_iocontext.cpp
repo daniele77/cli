@@ -34,10 +34,16 @@
 using namespace cli;
 using namespace std;
 
+#if ASIO_VERSION < 101200
+    using IoContext = asio::io_service;
+#else
+    using IoContext = asio::io_context;
+#endif
+
 class UserInterface
 {
 public:
-    explicit UserInterface(asio::io_context& iocontext) : scheduler(iocontext)
+    explicit UserInterface(IoContext& iocontext) : scheduler(iocontext)
     {
         auto rootMenu = make_unique< Menu >("cli");
         rootMenu->Insert(
@@ -102,7 +108,7 @@ int main()
     try
     {
         // main application that creates an asio io_context and uses it
-        asio::io_context iocontext;
+        IoContext iocontext;
         asio::steady_timer timer(iocontext, std::chrono::seconds(5));
         timer.async_wait([](const error_code&){ cout << "Timer expired!\n"; });
 
@@ -110,7 +116,11 @@ int main()
         UserInterface interface(iocontext);
 
         // start the asio io_context
-        auto work =     asio::make_work_guard(iocontext);
+#if ASIO_VERSION < 101200
+        asio::io_service::work work(iocontext);
+#else
+        auto work = asio::make_work_guard(iocontext);
+#endif
         iocontext.run();
 
         return 0;

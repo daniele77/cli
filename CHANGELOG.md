@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+ - Add a non-blocking exec method to schedulers (issue [#127](https://github.com/daniele77/cli/issues/127))
+
 ## [2.0.0] - 2021-08-25
 
  - Remove boost dependency for local only sessions (issue [#83](https://github.com/daniele77/cli/issues/83))

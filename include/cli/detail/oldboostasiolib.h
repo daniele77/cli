@@ -44,6 +44,7 @@ class OldBoostAsioLib
 {
 public:
     using ContextType = boost::asio::io_service;
+    using WorkGuard = boost::asio::io_service::work;
 
     class Executor
     {
