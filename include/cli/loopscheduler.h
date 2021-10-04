@@ -93,6 +93,23 @@ public:
         return true;
     }
 
+	bool PollOne()
+	{
+		std::function<void()> task;
+		{
+			std::lock_guard<std::mutex> lck(mtx);
+			if (!running || tasks.empty())
+				return false;
+			task = tasks.front();
+			tasks.pop();
+		}
+
+		if (task)
+			task();
+
+		return true;
+	}
+
 private:
     std::queue<std::function<void()>> tasks;
     bool running{ true };
