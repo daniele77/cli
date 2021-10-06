@@ -46,7 +46,6 @@ class NewBoostAsioLib
 public:
 
     using ContextType = boost::asio::io_context;
-    using WorkGuard = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
 
     class Executor
     {
@@ -64,6 +63,27 @@ public:
 #endif
          AsioExecutor executor;
     };
+
+	class WorkGuard
+	{
+	public:
+		explicit WorkGuard(ContextType& ios) :
+#if BOOST_VERSION >= 106600
+			workguard(boost::asio::make_work_guard(ios)) {}
+		void Reset() { workguard.reset(); }
+	private:
+		using AsioWorkGuard = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
+#else
+			workguard(ios) {}
+		void Reset() {}
+	private:
+		using AsioWorkGuard = boost::asio::work;
+#endif
+
+	private:
+
+		AsioWorkGuard workguard;
+	};
 
     static boost::asio::ip::address IpAddressFromString(const std::string& address)
     {

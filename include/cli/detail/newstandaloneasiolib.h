@@ -46,7 +46,6 @@ class NewStandaloneAsioLib
 public:
 
     using ContextType = asio::io_context;
-    using WorkGuard = asio::executor_work_guard<asio::io_context::executor_type>;
 
     class Executor
     {
@@ -64,6 +63,27 @@ public:
 #endif
          AsioExecutor executor;
     };
+
+	class WorkGuard
+	{
+	public:
+		explicit WorkGuard(ContextType& ios) :
+#if ASIO_VERSION >= 101300
+			workguard(asio::make_work_guard(ios)) {}
+		void Reset() { workguard.reset(); }
+	private:
+		using AsioWorkGuard = asio::executor_work_guard<asio::io_context::executor_type>;
+#else
+			workguard(ios) {}
+		void Reset() {}
+	private:
+		using AsioWorkGuard = asio::work;
+#endif
+
+	private:
+
+		AsioWorkGuard workguard;
+	};
 
     static asio::ip::address IpAddressFromString(const std::string& address)
     {
