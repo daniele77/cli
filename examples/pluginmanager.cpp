@@ -324,6 +324,12 @@ int main()
 
         scheduler.Run();
 
+        // instead of scheuler.Run() you could do:
+        /*
+        while(!scheduler.Stopped())
+            scheduler.PollOne();
+        */
+        
         return 0;
     }
     catch (const std::exception& e)

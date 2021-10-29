@@ -61,11 +61,21 @@ public:
     GenericAsioScheduler(const GenericAsioScheduler&) = delete;
     GenericAsioScheduler& operator=(const GenericAsioScheduler&) = delete;
 
-    void Stop() { context->stop(); }
+    void Stop()
+    {
+        if (work)
+            work->reset(); 
+        context->stop();
+    }
 
     void Run()
     {
         context->run();
+    }
+
+    bool Stopped() const
+    {
+        return context->stopped();
     }
 
     void ExecOne() { context->run_one(); }

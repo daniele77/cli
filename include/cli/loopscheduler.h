@@ -68,6 +68,12 @@ public:
         while( ExecOne() ) {};
     }
 
+    bool Stopped() const
+    {
+        std::lock_guard<std::mutex> lck (mtx);
+        return !running;
+    }
+
     void Post(const std::function<void()>& f) override
     {
         std::lock_guard<std::mutex> lck (mtx);
@@ -113,7 +119,7 @@ public:
 private:
     std::queue<std::function<void()>> tasks;
     bool running{ true };
-    std::mutex mtx;
+    mutable std::mutex mtx;
     std::condition_variable cv;
 };
 
