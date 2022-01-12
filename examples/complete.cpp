@@ -61,6 +61,8 @@
 using namespace cli;
 using namespace std;
 
+static void foo(std::ostream& out, int x) { out << x << std::endl; }
+
 int main()
 {
     try
@@ -71,6 +73,10 @@ int main()
         // setup cli
 
         auto rootMenu = make_unique<Menu>("cli");
+        rootMenu->Insert(
+                "free_function",
+                foo,
+                "Call a free function that echoes the parameter passed" );
         rootMenu->Insert(
                 "hello",
                 [](std::ostream& out){ out << "Hello, world\n"; },

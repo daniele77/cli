@@ -77,13 +77,13 @@ protected:
 
         // https://www.ibm.com/support/knowledgecenter/SSLTBW_1.13.0/com.ibm.zos.r13.hald001/telcmds.htm
 
-        std::string iacDoLineMode{ "\x0FF\x0FD\x022", 3 };
+        static const std::string iacDoLineMode{ "\x0FF\x0FD\x022", 3 };
         this -> OutStream() << iacDoLineMode << std::flush;
 
-        std::string iacSbLineMode0IacSe{ "\x0FF\x0FA\x022\x001\x000\x0FF\x0F0", 7 };
+        static const std::string iacSbLineMode0IacSe{ "\x0FF\x0FA\x022\x001\x000\x0FF\x0F0", 7 };
         this -> OutStream() << iacSbLineMode0IacSe << std::flush;
 
-        std::string iacWillEcho{ "\x0FF\x0FB\x001", 3 };
+        static const std::string iacWillEcho{ "\x0FF\x0FB\x001", 3 };
         this -> OutStream() << iacWillEcho << std::flush;
 /*
         constexpr char IAC = '\x0FF'; // 255

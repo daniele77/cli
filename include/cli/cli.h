@@ -422,6 +422,9 @@ namespace cli
             Command(_name), parent(nullptr), description(std::move(desc)), cmds(std::make_shared<Cmds>())
         {}
 
+        template <typename R, typename ... Args>
+        CmdHandler Insert(const std::string& cmdName, R (*f)(std::ostream&, Args...), const std::string& help, const std::vector<std::string>& parDesc={});
+        
         template <typename F>
         CmdHandler Insert(const std::string& cmdName, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
@@ -564,27 +567,27 @@ namespace cli
 
     // ********************************************************************
 
-    template <typename F, typename ... Args>
+    template <typename ... Args>
     struct Select;
 
-    template <typename F, typename P, typename ... Args>
-    struct Select<F, P, Args...>
+    template <typename P, typename ... Args>
+    struct Select<P, Args...>
     {
-        template <typename InputIt>
+        template <typename F, typename InputIt>
         static void Exec(const F& f, InputIt first, InputIt last)
         {
             assert( first != last );
             assert( std::distance(first, last) == 1+sizeof...(Args) );
             const P p = detail::from_string<typename std::decay<P>::type>(*first);
             auto g = [&](auto ... pars){ f(p, pars...); };
-            Select<decltype(g), Args...>::Exec(g, std::next(first), last);
+            Select<Args...>::Exec(g, std::next(first), last);
         }
     };
 
-    template <typename F>
-    struct Select<F>
+    template <>
+    struct Select<>
     {
-        template <typename InputIt>
+        template <typename F, typename InputIt>
         static void Exec(const F& f, InputIt first, InputIt last)
         {
             // silence the unused warning in release mode when assert is disabled
@@ -646,7 +649,7 @@ namespace cli
                 try
                 {
                     auto g = [&](auto ... pars){ func( session.OutStream(), pars... ); };
-                    Select<decltype(g), Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
+                    Select<Args...>::Exec(g, std::next(cmdLine.begin()), cmdLine.end());
                 }
                 catch (std::bad_cast&)
                 {
@@ -822,6 +825,13 @@ namespace cli
     }
 
     // Menu implementation
+
+    template <typename R, typename ... Args>
+    CmdHandler Menu::Insert(const std::string& cmdName, R (*f)(std::ostream&, Args...), const std::string& help, const std::vector<std::string>& parDesc)
+    {
+        using F = R (*)(std::ostream&, Args...);
+        return Insert(std::make_unique<VariadicFunctionCommand<F, Args ...>>(cmdName, f, help, parDesc));
+    }
 
     template <typename F, typename R, typename ... Args>
     CmdHandler Menu::Insert(const std::string& cmdName, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const )
