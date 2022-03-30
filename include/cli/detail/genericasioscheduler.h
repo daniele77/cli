@@ -55,7 +55,14 @@ public:
 
     explicit GenericAsioScheduler(ContextType& _context) : context{&_context}, executor{*context} {}
 
-    ~GenericAsioScheduler() override { if (owned) delete context; }
+    ~GenericAsioScheduler() override
+    {
+        if (owned)
+        {
+            work.reset(); // work uses context, so it must be deleted before context
+            delete context;
+        }
+    }
 
     // non copyable
     GenericAsioScheduler(const GenericAsioScheduler&) = delete;
