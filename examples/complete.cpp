@@ -171,6 +171,7 @@ int main()
                     nocolorCmd.Disable();
                 },
                 "Disable colors in the cli" );
+        nocolorCmd.Disable(); // start w/o colors, so we disable this command
         rootMenu->Insert(
                 "removecmds",
                 [&](std::ostream&)
