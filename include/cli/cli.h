@@ -81,29 +81,27 @@ namespace cli
     {
 
         // inner class to provide a global output stream
-        class OutStream
+        class OutStream : public std::basic_ostream<char>, public std::streambuf
         {
         public:
-            template <typename T>
-            OutStream& operator << (const T& msg)
+            OutStream()
             {
-                for (auto out: ostreams)
-                    *out << msg;
-                return *this;
+                this->init(this);
             }
 
-            // this is the type of std::cout
-            using CoutType = std::basic_ostream<char, std::char_traits<char> >;
-            // this is the function signature of std::endl
-            using StandardEndLine = CoutType &(*)(CoutType &);
-
-            // takes << std::endl
-            OutStream& operator << (StandardEndLine manip)
+            // std::streambuf overrides
+            std::streamsize xsputn(const char* s, std::streamsize n) override
             {
-                for (auto out: ostreams)
-                    manip(*out);
-                return *this;
+                for (auto os: ostreams)
+                    os->rdbuf()->sputn(s, n);
+                return n;
             }
+            int overflow(int c) override
+            {
+                for (auto os: ostreams)
+                    *os << static_cast<char>(c);
+                return c;
+            }            
 
         private:
             friend class Cli;
