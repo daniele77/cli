@@ -253,6 +253,97 @@ ioc.run();
 ...
 ```
 
+## Adding menus and commands
+
+You must provide at least a root menu for your cli:
+
+```
+// create a menu (this is the root menu of our cli)
+auto rootMenu = make_unique<Menu>("myprompt");
+
+... // fills rootMenu with commands
+
+// create the cli with the root menu
+Cli cli(std::move(rootMenu));
+
+```
+
+You can add menus to existing menus, to get a hierarchy:
+
+```
+auto rootMenu = make_unique<Menu>("myprompt");
+
+auto menuA = make_unique<Menu>("a_prompt");
+rootMenu->Insert( std::move(menuA) );
+
+auto menuAA = make_unique<Menu>("aa_prompt");
+menuA->Insert( std::move(menuAA) );
+
+auto menuAB = make_unique<Menu>("ab_prompt");
+menuA->Insert( std::move(menuAB) );
+
+auto menuAC = make_unique<Menu>("ac_prompt");
+menuA->Insert( std::move(menuAC) );
+
+auto menuACA = make_unique<Menu>("aca_prompt");
+menuAC->Insert( std::move(menuACA) );
+
+auto menuB = make_unique<Menu>("b_prompt");
+rootMenu->Insert( std::move(menuB) );
+
+auto menuBA = make_unique<Menu>("ba_prompt");
+menuB->Insert( std::move(menuBA) );
+
+auto menuBB = make_unique<Menu>("bb_prompt");
+menuB->Insert( std::move(menuBB) );
+```
+
+This results in this tree:
+
+```
+myprompt
+    |
+    +--- a_prompt
+    |        |
+    |        +--- aa_prompt
+    |        |
+    |        +--- ab_prompt
+    |        |
+    |        +--- ac_prompt
+    |                |
+    |                +--- aca_prompt
+    |
+    +--- b_prompt
+             |
+             +--- ba_prompt
+             |
+             +--- bb_prompt
+
+```
+
+Finally, you can add commands to menus, using the `Menu::Insert` method.
+The library supports adding commands handler via:
+- free functions
+- `std::function`
+- lambdas
+
+```
+
+static void foo(std::ostream& out, int x) { out << x << std::endl; }
+
+std::function<void(std::ostream& out, int x)> fun(foo);
+
+...
+
+myMenu->Insert("free_function", foo);
+
+myMenu->Insert("std_function", fun);
+
+myMenu->Insert("lambda", [](std::ostream& out, int x){ out << x << std::endl; } );
+
+```
+
+
 ## License
 
 Distributed under the Boost Software License, Version 1.0.
