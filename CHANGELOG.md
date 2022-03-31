@@ -6,6 +6,7 @@
  - Add a Menu::Insert method working with free functions as handler
  - Cli::cout() returns a class derived from std::ostream
  - Fix address sanitizer issue with GenericAsioScheduler dtor
+ - Fix teardown problem with linux (issue [#132](https://github.com/daniele77/cli/issues/132))
 
 ## [2.0.0] - 2021-08-25
 

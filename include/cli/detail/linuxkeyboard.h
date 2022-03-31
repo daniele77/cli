@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <termios.h>
 #include <unistd.h>
+#include <sys/select.h>
 
 #include "inputdevice.h"
 
@@ -46,37 +47,118 @@ namespace cli
 namespace detail
 {
 
+class InputSource
+{
+public:
+
+    InputSource()
+    {
+        ToManualMode();
+        int pipes[2];
+        if (pipe(pipes) == 0)
+        {
+            shutdownPipe = pipes[1]; // we store the write end
+            readPipe = pipes[0]; // ... and the read end
+        }
+    }
+    ~InputSource()
+    {
+        ToStandardMode();
+    }
+
+    int Get()
+    {
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(STDIN_FILENO, &rfds);
+        FD_SET(readPipe, &rfds);
+
+        while (select(readPipe + 1, &rfds, nullptr, nullptr, nullptr) == 0);
+
+        if (FD_ISSET(readPipe, &rfds)) // stop called
+        {
+            close(readPipe);
+            throw std::runtime_error("InputSource stop");
+        }
+
+        if (FD_ISSET(STDIN_FILENO, &rfds)) // char from stdinput
+        {
+            return std::getchar();
+        }
+
+        // cannot reach this point
+        return -1;
+    }
+
+    void Stop()
+    {
+        [[maybe_unused]] auto result = write(shutdownPipe, " ", 1);
+		result = close(shutdownPipe);
+		shutdownPipe = -1;
+    }
+
+private:
+    void ToManualMode()
+    {
+        constexpr tcflag_t ICANON_FLAG = ICANON;
+        constexpr tcflag_t ECHO_FLAG = ECHO;
+
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    }
+
+    void ToStandardMode()
+    {
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    }
+
+    termios oldt;
+    termios newt;
+    int shutdownPipe;
+    int readPipe;
+};
+
+//
+
+
 class LinuxKeyboard : public InputDevice
 {
 public:
     explicit LinuxKeyboard(Scheduler& _scheduler) :
-        InputDevice(_scheduler)
+        InputDevice(_scheduler),
+        servant( [this]() noexcept { Read(); } )
     {
-        ToManualMode();
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant->detach();
     }
     ~LinuxKeyboard() override
     {
-        run = false;
-        ToStandardMode();
+        is.Stop();
+        servant.join();
     }
 
 private:
 
-    void Read()
+    void Read() noexcept
     {
-        while ( run )
+        try
         {
-            auto k = Get();
-            Notify(k);
+            while (true)
+            {
+                auto k = Get();
+                Notify(k);
+            }
         }
+        catch(const std::exception&)
+        {
+            // nothing to do: just exit
+        }        
     }
 
     std::pair<KeyType,char> Get()
     {
-        int ch = std::getchar();
-        switch( ch )
+        int ch = is.Get();
+        switch(ch)
         {
             case EOF:
             case 4:  // EOT
@@ -85,14 +167,14 @@ private:
             case 127: return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
-                ch = std::getchar();
+                ch = is.Get();
                 if ( ch == 91 ) // arrow keys
                 {
-                    ch = std::getchar();
+                    ch = is.Get();
                     switch( ch )
                     {
                         case 51:
-                            ch = std::getchar();
+                            ch = is.Get();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
@@ -115,26 +197,8 @@ private:
         return std::make_pair(KeyType::ignored,' ');
     }
 
-    void ToManualMode()
-    {
-        constexpr tcflag_t ICANON_FLAG = ICANON;
-        constexpr tcflag_t ECHO_FLAG = ECHO;
-
-        tcgetattr( STDIN_FILENO, &oldt );
-        newt = oldt;
-        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
-        tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-    }
-
-    void ToStandardMode()
-    {
-        tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-    }
-
-    termios oldt;
-    termios newt;
-    std::atomic<bool> run{ true };
-    std::unique_ptr<std::thread> servant;
+    InputSource is;
+    std::thread servant;
 };
 
 } // namespace detail
