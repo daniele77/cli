@@ -87,8 +87,9 @@ public:
 
     void Stop()
     {
-        [[maybe_unused]] auto result = write(shutdownPipe, " ", 1);
-		result = close(shutdownPipe);
+        auto unused = write(shutdownPipe, " ", 1);
+		unused = close(shutdownPipe);
+        static_cast<void>(unused); // silence unused warn
 		shutdownPipe = -1;
     }
 
