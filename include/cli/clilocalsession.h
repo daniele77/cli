@@ -31,9 +31,9 @@
 #define CLI_CLILOCALSESSION_H
 
 #include <ostream> // std::ostream
-#include "detail/keyboard.h"
 #include "detail/inputhandler.h"
 #include "cli.h" // CliSession
+#include "detail/keyboard.h"
 
 namespace cli
 {

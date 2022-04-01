@@ -34,41 +34,101 @@
 #include <string>
 #include <thread>
 #include <memory>
-#include <atomic>
 #include <conio.h>
+#include <cassert>
 
 #include "inputdevice.h"
+
+#include <windows.h>
 
 namespace cli
 {
 namespace detail
 {
 
-class WinKeyboard : public InputDevice
+class InputSource
 {
 public:
-    explicit WinKeyboard(Scheduler& _scheduler) : InputDevice(_scheduler)
+
+    InputSource()
     {
-        servant = std::make_unique<std::thread>( [this](){ Read(); } );
-        servant->detach();
+        events[0] = CreateEvent(nullptr, FALSE, FALSE, nullptr); // Obtain a Windows handle to use to stop
+        events[1] = GetStdHandle(STD_INPUT_HANDLE); // Get a Windows handle to the keyboard input
     }
-    ~WinKeyboard()
+
+    void WaitKbHit()
     {
-        run = false;
+        // Wait for either the timer to expire or a key press event
+        DWORD dwResult = WaitForMultipleObjects(2, events, false, INFINITE);
+
+        if (dwResult == WAIT_FAILED)
+        {
+            // TODO
+            assert(false);
+        }
+        else
+        {
+            if (dwResult == WAIT_OBJECT_0) // WAIT_OBJECT_0 corresponds to the stop event
+            {
+                throw std::runtime_error("InputSource stop");
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        // we can't reach this point
+        assert(false);
+    }
+
+    void Stop()
+    {
+        SetEvent(events[0]);
     }
 
 private:
-    void Read()
+    HANDLE events[2];
+};
+
+//
+
+class WinKeyboard : public InputDevice
+{
+public:
+    explicit WinKeyboard(Scheduler& _scheduler) :
+        InputDevice(_scheduler),
+        servant([this]() noexcept { Read(); })
     {
-        while (run)
+    }
+    ~WinKeyboard() override
+    {
+        is.Stop();
+        servant.join();
+    }
+
+private:
+
+    void Read() noexcept
+    {
+        try
         {
-            auto k = Get();
-            Notify(k);
+            while (true)
+            {
+                auto k = Get();
+                Notify(k);
+            }
+        }
+        catch (const std::exception&)
+        {
+            // nothing to do: just exit
         }
     }
 
     std::pair<KeyType, char> Get()
     {
+        is.WaitKbHit();
+
         int c = _getch();
         switch (c)
         {
@@ -109,8 +169,8 @@ private:
         return std::make_pair(KeyType::ignored, ' ');
     }
 
-    std::atomic<bool> run{true};
-    std::unique_ptr<std::thread> servant;
+    InputSource is;
+    std::thread servant;
 };
 
 } // namespace detail
