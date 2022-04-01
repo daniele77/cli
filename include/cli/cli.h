@@ -320,6 +320,8 @@ namespace cli
 
             auto cmds = history.GetCommands();
             cli.StoreCommands(cmds);
+
+            exit = true; // prevent the prompt to be shown
         }
 
         void ExitAction(const std::function<void(std::ostream&)>& action)
@@ -349,6 +351,7 @@ namespace cli
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
+        bool exit{ false }; // to prevent the prompt after exit command
     };
 
     // ********************************************************************
@@ -791,6 +794,7 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
+        if (exit) return;
         out << beforePrompt
             << current->Prompt()
             << afterPrompt

@@ -7,6 +7,7 @@
  - Cli::cout() returns a class derived from std::ostream
  - Fix address sanitizer issue with GenericAsioScheduler dtor
  - Fix teardown problem with linux (issue [#132](https://github.com/daniele77/cli/issues/132))
+ - The prompt is no more shown after exit
 
 ## [2.0.0] - 2021-08-25
 
