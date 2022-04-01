@@ -65,8 +65,9 @@ or, if you want to specify the installation path:
 ## Compilation of the examples
 
 You can find some examples in the directory "examples".
-Each .cpp file corresponds to an executable. You can compile each example by including
-cli (and optionally asio/boost header files) 
+Each .cpp file corresponds to an executable.
+Each example can be compiled by including cli
+(and optionally asio/boost header files) 
 and linking pthread on linux (and optionally boost system).
 
 To compile the examples using cmake, use:
@@ -92,7 +93,7 @@ In the same directory you can also find:
 * Windows nmake files (makefile.noasio.win, makefile.boostasio.win, makefile.standaloneasio.win)
 * a Visual Studio solution
 
-You can specify boost/asio library path in the following ways:
+If needed, you can specify asio library path in the following ways:
 
 ### GNU Make
 
@@ -146,6 +147,31 @@ of the library in this way:
     doxygen Doxyfile
 
 ## CLI usage
+
+### Commands and shortcuts
+
+At the start of your  application, cli is presenting a prompt with the
+name you provided in the `Cli` constructor.
+This means you're in the root menu.
+
+To enter in a submenu, just type the submenu name:
+you should see the prompt change to reflect the name of the current submenu.
+
+To go back to the parent menu, you must enter the name of the parent menu.
+
+In any menu, you can enter:
+- `exit`: to exit the cli
+- `help`: to print the list of the commands available with a description 
+- a submenu name: to enter the submenu
+- the parent menu name: to return to the the parent menu
+- a command in the current menu: to exec the command
+- a command in a submenu (using the full path): to exec the command
+
+You can also use:
+- up and down arrow keys: to navigate the history of commands
+- tab key: to autocomplete the command / menu
+
+### Parameter parsing
 
 The cli interpreter can manage correctly sentences using quote (') and double quote (").
 Any character (spaces too) comprises between quotes or double quotes are considered as a single parameter of a command.

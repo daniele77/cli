@@ -32,12 +32,12 @@
 
 #include <thread>
 #include <memory>
-#include <atomic>
 
 #include <cstdio>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
+#include <cassert>
 
 #include "inputdevice.h"
 
@@ -53,7 +53,6 @@ public:
 
     InputSource()
     {
-        ToManualMode();
         int pipes[2];
         if (pipe(pipes) == 0)
         {
@@ -61,12 +60,8 @@ public:
             readPipe = pipes[0]; // ... and the read end
         }
     }
-    ~InputSource()
-    {
-        ToStandardMode();
-    }
 
-    int Get()
+    void WaitKbHit()
     {
         fd_set rfds;
         FD_ZERO(&rfds);
@@ -83,39 +78,22 @@ public:
 
         if (FD_ISSET(STDIN_FILENO, &rfds)) // char from stdinput
         {
-            return std::getchar();
+            return;
         }
 
         // cannot reach this point
-        return -1;
+        assert(false);
     }
 
     void Stop()
     {
-        [[maybe_unused]] auto result = write(shutdownPipe, " ", 1);
-		result = close(shutdownPipe);
+        auto unused = write(shutdownPipe, " ", 1);
+		unused = close(shutdownPipe);
+        static_cast<void>(unused); // silence unused warn
 		shutdownPipe = -1;
     }
 
 private:
-    void ToManualMode()
-    {
-        constexpr tcflag_t ICANON_FLAG = ICANON;
-        constexpr tcflag_t ECHO_FLAG = ECHO;
-
-        tcgetattr(STDIN_FILENO, &oldt);
-        newt = oldt;
-        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
-        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    }
-
-    void ToStandardMode()
-    {
-        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    }
-
-    termios oldt;
-    termios newt;
     int shutdownPipe;
     int readPipe;
 };
@@ -130,9 +108,11 @@ public:
         InputDevice(_scheduler),
         servant( [this]() noexcept { Read(); } )
     {
+        ToManualMode();
     }
     ~LinuxKeyboard() override
     {
+        ToStandardMode();
         is.Stop();
         servant.join();
     }
@@ -157,7 +137,9 @@ private:
 
     std::pair<KeyType,char> Get()
     {
-        int ch = is.Get();
+        is.WaitKbHit();
+
+        int ch = std::getchar();
         switch(ch)
         {
             case EOF:
@@ -167,14 +149,14 @@ private:
             case 127: return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
-                ch = is.Get();
+                ch = std::getchar();
                 if ( ch == 91 ) // arrow keys
                 {
-                    ch = is.Get();
+                    ch = std::getchar();
                     switch( ch )
                     {
                         case 51:
-                            ch = is.Get();
+                            ch = std::getchar();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
@@ -197,6 +179,24 @@ private:
         return std::make_pair(KeyType::ignored,' ');
     }
 
+    void ToManualMode()
+    {
+        constexpr tcflag_t ICANON_FLAG = ICANON;
+        constexpr tcflag_t ECHO_FLAG = ECHO;
+
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~( ICANON_FLAG | ECHO_FLAG );
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    }
+
+    void ToStandardMode()
+    {
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    }
+
+    termios oldt;
+    termios newt;
     InputSource is;
     std::thread servant;
 };

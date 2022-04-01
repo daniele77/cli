@@ -127,20 +127,6 @@ namespace cli
         Cli(Cli&&) = default;
         Cli& operator = (Cli&&) = default;
 
-        /// \deprecated Use the @c Cli::Cli(std::unique_ptr<Menu>,std::unique_ptr<HistoryStorage>) 
-        /// overload version and the method @c Cli::ExitAction instead
-        [[deprecated("Use the other overload of Cli constructor and the method Cli::ExitAction instead")]]
-        explicit Cli(
-            std::unique_ptr<Menu>&& _rootMenu,
-            std::function< void(std::ostream&)> _exitAction,
-            std::unique_ptr<HistoryStorage>&& historyStorage = std::make_unique<VolatileHistoryStorage>()
-        ) :
-            globalHistoryStorage(std::move(historyStorage)),
-            rootMenu(std::move(_rootMenu)),
-            exitAction(std::move(_exitAction))
-        {
-        }
-
         /**
          * @brief Construct a new Cli object having a given root menu that contains the first level commands available.
          * 
