@@ -84,9 +84,8 @@ namespace cli
         class OutStream : public std::basic_ostream<char>, public std::streambuf
         {
         public:
-            OutStream()
+            OutStream() : std::basic_ostream<char>(this)
             {
-                this->init(this);
             }
 
             // std::streambuf overrides
@@ -304,7 +303,7 @@ namespace cli
         CliSession(CliSession&&) = delete;
         CliSession& operator = (CliSession&&) = delete;
 
-        void Feed( const std::string& cmd );
+        void Feed(const std::string& cmd);
 
         void Prompt();
 
