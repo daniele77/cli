@@ -203,7 +203,7 @@ protected:
                                        // to perform, the indicated option.
         IAC = '\x0FF',                 // Data Byte 255.
 
-        ECHO = '\x001',
+        _ECHO = '\x001',
         SUPPRESS_GO_AHEAD = '\x003',
         TERMINAL_TYPE = '\x018',
         NEGOTIATE_ABOUT_WIN_SIZE = '\x01F',
@@ -343,11 +343,11 @@ private:
         #endif
         switch(c)
         {
-            case SUPPRESS_GO_AHEAD: Send(WILL, SUPPRESS_GO_AHEAD); break;
-            case TERMINAL_TYPE: Send(DO, TERMINAL_TYPE); break;
-            case NEGOTIATE_ABOUT_WIN_SIZE: Send(DO, NEGOTIATE_ABOUT_WIN_SIZE); break;
-            case TERMINAL_SPEED: Send(DONT, TERMINAL_SPEED); break;
-            case NEW_ENV_OPTION: Send(DONT, NEW_ENV_OPTION); break;
+            case SUPPRESS_GO_AHEAD: SendIacCmd(WILL, SUPPRESS_GO_AHEAD); break;
+            case TERMINAL_TYPE: SendIacCmd(DO, TERMINAL_TYPE); break;
+            case NEGOTIATE_ABOUT_WIN_SIZE: SendIacCmd(DO, NEGOTIATE_ABOUT_WIN_SIZE); break;
+            case TERMINAL_SPEED: SendIacCmd(DONT, TERMINAL_SPEED); break;
+            case NEW_ENV_OPTION: SendIacCmd(DONT, NEW_ENV_OPTION); break;
         };
     }
     void RxWont(char c)
@@ -363,8 +363,8 @@ private:
         #ifdef CLI_TELNET_TRACE
         std::cout << "do " << static_cast<int>(c) << std::endl;
         #endif
-        if (c == ECHO) // do echo
-            Send(DO, ECHO);
+        if (c == _ECHO) // do echo
+            SendIacCmd(DO, _ECHO);
     }
     void RxDont(char c)
     {
@@ -382,7 +382,7 @@ private:
         (void)c;
         #endif
     }
-    void Send(char action, char op)
+    void SendIacCmd(char action, char op)
     {
         std::string answer("\x0FF\x000\x000", 3);
         answer[1] = action;
