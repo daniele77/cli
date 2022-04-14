@@ -85,6 +85,7 @@ protected:
 
         static const std::string iacWillEcho{ "\x0FF\x0FB\x001", 3 };
         this -> OutStream() << iacWillEcho << std::flush;
+
 /*
         constexpr char IAC = '\x0FF'; // 255
         constexpr char DO = '\x0FD'; // 253
@@ -200,7 +201,14 @@ protected:
                                        // or confirmation that you are no
                                        // longer expecting the other party
                                        // to perform, the indicated option.
-        IAC = '\x0FF'                  // Data Byte 255.
+        IAC = '\x0FF',                 // Data Byte 255.
+
+        ECHO = '\x001',
+        SUPPRESS_GO_AHEAD = '\x003',
+        TERMINAL_TYPE = '\x018',
+        NEGOTIATE_ABOUT_WIN_SIZE = '\x01F',
+        TERMINAL_SPEED = '\x020',
+        NEW_ENV_OPTION = '\x027'
     };
 
 
@@ -217,15 +225,10 @@ private:
         if (escape)
         {
             if (c == IAC)
-            {
                 Data(c);
-                escape = false;
-            }
             else
-            {
                 Command(c);
-                escape = false;
-            }
+            escape = false;
         }
         else
         {
@@ -244,22 +247,22 @@ private:
                 Output(c);
                 break;
             case State::sub:
-                Sub(c);
+                RxSub(c);
                 break;
             case State::wait_will:
-                Will(c);
+                RxWill(c);
                 state = State::data;
                 break;
             case State::wait_wont:
-                Wont(c);
+                RxWont(c);
                 state = State::data;
                 break;
             case State::wait_do:
-                Do(c);
+                RxDo(c);
                 state = State::data;
                 break;
             case State::wait_dont:
-                Dont(c);
+                RxDont(c);
                 state = State::data;
                 break;
         }
@@ -333,15 +336,21 @@ private:
         }
     }
 
-    void Will(char c) 
+    void RxWill(char c)
     { 
         #ifdef CLI_TELNET_TRACE
         std::cout << "will " << static_cast<int>(c) << std::endl;
-        #else
-        (void)c;
         #endif
+        switch(c)
+        {
+            case SUPPRESS_GO_AHEAD: Send(WILL, SUPPRESS_GO_AHEAD); break;
+            case TERMINAL_TYPE: Send(DO, TERMINAL_TYPE); break;
+            case NEGOTIATE_ABOUT_WIN_SIZE: Send(DO, NEGOTIATE_ABOUT_WIN_SIZE); break;
+            case TERMINAL_SPEED: Send(DONT, TERMINAL_SPEED); break;
+            case NEW_ENV_OPTION: Send(DONT, NEW_ENV_OPTION); break;
+        };
     }
-    void Wont(char c)
+    void RxWont(char c)
     { 
         #ifdef CLI_TELNET_TRACE
         std::cout << "wont " << static_cast<int>(c) << std::endl;
@@ -349,15 +358,15 @@ private:
         (void)c;
         #endif
     }
-    void Do(char c)
+    void RxDo(char c)
     { 
         #ifdef CLI_TELNET_TRACE
         std::cout << "do " << static_cast<int>(c) << std::endl;
-        #else
-        (void)c;
         #endif
+        if (c == ECHO) // do echo
+            Send(DO, ECHO);
     }
-    void Dont(char c) 
+    void RxDont(char c)
     {
         #ifdef CLI_TELNET_TRACE
         std::cout << "dont " << static_cast<int>(c) << std::endl;
@@ -365,13 +374,20 @@ private:
         (void)c;
         #endif
     }
-    void Sub(char c) 
+    void RxSub(char c)
     { 
         #ifdef CLI_TELNET_TRACE
         std::cout << "sub: " << static_cast<int>(c) << std::endl;
         #else
         (void)c;
         #endif
+    }
+    void Send(char action, char op)
+    {
+        std::string answer("\x0FF\x000\x000", 3);
+        answer[1] = action;
+        answer[2] = op;
+        this -> OutStream() << answer << std::flush;
     }
 protected:
     virtual void Output(char c)
@@ -394,36 +410,8 @@ private:
     {
         if (std::isprint(c)) std::cout << c << std::endl;
         else std::cout << "0x" << std::hex << static_cast<int>(c) << std::dec << std::endl;
-/*
-        switch ( c )
-        {
-        case 0: break;
-        case '\n':
-        case '\r':
-        {
-            // trim trailing spaces
-            std::size_t endpos = buffer.find_last_not_of(" \t\r\n");
-            if( std::string::npos != endpos ) buffer = buffer.substr( 0, endpos+1 );
-            if ( cliSession.Feed( buffer ) ) cliSession.Prompt();
-            else Disconnect();
-
-            buffer.clear();
-            break;
-        }
-        default:
-            Echo( c );
-            buffer += c;
-        }
-*/
     }
-/*
-    void Echo( char c )
-    {
-        this -> OutStream() << c << std::flush;
-    }
-*/
     std::string buffer;
-    //bool waitAck = false;
 };
 
 template <typename ASIOLIB>

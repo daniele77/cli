@@ -9,6 +9,7 @@
  - Fix teardown problem with linux (issue [#132](https://github.com/daniele77/cli/issues/132))
  - Fix teardown problem with windows
  - The prompt is no more shown after exit
+ - Telnet server now works on MobaXTerm
 
 ## [2.0.0] - 2021-08-25
 
