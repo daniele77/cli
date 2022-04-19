@@ -167,6 +167,12 @@ protected:
     }
 #else
 
+    /*
+    See
+    https://www.iana.org/assignments/telnet-options/telnet-options.xhtml
+    for a list of telnet options
+    */
+
     enum
     {
         SE = '\x0F0',                  // End of subnegotiation parameters.
@@ -210,7 +216,6 @@ protected:
         TERMINAL_SPEED = '\x020',
         NEW_ENV_OPTION = '\x027'
     };
-
 
     void OnDataReceived(const std::string& _data) override
     {
@@ -343,11 +348,14 @@ private:
         #endif
         switch(c)
         {
-            case SUPPRESS_GO_AHEAD: SendIacCmd(WILL, SUPPRESS_GO_AHEAD); break;
-            case TERMINAL_TYPE: SendIacCmd(DO, TERMINAL_TYPE); break;
-            case NEGOTIATE_ABOUT_WIN_SIZE: SendIacCmd(DO, NEGOTIATE_ABOUT_WIN_SIZE); break;
-            case TERMINAL_SPEED: SendIacCmd(DONT, TERMINAL_SPEED); break;
-            case NEW_ENV_OPTION: SendIacCmd(DONT, NEW_ENV_OPTION); break;
+            case SUPPRESS_GO_AHEAD:
+                SendIacCmd(WILL, SUPPRESS_GO_AHEAD);
+                break;
+            case NEGOTIATE_ABOUT_WIN_SIZE: 
+                SendIacCmd(DO, NEGOTIATE_ABOUT_WIN_SIZE);
+                break;
+            default:
+                SendIacCmd(DONT, c);
         };
     }
     void RxWont(char c)
@@ -363,8 +371,17 @@ private:
         #ifdef CLI_TELNET_TRACE
         std::cout << "do " << static_cast<int>(c) << std::endl;
         #endif
-        if (c == _ECHO) // do echo
-            SendIacCmd(DO, _ECHO);
+        switch (c)
+        {
+            case _ECHO:
+                SendIacCmd(DO, _ECHO);
+                break;
+            case SUPPRESS_GO_AHEAD:
+                SendIacCmd(WILL, SUPPRESS_GO_AHEAD);
+                break;
+            default:
+                SendIacCmd(WONT, c);
+        };
     }
     void RxDont(char c)
     {
