@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [2.0.1] - 2022-04-19
 
  - Add a non-blocking exec method to schedulers (issue [#127](https://github.com/daniele77/cli/issues/127))
  - Add a Menu::Insert method working with free functions as handler

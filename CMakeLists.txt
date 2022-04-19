@@ -29,7 +29,7 @@
 
 cmake_minimum_required(VERSION 3.8)
 
-project(cli VERSION 2.0.0 
+project(cli VERSION 2.0.1
             # DESCRIPTION "A library for interactive command line interfaces in modern C++"
             LANGUAGES CXX)
 

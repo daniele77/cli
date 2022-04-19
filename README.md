@@ -369,6 +369,34 @@ myMenu->Insert("lambda", [](std::ostream& out, int x){ out << x << std::endl; } 
 
 ```
 
+There is no limit to the number of parameters that a command handler can take
+(however, they can only be basic types or `std::string`s):
+
+```
+myMenu->Insert(
+    "mycmd", 
+    [](std::ostream& out, int a, double b, const std::string& c, bool d, long e)
+    { 
+        ...
+    } );
+
+```
+
+If you need it, you can have a command handlers taking an arbitrary
+number of string parameters:
+
+```
+myMenu->Insert(
+    "mycmd", 
+    [](std::ostream& out, const std::vector<std::string>& pars)
+    { 
+        ...
+    } );
+
+```
+
+Please note that in this case your command handler must take *only one*
+parameter of type `std::vector<std::string>`.
 
 ## License
 
