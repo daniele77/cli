@@ -39,6 +39,9 @@
 
 #include "inputdevice.h"
 
+#if !defined(NOMINMAX)
+#define NOMINMAX 1 // prevent windows from defining min and max macros
+#endif // !defined(NOMINMAX)
 #include <windows.h>
 
 namespace cli
