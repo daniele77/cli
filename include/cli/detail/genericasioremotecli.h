@@ -219,13 +219,13 @@ protected:
 
     void OnDataReceived(const std::string& _data) override
     {
-        for (char c: _data)
+        for (auto c: _data)
             Consume(c);
     }
 
 private:
 
-    void Consume(char c)
+    void Consume(signed char c)
     {
         if (escape)
         {
@@ -244,7 +244,7 @@ private:
         }
     }
 
-    void Data(char c)
+    void Data(signed char c)
     {
         switch(state)
         {
@@ -407,7 +407,7 @@ private:
         this -> OutStream() << answer << std::flush;
     }
 protected:
-    virtual void Output(char c)
+    virtual void Output(signed char c)
     {
         #ifdef CLI_TELNET_TRACE
         std::cout << "data: " << static_cast<int>(c) << std::endl;
@@ -466,7 +466,7 @@ protected:
         Prompt();
     }
 
-    void Output(char c) override
+    void Output(signed char c) override // NB: C++ does not specify wether char is signed or unsigned
     {
         switch(step)
         {
