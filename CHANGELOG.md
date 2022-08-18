@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [2.0.1] - 2022-04-19
 
  - Specify signed for char parameters (issue [#149](https://github.com/daniele77/cli/issues/149))
  - CliSession can call OutStream::UnRegister() when it's already destroyed (issue [#153](https://github.com/daniele77/cli/issues/153))
