@@ -72,51 +72,49 @@ namespace cli
 
     // ********************************************************************
 
+    // this class provides a global output stream
+    class OutStream : public std::basic_ostream<char>, public std::streambuf
+    {
+    public:
+        OutStream() : std::basic_ostream<char>(this)
+        {
+        }
+
+        // std::streambuf overrides
+        std::streamsize xsputn(const char* s, std::streamsize n) override
+        {
+            for (auto os: ostreams)
+                os->rdbuf()->sputn(s, n);
+            return n;
+        }
+        int overflow(int c) override
+        {
+            for (auto os: ostreams)
+                *os << static_cast<char>(c);
+            return c;
+        }            
+
+        void Register(std::ostream& o)
+        {
+            ostreams.push_back(&o);
+        }
+        void UnRegister(std::ostream& o)
+        {
+            ostreams.erase(std::remove(ostreams.begin(), ostreams.end(), &o), ostreams.end());
+        }
+
+    private:
+
+        std::vector<std::ostream*> ostreams;
+    };
+    
     // forward declarations
     class Menu;
     class CliSession;
 
-
     class Cli
     {
 
-        // inner class to provide a global output stream
-        class OutStream : public std::basic_ostream<char>, public std::streambuf
-        {
-        public:
-            OutStream() : std::basic_ostream<char>(this)
-            {
-            }
-
-            // std::streambuf overrides
-            std::streamsize xsputn(const char* s, std::streamsize n) override
-            {
-                for (auto os: ostreams)
-                    os->rdbuf()->sputn(s, n);
-                return n;
-            }
-            int overflow(int c) override
-            {
-                for (auto os: ostreams)
-                    *os << static_cast<char>(c);
-                return c;
-            }            
-
-        private:
-            friend class Cli;
-
-            void Register(std::ostream& o)
-            {
-                ostreams.push_back(&o);
-            }
-            void UnRegister(std::ostream& o)
-            {
-                ostreams.erase(std::remove(ostreams.begin(), ostreams.end(), &o), ostreams.end());
-            }
-
-            std::vector<std::ostream*> ostreams;
-        };
-        // end inner class
 
     public:
         ~Cli() = default;
@@ -172,12 +170,17 @@ namespace cli
          */
         static OutStream& cout()
         {
-            static OutStream s;
-            return s;
+            return *CoutPtr();
         }
 
     private:
         friend class CliSession;
+
+        static std::shared_ptr<OutStream> CoutPtr()
+        {
+            static std::shared_ptr<OutStream> s = std::make_shared<OutStream>();
+            return s;
+        }
 
         Menu* RootMenu() { return rootMenu.get(); }
 
@@ -194,10 +197,6 @@ namespace cli
             else
                 out << e.what() << '\n';
         }
-
-        static void Register(std::ostream& o) { cout().Register(o); }
-
-        static void UnRegister(std::ostream& o) { cout().UnRegister(o); }
 
         void StoreCommands(const std::vector<std::string>& cmds)
         {
@@ -280,7 +279,7 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        virtual ~CliSession() noexcept { Cli::UnRegister(out); }
+        virtual ~CliSession() noexcept { coutPtr->UnRegister(out); }
 
         // disable value semantics
         CliSession(const CliSession&) = delete;
@@ -332,6 +331,7 @@ namespace cli
     private:
 
         Cli& cli;
+        std::shared_ptr<cli::OutStream> coutPtr;
         Menu* current;
         std::unique_ptr<Menu> globalScopeMenu;
         std::ostream& out;
@@ -719,6 +719,7 @@ namespace cli
 
     inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
             cli(_cli),
+            coutPtr(Cli::CoutPtr()),
             current(cli.RootMenu()),
             globalScopeMenu(std::make_unique< Menu >()),
             out(_out),
@@ -726,7 +727,7 @@ namespace cli
         {
             history.LoadCommands(cli.GetCommands());
 
-            Cli::Register(out);
+            coutPtr->Register(out);
             globalScopeMenu->Insert(
                 "help",
                 [this](std::ostream&){ Help(); },
