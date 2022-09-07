@@ -58,10 +58,34 @@
 #include <vector>
 #include <algorithm> // std::copy
 
+#include <complex>
+
 using namespace cli;
 using namespace std;
 
+// a free function to be used as handler
 static void foo(std::ostream& out, int x) { out << x << std::endl; }
+
+// a custom struct to be used as a user-defined parameter type
+struct Bar
+{
+    string to_string() const { return std::to_string(value); }
+    friend istream & operator >> (istream &in, Bar& p);
+    int value;
+};
+
+istream & operator >> (istream& in, Bar& p)
+{
+    in >> p.value;
+    return in;
+}
+
+// needed only for generic help, you can omit this
+namespace cli { template <> struct TypeDesc<Bar> { static const char* Name() { return "<bar>"; } }; }
+
+// needed only for generic help, you can omit this
+namespace cli { template <> struct TypeDesc<complex<double>> { static const char* Name() { return "<complex>"; } }; }
+
 
 int main()
 {
@@ -73,6 +97,7 @@ int main()
         // setup cli
 
         auto rootMenu = make_unique<Menu>("cli");
+
         rootMenu->Insert(
                 "free_function",
                 foo,
@@ -151,6 +176,14 @@ int main()
                     out << "\n";
                 },
                 "Alphabetically sort a list of words" );
+        rootMenu->Insert(
+                "bar",
+                [](std::ostream& out, Bar x){ out << "You entered bar: " << x.to_string() << "\n"; },
+                "Custom type" );
+        rootMenu->Insert(
+                "complex",
+                [](std::ostream& out, std::complex<double> x){ out << "You entered complex : " << x << "\n"; },
+                "Print a complex number" );
         colorCmd = rootMenu->Insert(
                 "color",
                 [&](std::ostream& out)
@@ -242,11 +275,11 @@ int main()
     }
     catch (const std::exception& e)
     {
-        cerr << "Exception caugth in main: " << e.what() << endl;
+        cerr << "Exception caugth in main: " << e.what() << '\n';
     }
     catch (...)
     {
-        cerr << "Unknown exception caugth in main." << endl;
+        cerr << "Unknown exception caugth in main.\n";
     }
     return -1;
 }

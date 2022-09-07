@@ -369,8 +369,8 @@ myMenu->Insert("lambda", [](std::ostream& out, int x){ out << x << std::endl; } 
 
 ```
 
-There is no limit to the number of parameters that a command handler can take
-(however, they can only be basic types or `std::string`s):
+There is no limit to the number of parameters that a command handler can take.
+They can be basic types and `std::string`s
 
 ```
 myMenu->Insert(
@@ -380,10 +380,40 @@ myMenu->Insert(
         ...
     } );
 
+myMenu->Insert(
+    "complex", 
+    [](std::ostream& out, std::complex c)
+    { 
+        ...
+    } );
+```
+
+or they can be custom types overloading the `std::istream << operator`:
+
+```
+struct Foo
+{
+    friend istream & operator >> (istream &in, Foo& p);
+    int value;
+};
+
+istream & operator >> (istream& in, Foo& p)
+{
+    in >> p.value;
+    return in;
+}
+
+myMenu->Insert(
+    "foo", 
+    [](std::ostream& out, Foo f)
+    { 
+        ...
+    } );
+
 ```
 
 If you need it, you can have a command handlers taking an arbitrary
-number of string parameters:
+number of `std::string` parameters:
 
 ```
 myMenu->Insert(

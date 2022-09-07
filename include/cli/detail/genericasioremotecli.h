@@ -303,7 +303,7 @@ private:
                 if (state == State::sub)
                     state = State::data;
                 else
-                    std::cout << "ERROR: received SE when not in sub state" << std::endl;
+                    std::cerr << "ERROR: received SE when not in sub state\n";
                 break;
             case DataMark: // ?
             case Break: // ?
