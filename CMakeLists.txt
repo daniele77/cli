@@ -116,34 +116,36 @@ if (CLI_BuildTests)
 endif()
 
 # Install
-install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(NOT CMAKE_SKIP_INSTALL_RULES)
+    install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-include(CMakePackageConfigHelpers)
-configure_package_config_file(
-    "cliConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
-)
+    include(CMakePackageConfigHelpers)
+    configure_package_config_file(
+        "cliConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
+    )
 
-# Generate pkg-config .pc file
-set(PKGCONFIG_INSTALL_DIR
-    ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
-    CACHE PATH "Installation directory for pkg-config (cli.pc) file"
-)
-configure_file(
-    "cli.pc.in"
-    "cli.pc"
-    @ONLY
-)
+    # Generate pkg-config .pc file
+    set(PKGCONFIG_INSTALL_DIR
+        ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+        CACHE PATH "Installation directory for pkg-config (cli.pc) file"
+    )
+    configure_file(
+        "cli.pc.in"
+        "cli.pc"
+        @ONLY
+    )
 
-install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
+    install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
 
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
-)
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
-    DESTINATION ${PKGCONFIG_INSTALL_DIR}
-)
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
+    )
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
+        DESTINATION ${PKGCONFIG_INSTALL_DIR}
+    )
+endif()
