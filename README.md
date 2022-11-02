@@ -61,6 +61,21 @@ or, if you want to specify the installation path:
     mkdir build && cd build
     cmake .. -DCMAKE_INSTALL_PREFIX:PATH=<cli_install_location>
     make install
+    
+Alternatively, you can use CMake's `FetchContent` module to include CLI library in your project directly.
+Add something like this in your `CMakeLists.txt` file:
+
+    include(FetchContent)
+    FetchContent_Declare(
+      cli
+      GIT_REPOSITORY https://github.com/daniele77/cli.git
+      GIT_TAG v2.0.2
+    )
+    FetchContent_MakeAvailable(cli)
+    
+    add_executable(main-project)
+    target_link_libraries(main-project PRIVATE cli::cli)
+
 
 ## Compilation of the examples
 
