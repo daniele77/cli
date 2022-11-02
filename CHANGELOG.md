@@ -6,6 +6,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Unreleased
 
  - Nest namespace rang (issue [#167](https://github.com/daniele77/cli/issues/167))
+ - Add ascii value 8 for backspace [#124](https://github.com/daniele77/cli/issues/124))
+ - Add check for CMAKE_SKIP_INSTALL_RULES [#160](https://github.com/daniele77/cli/issues/160))
 
 ## [2.0.2] - 2022-08-18
 
