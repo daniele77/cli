@@ -239,7 +239,7 @@ LoopScheduler scheduler;
 CliLocalTerminalSession localSession(cli, scheduler);
 ...
 // in another thread you can do:
-scheduler.Post([](){ cout << "This will be executed in the scheduler thread" << endl; });
+scheduler.Post([](){ cout << "This will be executed in the scheduler thread\n"; });
 ...
 // start the scheduler main loop
 // it will exit from this method only when scheduler.Stop() is called

@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+ - Nest namespace rang (issue [#167](https://github.com/daniele77/cli/issues/167))
+
 ## [2.0.2] - 2022-08-18
 
  - Specify signed for char parameters (issue [#149](https://github.com/daniele77/cli/issues/149))
