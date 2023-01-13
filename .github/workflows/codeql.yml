@@ -70,7 +70,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON
+        cmake .. -DCLI_BuildTests=OFF -DCLI_BuildExamples=ON
         make all
 
     - name: Perform CodeQL Analysis
