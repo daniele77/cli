@@ -140,9 +140,17 @@ namespace cli
         Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>()) :
             globalHistoryStorage(std::move(historyStorage)),
             rootMenu(std::move(_rootMenu)),
+            enterAction{},
             exitAction{}
         {
         }
+
+        /**
+         * @brief Add a global enter action that is called every time a session (local or remote) is established.
+         * 
+         * @param action the function to be called when a session exits, taking a @c std::ostream& parameter to write on that session console.
+         */
+        void EnterAction(const std::function< void(std::ostream&)>& action) { enterAction = action; }
 
         /**
          * @brief Add a global exit action that is called every time a session (local or remote) gets the "exit" command.
@@ -184,6 +192,13 @@ namespace cli
 
         Menu* RootMenu() { return rootMenu.get(); }
 
+        void EnterAction(std::ostream& out)
+        {
+            if (enterAction) {
+                enterAction(out);
+            }
+        }
+
         void ExitAction( std::ostream& out )
         {
             if ( exitAction )
@@ -211,6 +226,7 @@ namespace cli
     private:
         std::unique_ptr<HistoryStorage> globalHistoryStorage;
         std::unique_ptr<Menu> rootMenu; // just to keep it alive
+        std::function<void(std::ostream&)> enterAction;
         std::function<void(std::ostream&)> exitAction;
         std::function<void(std::ostream&, const std::string& cmd, const std::exception& )> exceptionHandler;
     };
@@ -298,6 +314,15 @@ namespace cli
 
         void Help() const;
 
+        void Enter() 
+        {
+            cli.EnterAction(out);
+
+            if (enterAction) {
+                enterAction(out);
+            }
+        }
+
         void Exit()
         {
             exitAction(out);
@@ -307,6 +332,11 @@ namespace cli
             cli.StoreCommands(cmds);
 
             exit = true; // prevent the prompt to be shown
+        }
+
+        void EnterAction(const std::function<void(std::ostream&)>& action)
+        {
+            enterAction = action;
         }
 
         void ExitAction(const std::function<void(std::ostream&)>& action)
@@ -335,6 +365,7 @@ namespace cli
         Menu* current;
         std::unique_ptr<Menu> globalScopeMenu;
         std::ostream& out;
+        std::function< void(std::ostream&)> enterAction = []( std::ostream& ){};
         std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
         bool exit{ false }; // to prevent the prompt after exit command

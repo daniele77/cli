@@ -58,6 +58,8 @@ public:
     }
     void Start()
     {
+        Enter();
+
         while(!exit)
         {
             Prompt();

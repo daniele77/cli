@@ -370,6 +370,29 @@ BOOST_AUTO_TEST_CASE(Submenus)
     BOOST_CHECK_EQUAL(ExtractContent(oss), "foo");
 }
 
+BOOST_AUTO_TEST_CASE(EnterActions)
+{
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert("int_cmd",
+                     [](ostream &out, int par) { out << par << "\n"; },
+                     "int_cmd help", {"int_par"});
+    rootMenu->Insert(
+        "string_cmd",
+        [](ostream &out, const string &par) { out << par << "\n"; },
+        "string_cmd help", {"string_par"});
+
+    Cli cli(std::move(rootMenu));
+    bool enterActionDone = false;
+
+    cli.EnterAction(
+        [&enterActionDone](std::ostream &) { enterActionDone = true; });
+
+    stringstream oss;
+
+    UserInput(cli, oss, "exit");
+    BOOST_CHECK(enterActionDone);
+}
+
 BOOST_AUTO_TEST_CASE(ExitActions)
 {
     auto rootMenu = make_unique<Menu>("cli");
