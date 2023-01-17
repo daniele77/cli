@@ -64,6 +64,7 @@ public:
         kb(scheduler),
         ih(*this, kb)
     {
+        Enter();
         Prompt();
     }
 

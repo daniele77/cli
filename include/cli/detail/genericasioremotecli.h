@@ -463,6 +463,7 @@ protected:
     void OnConnect() override
     {
         TelnetSession::OnConnect();
+        Enter();
         Prompt();
     }
 
@@ -559,6 +560,12 @@ public:
         cli(_cli),
         historySize(_historySize)
     {}
+
+    void EnterAction(std::function< void(std::ostream&)> action)
+    {
+        enterAction = action;
+    }
+
     void ExitAction( std::function< void(std::ostream&)> action )
     {
         exitAction = action;
@@ -570,6 +577,7 @@ public:
 private:
     Scheduler& scheduler;
     Cli& cli;
+    std::function< void(std::ostream&)> enterAction;
     std::function< void(std::ostream&)> exitAction;
     std::size_t historySize;
 };
