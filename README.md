@@ -298,7 +298,7 @@ ioc.run();
 
 You must provide at least a root menu for your cli:
 
-```
+```C++
 // create a menu (this is the root menu of our cli)
 auto rootMenu = make_unique<Menu>("myprompt");
 
@@ -311,7 +311,7 @@ Cli cli(std::move(rootMenu));
 
 You can add menus to existing menus, to get a hierarchy:
 
-```
+```C++
 auto rootMenu = make_unique<Menu>("myprompt");
 
 auto menuA = make_unique<Menu>("a_prompt");
@@ -368,7 +368,7 @@ The library supports adding commands handler via:
 - `std::function`
 - lambdas
 
-```
+```C++
 
 static void foo(std::ostream& out, int x) { out << x << std::endl; }
 
@@ -387,7 +387,7 @@ myMenu->Insert("lambda", [](std::ostream& out, int x){ out << x << std::endl; } 
 There is no limit to the number of parameters that a command handler can take.
 They can be basic types and `std::string`s
 
-```
+```C++
 myMenu->Insert(
     "mycmd", 
     [](std::ostream& out, int a, double b, const std::string& c, bool d, long e)
@@ -405,7 +405,7 @@ myMenu->Insert(
 
 or they can be custom types overloading the `std::istream << operator`:
 
-```
+```C++
 struct Foo
 {
     friend istream & operator >> (istream &in, Foo& p);
@@ -430,7 +430,7 @@ myMenu->Insert(
 If you need it, you can have a command handlers taking an arbitrary
 number of `std::string` parameters:
 
-```
+```C++
 myMenu->Insert(
     "mycmd", 
     [](std::ostream& out, const std::vector<std::string>& pars)
@@ -442,6 +442,20 @@ myMenu->Insert(
 
 Please note that in this case your command handler must take *only one*
 parameter of type `std::vector<std::string>`.
+
+## Enter and exit actions
+
+You can add an enter action and/or an exit action (for example to print a welcome/goodbye message
+every time a user opens/closes a session, even a remote one):
+
+```C++
+Cli cli(std::move(rootMenu));
+cli.EnterAction(
+    [&enterActionDone](std::ostream& out) { out << "Welcome\n"; });
+cli.ExitAction(
+    [&enterActionDone](std::ostream& out) { out << "Goodbye\n"; });
+```
+
 
 ## License
 

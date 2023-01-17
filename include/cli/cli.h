@@ -194,15 +194,14 @@ namespace cli
 
         void EnterAction(std::ostream& out)
         {
-            if (enterAction) {
+            if (enterAction)
                 enterAction(out);
-            }
         }
 
-        void ExitAction( std::ostream& out )
+        void ExitAction(std::ostream& out)
         {
-            if ( exitAction )
-                exitAction( out );
+            if (exitAction)
+                exitAction(out);
         }
 
         void StdExceptionHandler(std::ostream& out, const std::string& cmd, const std::exception& e)
@@ -318,9 +317,8 @@ namespace cli
         {
             cli.EnterAction(out);
 
-            if (enterAction) {
+            if (enterAction)
                 enterAction(out);
-            }
         }
 
         void Exit()
