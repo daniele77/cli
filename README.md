@@ -178,7 +178,7 @@ In any menu, you can enter:
 - `exit`: to exit the cli
 - `help`: to print the list of the commands available with a description 
 - a submenu name: to enter the submenu
-- the parent menu name: to return to the the parent menu
+- the parent menu name: to return to the parent menu
 - a command in the current menu: to exec the command
 - a command in a submenu (using the full path): to exec the command
 
@@ -235,7 +235,7 @@ because they internally use `boost::asio` and `asio`.
 You should use one of them also if your application uses `asio` in some way.
 
 After setting up your application, you must call `Scheduler::Run()`
-to enter the scheduler loop. Each comamnd handler of the library
+to enter the scheduler loop. Each command handler of the library
 will execute in the thread that called `Scheduler::Run()`.
 
 You can exit the scheduler loop by calling `Scheduler::Stop()`
