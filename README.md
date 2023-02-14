@@ -455,7 +455,38 @@ cli.EnterAction(
 cli.ExitAction(
     [&enterActionDone](std::ostream& out) { out << "Goodbye\n"; });
 ```
+## Unicode
 
+`cli` uses the input and output stream objects provided by the standard library (such as `std::cin` and `std::cout`) by default, so currently `cli` does not have effective support for unicode input and output.
+
+If you want to handle unicode input and output, you need to provide custom i/o unicode aware stream objects derived from `std::istream` or `std::ostream`.
+
+For example, you can use [boost::nowide](https://github.com/boostorg/nowide) as an alternative to implement UTF-8 aware programming in a out-of-box and cross-platform way:
+
+```c++
+#include <boost/nowide/iostream.hpp> // for boost::nowide::cin and boost::nowide::cout
+// other headers...
+
+cli::Cli app{/*init code*/};
+
+// FileSession session{app}; // default
+
+// now, all parameters is in a UTF-8 encoded std::string
+// pass boost::nowide::cin and boost::nowide::cout as parameters(FileSession requires std::istream and std::ostream)
+FileSession session{app, boost::nowide::cin, boost::nowide::cout};
+
+/*....*/
+
+// you can call this command funtion and get UTF-8 encoded input data (p), just use it.
+// boost::noide helps us avoid the trouble
+// caused by inconsistent default code page and encoding of the console under different platforms.
+void a_command_function(std::ostream& os, std::string const& p) {
+ /* implements */
+}
+
+```
+
+Of course, you can also pass stream objects with other capabilities to achieve more customized input and output functions.
 
 ## License
 
