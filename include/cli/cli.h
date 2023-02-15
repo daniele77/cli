@@ -129,7 +129,7 @@ namespace cli
          * @brief Construct a new Cli object having a given root menu that contains the first level commands available.
          * 
          * @param _rootMenu is the @c Menu containing the first level commands available to the user.
-         * @param historyStorage is the policy for the storage of the cli commands history. You must pass an istance of
+         * @param historyStorage is the policy for the storage of the cli commands history. You must pass an instance of
          * a class derived from @c HistoryStorage. The library provides these policies:
          *   - @c VolatileHistoryStorage
          *   - @c FileHistoryStorage it's a persistent history. I.e., the command history is preserved after your application

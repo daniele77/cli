@@ -62,7 +62,7 @@ class Terminal
             << std::string(position, '\b') << newLine
             << afterInput << std::flush;
 
-        // if newLine is shorter then currentLine, we have
+        // if newLine is shorter than currentLine, we have
         // to clear the rest of the string
         if (newLine.size() < currentLine.size())
         {

@@ -40,7 +40,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.2.1] - 2020-08-27
 
- - With Boost >= 1.74 use TS exectuor by default (issue [#79](https://github.com/daniele77/cli/issues/79))
+ - With Boost >= 1.74 use TS executor by default (issue [#79](https://github.com/daniele77/cli/issues/79))
  - Standard and custom exception handler for cli commands (issue [#74](https://github.com/daniele77/cli/issues/74))
 
 ## [1.2.0] - 2020-06-27
