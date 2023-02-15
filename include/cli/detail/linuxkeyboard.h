@@ -88,9 +88,9 @@ public:
     void Stop()
     {
         auto unused = write(shutdownPipe, " ", 1);
-		unused = close(shutdownPipe);
+        unused = close(shutdownPipe);
         static_cast<void>(unused); // silence unused warn
-		shutdownPipe = -1;
+        shutdownPipe = -1;
     }
 
 private:
@@ -132,14 +132,22 @@ private:
         catch(const std::exception&)
         {
             // nothing to do: just exit
-        }        
+        }
+    }
+
+    char GetChar()
+    {
+        char buffer = 0;
+        auto unused = read(0, &buffer, 1);
+        static_cast<void>(unused); // silence unused warn
+        return buffer;
     }
 
     std::pair<KeyType,char> Get()
     {
         is.WaitKbHit();
 
-        int ch = std::getchar();
+        auto ch = GetChar();
         switch(ch)
         {
             case EOF:
@@ -151,14 +159,14 @@ private:
                 return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
             case 27: // symbol
-                ch = std::getchar();
+                ch = GetChar();
                 if ( ch == 91 ) // arrow keys
                 {
-                    ch = std::getchar();
+                    ch = GetChar();
                     switch( ch )
                     {
                         case 51:
-                            ch = std::getchar();
+                            ch = GetChar();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
                             break;
