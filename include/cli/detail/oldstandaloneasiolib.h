@@ -72,6 +72,10 @@ public:
         return work;
     }
 
+    static void Reset(WorkGuard& /*wg*/)
+    {
+    }
+
 };
 
 } // namespace detail

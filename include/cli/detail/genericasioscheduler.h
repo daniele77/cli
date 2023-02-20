@@ -71,7 +71,7 @@ public:
     void Stop()
     {
         if (work)
-            work->reset(); 
+            ASIOLIB::Reset(*work);
         context->stop();
     }
 

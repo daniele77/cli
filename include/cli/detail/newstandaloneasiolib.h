@@ -74,6 +74,12 @@ public:
     {
         return asio::make_work_guard(context);
     }
+
+    static void Reset(WorkGuard& wg)
+    {
+        wg.reset();
+    }
+
 };
 
 } // namespace detail
