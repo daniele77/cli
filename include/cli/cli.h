@@ -433,8 +433,12 @@ namespace cli
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
-        explicit Menu(const std::string& _name, std::string desc = "(menu)") :
-            Command(_name), parent(nullptr), description(std::move(desc)), cmds(std::make_shared<Cmds>())
+        explicit Menu(const std::string& _name, std::string desc = "(menu)", const std::string& _prompt="") :
+            Command(_name),
+            parent(nullptr),
+            description(std::move(desc)),
+            prompt(_prompt.empty() ? _name : _prompt),
+            cmds(std::make_shared<Cmds>())
         {}
 
         template <typename R, typename ... Args>
@@ -505,7 +509,7 @@ namespace cli
 
         std::string Prompt() const
         {
-            return Name();
+            return prompt;
         }
 
         void MainHelp(std::ostream& out)
@@ -574,6 +578,7 @@ namespace cli
 
         Menu* parent{ nullptr };
         const std::string description;
+        const std::string prompt;
         // using shared_ptr instead of unique_ptr to get a weak_ptr
         // for the CmdHandler::Descriptor
         using Cmds = std::vector<std::shared_ptr<Command>>;

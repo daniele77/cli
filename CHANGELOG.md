@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Fix missing echo after paste of command (issue [#185](https://github.com/daniele77/cli/issues/185))
  - Fix asio::io_context::work has no member named reset in old asio lib (issue [#188](https://github.com/daniele77/cli/issues/188))
  - Shown in the `complete` and `pluginmanager` examples that the issue #96 was already fixed (issue [#96](https://github.com/daniele77/cli/issues/96))
+ - Allow custom prompt for menu (issue [#101](https://github.com/daniele77/cli/issues/101))
 
 ## [2.0.2] - 2022-08-18
 

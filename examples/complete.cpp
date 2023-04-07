@@ -214,7 +214,11 @@ int main()
                 }
         );
 
-        auto subMenu = make_unique<Menu>("sub", "Enter a submenu");
+        // a submenu
+        // first parameter is the command to enter the submenu
+        // second parameter (optional) is the description of the menu in the help
+        // third parameter (optional) is the prompt of the menu (default is the name of the command)
+        auto subMenu = make_unique<Menu>("sub", "Enter a submenu", "submenu");
         subMenu->Insert(
                 "hello",
                 [](std::ostream& out){ out << "Hello, submenu world\n"; },
