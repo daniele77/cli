@@ -433,7 +433,7 @@ namespace cli
 
         Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
 
-        explicit Menu(const std::string& _name, std::string  desc = "(menu)") :
+        explicit Menu(const std::string& _name, std::string desc = "(menu)") :
             Command(_name), parent(nullptr), description(std::move(desc)), cmds(std::make_shared<Cmds>())
         {}
 

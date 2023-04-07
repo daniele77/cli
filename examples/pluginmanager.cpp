@@ -164,7 +164,7 @@ class Arithmetic : public RegisteredPlugin<Arithmetic, ArithmeticName>
 public:
     explicit Arithmetic(Menu* menu)
     {
-        auto subMenu = make_unique<Menu>(Name());
+        auto subMenu = make_unique<Menu>(Name(), "Enter the " + Name() + " plugin menu");
         subMenu->Insert(
                 "add", {"first_term", "second_term"},
                 [](std::ostream& out, int x, int y)
@@ -208,7 +208,7 @@ class Strings : public RegisteredPlugin<Strings, StringsName>
 public:
     explicit Strings(Menu* menu)
     {
-        auto subMenu = make_unique<Menu>(Name());
+        auto subMenu = make_unique<Menu>(Name(), "Enter the " + Name() + " plugin menu");
         subMenu->Insert(
                 "reverse", {"string_to_revert"},
                 [](std::ostream& out, const string& arg)

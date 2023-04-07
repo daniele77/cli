@@ -214,7 +214,7 @@ int main()
                 }
         );
 
-        auto subMenu = make_unique<Menu>("sub");
+        auto subMenu = make_unique<Menu>("sub", "Enter a submenu");
         subMenu->Insert(
                 "hello",
                 [](std::ostream& out){ out << "Hello, submenu world\n"; },
@@ -224,7 +224,7 @@ int main()
                 [](std::ostream& out){ out << "This is a sample!\n"; },
                 "Print a demo string" );
 
-        auto subSubMenu = make_unique<Menu>("subsub");
+        auto subSubMenu = make_unique<Menu>("subsub", "Enter a submenu of second level");
             subSubMenu->Insert(
                 "hello",
                 [](std::ostream& out){ out << "Hello, subsubmenu world\n"; },
