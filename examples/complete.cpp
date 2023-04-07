@@ -211,8 +211,8 @@ int main()
                 {
                     colorCmd.Remove();
                     nocolorCmd.Remove();
-                }
-        );
+                },
+                "Remove both color and nocolor commands from the menu" );
 
         // a submenu
         // first parameter is the command to enter the submenu

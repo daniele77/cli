@@ -115,7 +115,6 @@ namespace cli
     class Cli
     {
 
-
     public:
         ~Cli() = default;
         // disable value semantics
