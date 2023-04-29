@@ -97,7 +97,9 @@ class Terminal
                 // go back to the previous char
                 out << '\b';
                 // output the rest of the line
-                out << std::string(currentLine.begin() + pos, currentLine.end());
+                out << beforeInput
+                    << std::string(currentLine.begin() + pos, currentLine.end())
+                    << afterInput;
                 // remove last char
                 out << ' ';
                 // go back to the original position
