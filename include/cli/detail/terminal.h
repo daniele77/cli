@@ -126,6 +126,36 @@ class Terminal
                     ++position;
                 }
                 break;
+            case KeyType::transpose_chars:
+                out << afterInput << std::flush;
+                break;
+            case KeyType::unix_line_discard:
+            {
+                if (position == 0)
+                    break;
+
+                const auto current_len = currentLine.size();
+                // remove chars before the cursor from buffer
+                currentLine.erase(currentLine.begin(), currentLine.begin() + position);
+                // go back to the beginning of the line
+                out << std::string(position, '\b');
+                // output the rest of the line
+                out << beforeInput << currentLine << afterInput;
+                // remove rest chars
+                out << std::string(position, ' ');
+                // go back to the beginning of the line
+                out << std::string(current_len, '\b') << std::flush;
+                position = 0;
+                break;
+            }
+            case KeyType::kill_line:
+                break;
+            case KeyType::unix_word_rubout:
+                break;
+            case KeyType::clear_screen:
+                break;
+            case KeyType::reverse_search_history:
+                break;
             case KeyType::ret:
             {
                 out << "\r\n";
