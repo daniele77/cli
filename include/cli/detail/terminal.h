@@ -130,10 +130,21 @@ class Terminal
                 }
                 break;
             case KeyType::transpose_chars:
+            {
                 if (currentLine.size() < 2 || position == 0)
+                    // TODO: bell?
                     break;
-                // TODO (guo)
+                // if position is at the end, transpose the characters before position
+                auto tr_pos = position == currentLine.size()? position-1: position;
+                // XXX may not work with unicode
+                out << std::string(position - tr_pos + 1, '\b')
+                    << beforeInput
+                    << currentLine[tr_pos] << currentLine[tr_pos-1]
+                    << afterInput << std::flush;
+                std::swap(currentLine[tr_pos], currentLine[tr_pos-1]);
+                position = tr_pos + 1;
                 break;
+            }
             case KeyType::unix_line_discard:
             {
                 if (position == 0)
