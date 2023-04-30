@@ -46,6 +46,7 @@ enum class Symbol
     up,
     down,
     tab,
+    clrscr,
     eof
 };
 
@@ -129,7 +130,9 @@ class Terminal
                 }
                 break;
             case KeyType::transpose_chars:
-                out << afterInput << std::flush;
+                if (currentLine.size() < 2 || position == 0)
+                    break;
+                // TODO (guo)
                 break;
             case KeyType::unix_line_discard:
             {
@@ -151,12 +154,21 @@ class Terminal
                 break;
             }
             case KeyType::kill_line:
+                if (position == currentLine.size())
+                    break;
+                // TODO (guo)
                 break;
             case KeyType::unix_word_rubout:
+                // TODO (guo)
                 break;
             case KeyType::clear_screen:
-                break;
+                // TODO: get the correct escape sequence for current terminal using tigetstr/tgetstr
+                // VT100 escape sequence for clear screen ond move cursor to top left corner
+                out << "\033[H\033[2J" << std::flush;
+                // prompt and current line will be printed in NewCommand()
+                return std::make_pair(Symbol::clrscr, std::string{});
             case KeyType::reverse_search_history:
+                // TODO (guo)
                 break;
             case KeyType::ret:
             {
