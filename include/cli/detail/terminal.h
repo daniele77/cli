@@ -47,6 +47,7 @@ enum class Symbol
     down,
     tab,
     clrscr,
+    reverse_search_history,
     eof
 };
 
@@ -132,7 +133,7 @@ class Terminal
             case KeyType::transpose_chars:
             {
                 if (currentLine.size() < 2 || position == 0)
-                    // TODO: bell?
+                    // TODO: ring bell?
                     break;
                 // if position is at the end, transpose the characters before position
                 auto tr_pos = position == currentLine.size()? position-1: position;
@@ -145,32 +146,35 @@ class Terminal
                 position = tr_pos + 1;
                 break;
             }
-            case KeyType::unix_line_discard:
+            case KeyType::unix_word_rubout:
             {
                 if (position == 0)
                     break;
-
-                const auto current_len = currentLine.size();
-                // remove chars before the cursor from buffer
-                currentLine.erase(currentLine.begin(), currentLine.begin() + position);
-                // go back to the beginning of the line
-                out << std::string(position, '\b');
-                // output the rest of the line
-                out << beforeInput << currentLine << afterInput;
-                // remove rest chars
-                out << std::string(position, ' ');
-                // go back to the beginning of the line
-                out << std::string(current_len, '\b') << std::flush;
-                position = 0;
+                int kill_index = position - 1;
+                while (kill_index >= 0 && std::isspace(currentLine[kill_index]))
+                    --kill_index;
+                while (kill_index >= 0 && !std::isspace(currentLine[kill_index]))
+                    --kill_index;
+                KillText(kill_index + 1, position - kill_index - 1);
                 break;
             }
-            case KeyType::kill_line:
-                if (position == currentLine.size())
-                    break;
-                // TODO (guo)
+            case KeyType::unix_line_discard:
+                KillText(0, position);
                 break;
-            case KeyType::unix_word_rubout:
-                // TODO (guo)
+            case KeyType::kill_line:
+                KillText(position, currentLine.size() - position);
+                break;
+            case KeyType::yank:
+                // output kill buffer and the rest of the string:
+                out << beforeInput
+                    << killBuffer
+                    << std::string(currentLine.begin() + position, currentLine.end())
+                    << afterInput;
+                // go back to the original position
+                out << std::string(currentLine.size() - position, '\b') << std::flush;
+                // update the buffer and cursor position:
+                currentLine.insert(position, killBuffer);
+                position += killBuffer.size();
                 break;
             case KeyType::clear_screen:
                 // TODO: get the correct escape sequence for current terminal using tigetstr/tgetstr
@@ -179,8 +183,7 @@ class Terminal
                 // prompt and current line will be printed in NewCommand()
                 return std::make_pair(Symbol::clrscr, std::string{});
             case KeyType::reverse_search_history:
-                // TODO (guo)
-                break;
+                return std::make_pair(Symbol::reverse_search_history, currentLine);
             case KeyType::ret:
             {
                 out << "\r\n";
@@ -258,8 +261,33 @@ class Terminal
 
   private:
     std::string currentLine;
+    std::string killBuffer; // TODO: implement kill ring other than buffer
     std::size_t position = 0; // next writing position in currentLine
     std::ostream &out;
+    void KillText(const size_t index, const size_t npos)
+    {
+        if (npos == 0 || position < index) {
+            // TODO: ring bell?
+            return;
+        }
+        // go back to the beginning of the kill region
+        out << std::string(position - index, '\b');
+        // output the rest of the line
+        out << beforeInput
+            << std::string(currentLine.begin() + index + npos, currentLine.end())
+            << afterInput;
+        // remove rest chars
+        out << std::string(npos, ' ');
+        // go back to the beginning of the kill region
+        out << std::string(currentLine.size() - index, '\b') << std::flush;
+
+        // save kill region to buffer
+        killBuffer = currentLine.substr(index, npos);
+        // remove kill region
+        currentLine.erase(currentLine.begin() + index,
+                          currentLine.begin() + index + npos);
+        position = index;
+    }
 };
 
 } // namespace detail

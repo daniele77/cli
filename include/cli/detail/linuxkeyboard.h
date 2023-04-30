@@ -200,6 +200,8 @@ private:
                 return std::make_pair(KeyType::kill_line,' ');
             case 23: // C-w
                 return std::make_pair(KeyType::unix_word_rubout,' ');
+            case 25: // C-y
+                return std::make_pair(KeyType::yank,' ');
             case 12: // C-l
                 return std::make_pair(KeyType::clear_screen,' ');
             case 18: // C-r

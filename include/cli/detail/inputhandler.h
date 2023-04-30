@@ -125,6 +125,11 @@ private:
                 terminal.SetLine(terminal.GetLine());
                 break;
             }
+            case Symbol::reverse_search_history:
+            {
+                // TODO
+                break;
+            }
         }
 
     }

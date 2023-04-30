@@ -41,7 +41,7 @@ namespace detail
 
 enum class KeyType { ascii, up, down, left, right, backspace, canc, home, end, ret, eof,
                      transpose_chars, unix_line_discard, kill_line, unix_word_rubout,
-                     clear_screen, reverse_search_history, ignored };
+                     yank, clear_screen, reverse_search_history, ignored };
 
 class InputDevice
 {
