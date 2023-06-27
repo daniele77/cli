@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(BoostAsioNonOwner)
     detail::BoostAsioLib::ContextType ioc;
     BoostAsioScheduler scheduler(ioc);
     bool done = false;
-    scheduler.Post( [&done](){ done = true; } );
+    scheduler.Post( [&done]() noexcept { done = true; } );
     ioc.run_one();
     BOOST_CHECK(done);
 }
