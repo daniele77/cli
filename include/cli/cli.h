@@ -362,8 +362,8 @@ namespace cli
         Menu* current;
         std::unique_ptr<Menu> globalScopeMenu;
         std::ostream& out;
-        std::function< void(std::ostream&)> enterAction = []( std::ostream& ){};
-        std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
+        std::function< void(std::ostream&)> enterAction = []( std::ostream& ) noexcept {};
+        std::function< void(std::ostream&)> exitAction = []( std::ostream& ) noexcept {};
         detail::History history;
         bool exit{ false }; // to prevent the prompt after exit command
     };

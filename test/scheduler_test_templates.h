@@ -38,7 +38,7 @@ void SchedulingTest()
 {
     S scheduler;
     bool done = false;
-    scheduler.Post( [&done](){ done = true; } );
+    scheduler.Post( [&done]() noexcept { done = true; } );
     scheduler.ExecOne();
     BOOST_CHECK(done);
 }
@@ -56,7 +56,7 @@ void SameThreadTest()
         {
             postThreadId = this_thread::get_id();
             scheduler.Post( 
-                [&runThreadId]()
+                [&runThreadId]() noexcept
                 { 
                     runThreadId = this_thread::get_id();
                 }

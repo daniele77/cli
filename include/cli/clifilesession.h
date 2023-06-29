@@ -50,7 +50,7 @@ public:
         if (!_in.good()) throw std::invalid_argument("istream invalid");
         if (!_out.good()) throw std::invalid_argument("ostream invalid");
         ExitAction(
-            [this](std::ostream&)
+            [this](std::ostream&) noexcept
             {
                 exit = true;
             }

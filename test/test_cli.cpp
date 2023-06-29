@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(EnterActions)
     bool enterActionDone = false;
 
     cli.EnterAction(
-        [&enterActionDone](std::ostream &) { enterActionDone = true; });
+        [&enterActionDone](std::ostream &) noexcept { enterActionDone = true; });
 
     stringstream oss;
 
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(ExitActions)
 
     Cli cli(move(rootMenu));
     bool exitActionDone = false;
-    cli.ExitAction([&](std::ostream&){ exitActionDone=true; });
+    cli.ExitAction([&](std::ostream&) noexcept { exitActionDone=true; });
 
     stringstream oss;
 
@@ -425,7 +425,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
 
     // std exception type, custom handler
     bool excActionDone = false;
-    cli.StdExceptionHandler( [&](std::ostream&, const std::string&, const std::exception&){ excActionDone = true; } );
+    cli.StdExceptionHandler( [&](std::ostream&, const std::string&, const std::exception&) noexcept { excActionDone = true; } );
     BOOST_CHECK_NO_THROW( UserInput(cli, oss, "stdexception") );
     BOOST_CHECK(excActionDone);
 

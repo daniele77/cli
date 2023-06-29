@@ -125,14 +125,12 @@ public:
     Server& operator = ( const Server& ) = delete;
 
     Server(typename ASIOLIB::ContextType& ios, unsigned short port) :
-        acceptor(ios, asiolib::ip::tcp::endpoint(asiolib::ip::tcp::v4(), port)),
-        socket(ios)
+        acceptor(ios, asiolib::ip::tcp::endpoint(asiolib::ip::tcp::v4(), port))
     {
         Accept();
     }
     Server(typename ASIOLIB::ContextType& ios, std::string address, unsigned short port) :
-        acceptor(ios, asiolib::ip::tcp::endpoint(ASIOLIB::IpAddressFromString(address), port)),
-        socket(ios)
+        acceptor(ios, asiolib::ip::tcp::endpoint(ASIOLIB::IpAddressFromString(address), port))
     {
         Accept();
     }
@@ -142,15 +140,15 @@ public:
 private:
     void Accept()
     {
-        acceptor.async_accept(socket, [this](asiolibec::error_code ec)
+        acceptor.async_accept([this](asiolibec::error_code ec, asiolib::ip::tcp::socket socket)
             {
                 if (!ec) CreateSession(std::move(socket))->Start();
                 Accept();
             });
     }
     asiolib::ip::tcp::acceptor acceptor;
-    asiolib::ip::tcp::socket socket;
 };
+
 
 } // namespace detail
 } // namespace cli
