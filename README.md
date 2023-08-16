@@ -403,7 +403,7 @@ myMenu->Insert(
     } );
 ```
 
-or they can be custom types overloading the `std::istream << operator`:
+Or they can be custom types by overloading the `std::istream::operator>>`:
 
 ```C++
 struct Foo
