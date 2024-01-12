@@ -173,7 +173,7 @@ protected:
     for a list of telnet options
     */
 
-    enum
+    enum : unsigned char
     {
         SE = '\x0F0',                  // End of subnegotiation parameters.
         NOP = '\x0F1',                 // No operation.
@@ -225,7 +225,7 @@ protected:
 
 private:
 
-    void Consume(signed char c)
+    void Consume(unsigned char c)
     {
         if (escape)
         {
@@ -244,7 +244,7 @@ private:
         }
     }
 
-    void Data(signed char c)
+    void Data(unsigned char c)
     {
         switch(state)
         {
