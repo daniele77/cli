@@ -135,9 +135,10 @@ private:
         }
     }
 
-    char GetChar()
+    int GetChar()
     {
-        char buffer = 0;
+        // purposely cast to unsigned char to ensure in-band byte value is 0-255 before casting to int
+        unsigned char buffer = 0;
         auto unused = read(0, &buffer, 1);
         static_cast<void>(unused); // silence unused warn
         return buffer;
@@ -215,4 +216,3 @@ private:
 } // namespace cli
 
 #endif // CLI_DETAIL_LINUXKEYBOARD_H_
-
