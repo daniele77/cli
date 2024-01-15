@@ -173,7 +173,7 @@ protected:
     for a list of telnet options
     */
 
-    enum : unsigned char
+    enum
     {
         SE = '\x0F0',                  // End of subnegotiation parameters.
         NOP = '\x0F1',                 // No operation.
@@ -219,13 +219,14 @@ protected:
 
     void OnDataReceived(const std::string& _data) override
     {
-        for (auto c: _data)
+        // purposely cast to unsigned char to ensure in-band byte value is 0-255 before casting to int
+        for (unsigned char c: _data)
             Consume(c);
     }
 
 private:
 
-    void Consume(unsigned char c)
+    void Consume(int c)
     {
         if (escape)
         {
@@ -244,7 +245,7 @@ private:
         }
     }
 
-    void Data(unsigned char c)
+    void Data(int c)
     {
         switch(state)
         {
@@ -273,7 +274,7 @@ private:
         }
     }
 
-    void Command(char c)
+    void Command(int c)
     {
 /*
         switch (static_cast<int>( c & 0xFF ))
@@ -341,8 +342,8 @@ private:
         }
     }
 
-    void RxWill(char c)
-    { 
+    void RxWill(int c)
+    {
         #ifdef CLI_TELNET_TRACE
         std::cout << "will " << static_cast<int>(c) << std::endl;
         #endif
@@ -351,23 +352,23 @@ private:
             case SUPPRESS_GO_AHEAD:
                 SendIacCmd(WILL, SUPPRESS_GO_AHEAD);
                 break;
-            case NEGOTIATE_ABOUT_WIN_SIZE: 
+            case NEGOTIATE_ABOUT_WIN_SIZE:
                 SendIacCmd(DO, NEGOTIATE_ABOUT_WIN_SIZE);
                 break;
             default:
                 SendIacCmd(DONT, c);
         };
     }
-    void RxWont(char c)
-    { 
+    void RxWont(int c)
+    {
         #ifdef CLI_TELNET_TRACE
         std::cout << "wont " << static_cast<int>(c) << std::endl;
         #else
         (void)c;
         #endif
     }
-    void RxDo(char c)
-    { 
+    void RxDo(int c)
+    {
         #ifdef CLI_TELNET_TRACE
         std::cout << "do " << static_cast<int>(c) << std::endl;
         #endif
@@ -383,7 +384,7 @@ private:
                 SendIacCmd(WONT, c);
         };
     }
-    void RxDont(char c)
+    void RxDont(int c)
     {
         #ifdef CLI_TELNET_TRACE
         std::cout << "dont " << static_cast<int>(c) << std::endl;
@@ -391,15 +392,15 @@ private:
         (void)c;
         #endif
     }
-    void RxSub(char c)
-    { 
+    void RxSub(int c)
+    {
         #ifdef CLI_TELNET_TRACE
         std::cout << "sub: " << static_cast<int>(c) << std::endl;
         #else
         (void)c;
         #endif
     }
-    void SendIacCmd(char action, char op)
+    void SendIacCmd(int action, int op)
     {
         std::string answer("\x0FF\x000\x000", 3);
         answer[1] = action;
@@ -407,7 +408,7 @@ private:
         this -> OutStream() << answer << std::flush;
     }
 protected:
-    virtual void Output(signed char c)
+    virtual void Output(int c)
     {
         #ifdef CLI_TELNET_TRACE
         std::cout << "data: " << static_cast<int>(c) << std::endl;
@@ -467,14 +468,14 @@ protected:
         Prompt();
     }
 
-    void Output(signed char c) override // NB: C++ does not specify wether char is signed or unsigned
+    void Output(int c) override
     {
         switch(step)
         {
             case Step::_1:
                 switch( c )
                 {
-                    case EOF:
+                    case EOF: // -1 is out of band (not a key press)
                     case 4:  // EOT
                         Notify(std::make_pair(KeyType::eof,' ')); break;
                     case 8: // Backspace
@@ -587,4 +588,3 @@ private:
 } // namespace cli
 
 #endif // CLI_DETAIL_GENERICASIOREMOTECLI_H_
-
