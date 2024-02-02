@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+ - Fix issue with remote session on ARM platforms (issue [#220](https://github.com/daniele77/cli/issues/220))
+
 ## [2.1.0] - 2023-06-29
 
  - Nest namespace rang (issue [#167](https://github.com/daniele77/cli/issues/167))
