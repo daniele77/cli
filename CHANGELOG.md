@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Unreleased
 
  - Fix issue with remote session on ARM platforms (issue [#220](https://github.com/daniele77/cli/issues/220))
+ - Custom handler for wrong commands (issue [#223](https://github.com/daniele77/cli/issues/223))
 
 ## [2.1.0] - 2023-06-29
 

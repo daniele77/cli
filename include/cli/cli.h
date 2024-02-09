@@ -162,12 +162,24 @@ namespace cli
          * @brief Add an handler that will be called when a @c std::exception (or derived) is thrown inside a command handler.
          * If an exception handler is not set, the exception will be logget on the session output stream.
          * 
-         * @param handler the function to be called when an exception is thrown, taking a @c std::ostream& parameter to write on that session console
-         * and the exception thrown.
+         * @param handler the function to be called when an exception is thrown, taking a @c std::ostream& parameter to write on that session console,
+         * the command entered and the exception thrown.
          */
         void StdExceptionHandler(const std::function< void(std::ostream&, const std::string& cmd, const std::exception&) >& handler)
         {
             exceptionHandler = handler;
+        }
+
+        /**
+         * @brief Add an handler that will be called when the user enter a wrong command (not existing command or having wrong parameters).
+         * If an handler is not set, the library will print the message "wrong command" on the console.
+         * 
+         * @param handler the function to be called when the user enter a wrong command, taking a @c std::ostream& parameter to write on that session console
+         * and the command entered.
+         */
+        void WrongCommandHandler(const std::function< void(std::ostream&, const std::string& cmd) >& handler)
+        {
+            wrongCmdHandler = handler;
         }
 
         /**
@@ -211,6 +223,14 @@ namespace cli
                 out << e.what() << '\n';
         }
 
+        void WrongCommandHandler(std::ostream& out, const std::string& cmd)
+        {
+            if (wrongCmdHandler)
+                wrongCmdHandler(out, cmd);
+            else
+                out << "wrong command: " << cmd << '\n';
+        }
+
         void StoreCommands(const std::vector<std::string>& cmds)
         {
             globalHistoryStorage->Store(cmds);
@@ -227,6 +247,7 @@ namespace cli
         std::function<void(std::ostream&)> enterAction;
         std::function<void(std::ostream&)> exitAction;
         std::function<void(std::ostream&, const std::string& cmd, const std::exception& )> exceptionHandler;
+        std::function<void(std::ostream&, const std::string& cmd)> wrongCmdHandler;
     };
 
     // ********************************************************************
@@ -797,8 +818,8 @@ namespace cli
             // root menu recursive cmds check
             if (!found) found = current->ScanCmds(strs, *this);
 
-            if (!found) // error msg if not found
-                out << "wrong command: " << cmd << '\n';
+            if (!found) // wrong command handler if not found
+                cli.WrongCommandHandler(out, cmd);
         }
         catch(const std::exception& e)
         {

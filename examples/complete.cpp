@@ -248,9 +248,18 @@ int main()
         cli.StdExceptionHandler(
             [](std::ostream& out, const std::string& cmd, const std::exception& e)
             {
-                out << "Exception caught in cli handler: "
+                out << "Exception caught in CLI handler: "
                     << e.what()
-                    << " handling command: "
+                    << " while handling command: "
+                    << cmd
+                    << ".\n";
+            }
+        );
+        // custom handler for unknown commands
+        cli.WrongCommandHandler(
+            [](std::ostream& out, const std::string& cmd)
+            {
+                out << "Unknown command or incorrect parameters: "
                     << cmd
                     << ".\n";
             }

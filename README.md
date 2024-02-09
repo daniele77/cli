@@ -455,6 +455,43 @@ cli.EnterAction(
 cli.ExitAction(
     [&enterActionDone](std::ostream& out) { out << "Goodbye\n"; });
 ```
+
+## Custom Handler for Unknown Commands
+
+You can modify the default behavior of the library for cases where
+the user enters an unknown command or its parameters do not match:
+
+```C++
+Cli cli(std::move(rootMenu));
+cli.WrongCommandHandler(
+    [](std::ostream& out, const std::string& cmd)
+    {
+        out << "Unknown command or incorrect parameters: "
+            << cmd
+            << ".\n";
+    }
+);
+```
+
+## Standard Exception Custom Handler
+
+You can handle cases where an exception is thrown inside a command handler
+by registering a specific handler:
+
+```C++
+Cli cli(std::move(rootMenu));
+cli.StdExceptionHandler(
+    [](std::ostream& out, const std::string& cmd, const std::exception& e)
+    {
+        out << "Exception caught in CLI handler: "
+            << e.what()
+            << " while handling command: "
+            << cmd
+            << ".\n";
+    }
+);
+```
+
 ## Unicode
 
 `cli` uses the input and output stream objects provided by the standard library (such as `std::cin` and `std::cout`) by default, so currently `cli` does not have effective support for unicode input and output.
