@@ -31,6 +31,7 @@ To migrate your application to new `cli` version, see the section
 
 * From [GitHub](https://github.com/daniele77/cli/releases)
 * Using [Vcpkg](https://github.com/Microsoft/vcpkg)
+* Using [Conan](https://conan.io/center/recipes/cli)
 
 ## Dependencies
 

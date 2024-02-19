@@ -334,11 +334,11 @@ int main()
     }
     catch (const std::exception& e)
     {
-        cerr << "Exception caugth in main: " << e.what() << '\n';
+        cerr << "Exception caught in main: " << e.what() << '\n';
     }
     catch (...)
     {
-        cerr << "Unknown exception caugth in main.\n";
+        cerr << "Unknown exception caught in main.\n";
     }
     return -1;
 }
