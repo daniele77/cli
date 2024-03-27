@@ -499,6 +499,7 @@ namespace cli
         {
             if (!IsEnabled())
                 return false;
+            assert(!cmdLine.empty());
             if (cmdLine[0] == Name())
             {
                 if (cmdLine.size() == 1)
@@ -517,6 +518,14 @@ namespace cli
             return false;
         }
 
+        bool Exec(CliSession& session)
+        {
+            if (!IsEnabled())
+                return false;
+            session.Current(this);
+            return true;
+        }
+
         bool ScanCmds(const std::vector<std::string>& cmdLine, CliSession& session)
         {
             if (!IsEnabled())
@@ -524,6 +533,9 @@ namespace cli
             for (auto& cmd: *cmds)
                 if (cmd->Exec(cmdLine, session))
                     return true;
+            assert(!cmdLine.empty());
+            if (parent && cmdLine[0] == "..")
+                return parent->Exec(session);
             return (parent && parent->Exec(cmdLine, session));
         }
 
