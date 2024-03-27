@@ -583,8 +583,8 @@ namespace cli
                 }
                 if (parent != nullptr)
                 {
-                    auto cc = parent->GetCompletionRecursive(rest);
-                    for (const auto& c: cc)
+                    auto cs = parent->GetCompletionRecursive(rest);
+                    for (const auto& c: cs)
                         result.push_back(Name() + ' ' + c); // concat submenu with command
                 }
                 return result;
