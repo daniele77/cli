@@ -513,6 +513,7 @@ namespace cli
                     std::vector<std::string > subCmdLine(cmdLine.begin()+1, cmdLine.end());
                     for (auto& cmd: *cmds)
                         if (cmd->Exec( subCmdLine, session )) return true;
+                    return (parent && parent->Exec(subCmdLine, session));
                 }
             }
             return false;
@@ -589,6 +590,12 @@ namespace cli
                 for (const auto& cmd: *cmds)
                 {
                     auto cs = cmd->GetCompletionRecursive(rest);
+                    for (const auto& c: cs)
+                        result.push_back(Name() + ' ' + c); // concat submenu with command
+                }
+                if (parent != nullptr)
+                {
+                    auto cs = parent->GetCompletionRecursive(rest);
                     for (const auto& c: cs)
                         result.push_back(Name() + ' ' + c); // concat submenu with command
                 }
