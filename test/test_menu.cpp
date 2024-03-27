@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK_EQUAL_COLLECTIONS(completions.begin(), completions.end(), expected.begin(), expected.end());
 
     completions = menu.GetCompletions("submenu");
-    expected = {"submenu subsubmenu", "submenu foo"};
+    expected = {"submenu subsubmenu", "submenu foo", "submenu menu"};
     BOOST_CHECK_EQUAL_COLLECTIONS(completions.begin(), completions.end(), expected.begin(), expected.end());
 
 /*
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK_EQUAL_COLLECTIONS(completions.begin(), completions.end(), expected.begin(), expected.end());
 
     completions = menu.GetCompletionRecursive("menu submenu");
-    expected = {"menu submenu subsubmenu", "menu submenu foo"};
+    expected = {"menu submenu subsubmenu", "menu submenu foo", "menu submenu menu"};
     BOOST_CHECK_EQUAL_COLLECTIONS(completions.begin(), completions.end(), expected.begin(), expected.end());
 }
 
