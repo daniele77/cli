@@ -497,34 +497,12 @@ namespace cli
 
         bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) override
         {
-            if (!IsEnabled())
-                return false;
-            assert(!cmdLine.empty());
-            if (cmdLine[0] == Name())
-            {
-                if (cmdLine.size() == 1)
-                {
-                    session.Current(this);
-                    return true;
-                }
-                else
-                {
-                    // check also for subcommands
-                    std::vector<std::string > subCmdLine(cmdLine.begin()+1, cmdLine.end());
-                    for (auto& cmd: *cmds)
-                        if (cmd->Exec( subCmdLine, session )) return true;
-                    return (parent && parent->Exec(subCmdLine, session));
-                }
-            }
-            return false;
+            return HandleCommand({Name()}, cmdLine, session);
         }
 
-        bool Exec(CliSession& session)
+        bool ExecParent(const std::vector<std::string>& cmdLine, CliSession& session)
         {
-            if (!IsEnabled())
-                return false;
-            session.Current(this);
-            return true;
+            return HandleCommand({Name(), ".."}, cmdLine, session);
         }
 
         bool ScanCmds(const std::vector<std::string>& cmdLine, CliSession& session)
@@ -535,9 +513,7 @@ namespace cli
                 if (cmd->Exec(cmdLine, session))
                     return true;
             assert(!cmdLine.empty());
-            if (parent && cmdLine[0] == "..")
-                return parent->Exec(session);
-            return (parent && parent->Exec(cmdLine, session));
+            return (parent && parent->ExecParent(cmdLine, session));
         }
 
         std::string Prompt() const
@@ -605,6 +581,55 @@ namespace cli
         }
 
     private:
+
+        /**
+         * Handles a command from the user input.
+         *
+         * This function checks if the first element of the `cmdLine` vector matches any of the
+         * valid commands listed in `cmdNames`. If it does, it performs the following actions:
+         *   - If the `cmdLine` is of length 1 (only the command itself), it sets the current
+         *     session to this object (`session.Current(this)`) and returns true.
+         *   - If the `cmdLine` is longer (includes subcommands), it iterates through registered
+         *     subcommands (`*cmds`) and calls their `Exec` function with the subcommand arguments
+         *     (`subCmdLine`) and the session (`session`). If any subcommand successfully handles
+         *     the command, it returns true.
+         *   - If no subcommand handles the command and a parent object (`parent`) is set, it
+         *     calls the parent's `ExecParent` function with the subcommand arguments and the
+         *     session.
+         *
+         * The function returns false if the command is not found, not enabled, or no subcommand or
+         * parent can handle it.
+         *
+         * @param cmdNames  - List of valid command names.
+         * @param cmdLine   - User input divided into tokens (command and arguments).
+         * @param session   - Reference to the current CliSession object.
+         * @return true if the command is handled successfully, false otherwise.
+         */
+        bool HandleCommand(const std::vector<std::string>& cmdNames, const std::vector<std::string>& cmdLine, CliSession& session)
+        {
+            if (!IsEnabled())
+                return false;
+
+            assert(!cmdLine.empty());
+
+            if (std::find(cmdNames.begin(), cmdNames.end(), cmdLine[0]) != cmdNames.end())
+            {
+                if (cmdLine.size() == 1)
+                {
+                    session.Current(this);
+                    return true;
+                }
+                else
+                {
+                    // check also for subcommands
+                    std::vector<std::string > subCmdLine(cmdLine.begin()+1, cmdLine.end());
+                    for (auto& cmd: *cmds)
+                        if (cmd->Exec( subCmdLine, session )) return true;
+                    return (parent && parent->ExecParent(subCmdLine, session));
+                }
+            }
+            return false;
+        }
 
         template <typename F, typename R, typename ... Args>
         CmdHandler Insert(const std::string& name, const std::string& help, const std::vector<std::string>& parDesc, F& f, R (F::*)(std::ostream& out, Args...) const);
