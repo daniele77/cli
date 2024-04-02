@@ -164,36 +164,36 @@ of the library in this way:
 
 ## CLI usage
 
-### Commands and shortcuts
-
-At the start of your  application, cli is presenting a prompt with the
+At the start of your application, the CLI presents a prompt with the
 name you provided in the `Cli` constructor.
-This means you're in the root menu.
+This indicates you're in the root menu.
 
-To enter in a submenu, just type the submenu name:
-you should see the prompt change to reflect the name of the current submenu.
+### Navigation
 
-To go back to the parent menu, you must enter the name of the parent menu.
+- **Enter a submenu:** Type the submenu name to enter it.
+  The prompt will change to reflect the current submenu.
+- **Go back to parent menu:** Type the name of the parent menu or `..` to return.
+- **Navigate history:** Use up and down arrow keys to navigate through previously entered commands.
+- **Exit:** Type `exit` to terminate the CLI application.
 
-In any menu, you can enter:
-- `exit`: to exit the cli
-- `help`: to print the list of the commands available with a description 
-- a submenu name: to enter the submenu
-- the parent menu name: to return to the parent menu
-- a command in the current menu: to exec the command
-- a command in a submenu (using the full path): to exec the command
+### Commands in any menu
 
-You can also use:
-- up and down arrow keys: to navigate the history of commands
-- tab key: to autocomplete the command / menu
+- `help`: Prints a list of available commands with descriptions.
+- **Command execution:**
+    - **Current menu:** Enter the name of a command available in the current menu to execute it.
+    - **Submenu (full path):** Specify the complete path (separated by spaces) to a command within a submenu to execute it.
+
+### Autocompletion
+
+Use the Tab key to get suggestions for completing command or menu names as you type.
 
 ### Parameter parsing
 
-The cli interpreter can manage correctly sentences using quote (') and double quote (").
-Any character (spaces too) comprises between quotes or double quotes are considered as a single parameter of a command.
-The characters ' and " can be used inside a command parameter by escaping them with a backslash.
+The CLI interpreter can handle sentences using single quotes (`'`) and double quotes (`"`).
+Any character (including spaces) enclosed within quotes is considered a single parameter for a command.
+You can use quotes within parameters by escaping them with a backslash (`\`).
 
-Some example:
+**Examples:**
 
     cli> echo "this is a single parameter"
     this is a single parameter

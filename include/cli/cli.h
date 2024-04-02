@@ -502,7 +502,7 @@ namespace cli
 
         bool ExecParent(const std::vector<std::string>& cmdLine, CliSession& session)
         {
-            return HandleCommand({Name(), ".."}, cmdLine, session);
+            return HandleCommand({Name(), ParentShortcut()}, cmdLine, session);
         }
 
         bool ScanCmds(const std::vector<std::string>& cmdLine, CliSession& session)
@@ -545,42 +545,87 @@ namespace cli
             auto result = cli::GetCompletions(cmds, currentLine);
             if (parent != nullptr)
             {
-                auto c = parent->GetCompletionRecursive(currentLine);
+                auto c = parent->GetCompletionWithParent(currentLine);
                 result.insert(result.end(), std::make_move_iterator(c.begin()), std::make_move_iterator(c.end()));
             }
             return result;
         }
 
-        // returns:
-        // - the completion of this menu command
-        // - the recursive completions of the subcommands
+        /**
+         * Retrieves completion suggestions for the user input recursively.
+         *
+         * This function checks if the user input starts with the current command's name. If it
+         * does, it extracts the remaining part of the input and retrieves suggestions:
+         *   - From subcommands using their `GetCompletionRecursive` function.
+         *   - From the parent command (if available) using its `GetCompletionRecursiveFull` function.
+         *   - (Optional) You can customize the behavior for empty lines to provide top-level commands.
+         *
+         * If the input doesn't start with the command name, it delegates to the base class's
+         * `Command::GetCompletionRecursive` function for handling generic commands.
+         *
+         * @param line The user's input string (potentially incomplete command).
+         * @return A vector containing suggested completions for the user input.
+         */
         std::vector<std::string> GetCompletionRecursive(const std::string& line) const override
         {
             if (line.rfind(Name(), 0) == 0) // line starts_with Name()
             {
-                auto rest = line;
-                rest.erase(0, Name().size());
-                // trim_left(rest);
-                rest.erase(rest.begin(), std::find_if(rest.begin(), rest.end(), [](int ch) { return !std::isspace(ch); }));
-                std::vector<std::string> result;
-                for (const auto& cmd: *cmds)
-                {
-                    auto cs = cmd->GetCompletionRecursive(rest);
-                    for (const auto& c: cs)
-                        result.push_back(Name() + ' ' + c); // concat submenu with command
-                }
-                if (parent != nullptr)
-                {
-                    auto cs = parent->GetCompletionRecursive(rest);
-                    for (const auto& c: cs)
-                        result.push_back(Name() + ' ' + c); // concat submenu with command
-                }
-                return result;
+                return GetCompletionRecursiveHelper(line, Name());
             }
+
             return Command::GetCompletionRecursive(line);
         }
 
     private:
+
+        /**
+         * Retrieves completion suggestions for the user input recursively, including the parent command.
+         *
+         * This function is similar to `GetCompletionRecursive` but explicitly includes
+         * completions from the parent command (if available) using its `GetCompletionRecursiveFull` function.
+         * This allows navigation within the command hierarchy using "..".
+         *
+         * The rest of the functionality remains the same as `GetCompletionRecursive`.
+         *
+         * @param line The user's input string (potentially incomplete command).
+         * @return A vector containing suggested completions for the user input.
+         */
+        std::vector<std::string> GetCompletionWithParent(const std::string& line) const
+        {
+            if (line.rfind(Name(), 0) == 0) // line starts_with Name()
+            {
+                return GetCompletionRecursiveHelper(line, Name());
+            }
+
+            if (line.rfind(ParentShortcut(), 0) == 0) // line starts_with ..
+            {
+                return GetCompletionRecursiveHelper(line, ParentShortcut());
+            }
+
+            return Command::GetCompletionRecursive(line);
+        }
+
+        std::vector<std::string> GetCompletionRecursiveHelper(const std::string& line, const std::string& prefix) const
+        {
+            auto rest = line;
+            rest.erase(0, prefix.size());
+            // trim_left(rest);
+            rest.erase(rest.begin(), std::find_if(rest.begin(), rest.end(), [](int ch) { return !std::isspace(ch); }));
+            std::vector<std::string> result;
+            for (const auto& cmd: *cmds)
+            {
+                auto cs = cmd->GetCompletionRecursive(rest);
+                for (const auto& c: cs)
+                    result.push_back(prefix + ' ' + c); // concat submenu with command
+            }
+            if (parent != nullptr)
+            {
+                auto cs = parent->GetCompletionWithParent(rest);
+                for (const auto& c: cs)
+                    result.push_back(prefix + ' ' + c); // concat submenu with command
+            }
+            return result;
+        }
 
         /**
          * Handles a command from the user input.
@@ -629,6 +674,11 @@ namespace cli
                 }
             }
             return false;
+        }
+
+        static std::string ParentShortcut()
+        {
+            return "..";
         }
 
         template <typename F, typename R, typename ... Args>

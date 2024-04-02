@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Fix issue with remote session on ARM platforms (issue [#220](https://github.com/daniele77/cli/issues/220))
  - Custom handler for wrong commands (issue [#223](https://github.com/daniele77/cli/issues/223))
  - Parent menus does not chain (issue [#234](https://github.com/daniele77/cli/issues/234))
+ - Parent menu shortcut (issue [#233](https://github.com/daniele77/cli/issues/233))
 
 ## [2.1.0] - 2023-06-29
 
