@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Custom handler for wrong commands (issue [#223](https://github.com/daniele77/cli/issues/223))
  - Parent menus does not chain (issue [#234](https://github.com/daniele77/cli/issues/234))
  - Parent menu shortcut (issue [#233](https://github.com/daniele77/cli/issues/233))
+ - Integer overflow warning detected by clang++ (issue [#236](https://github.com/daniele77/cli/issues/236))
 
 ## [2.1.0] - 2023-06-29
 
