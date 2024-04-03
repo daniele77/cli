@@ -98,7 +98,7 @@ public:
     {
         auto p = PluginRegistry::Instance().Create(plugin, menu);
         if (p)
-            plugins.push_back(move(p));
+            plugins.push_back(std::move(p));
     }
     void Unload(const string& plugin)
     {
@@ -187,7 +187,7 @@ public:
                 },
                 "Print the result of a subtraction" );
 
-        menuHandler = menu->Insert(move(subMenu));
+        menuHandler = menu->Insert(std::move(subMenu));
     }
     ~Arithmetic() override
     {
@@ -237,7 +237,7 @@ public:
                 out << "\n";
             },
             "Alphabetically sort a list of words" );
-        menuHandler = menu->Insert(move(subMenu));
+        menuHandler = menu->Insert(std::move(subMenu));
     }
     ~Strings() override
     {

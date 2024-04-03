@@ -131,7 +131,7 @@ inline T signed_from_string(std::string s)
     {
         s = s.substr(1);
         const U val = unsigned_digits_from_string<U>(s);
-        const auto min = std::numeric_limits<T>::min(); // this to avoid overflow warnings
+        auto min = std::numeric_limits<T>::min(); // this to avoid overflow warnings. Please NOTE: const auto produces warning!
         if ( val > static_cast<U>( - min ) )
             throw bad_conversion();
         return (- static_cast<T>(val));
