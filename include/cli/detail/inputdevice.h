@@ -48,6 +48,8 @@ public:
 
     explicit InputDevice(Scheduler& _scheduler) : scheduler(_scheduler) {}
     virtual ~InputDevice() = default;
+    virtual void ActivateInput() {}
+    virtual void DeactivateInput() {}
 
     template <typename H>
     void Register(H&& h) { handler = std::forward<H>(h); }

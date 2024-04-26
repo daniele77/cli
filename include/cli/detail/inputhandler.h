@@ -45,9 +45,10 @@ namespace detail
 class InputHandler
 {
 public:
-    InputHandler(CliSession& _session, InputDevice& kb) :
+    InputHandler(CliSession& _session, InputDevice& _kb) :
         session(_session),
-        terminal(session.OutStream())
+        terminal(session.OutStream()),
+        kb(_kb)
     {
         kb.Register( [this](auto key){ this->Keypressed(key); } );
     }
@@ -75,8 +76,10 @@ private:
             }
             case Symbol::command:
             {
+                kb.DeactivateInput();
                 session.Feed(s.second);
                 session.Prompt();
+                kb.ActivateInput();
                 break;
             }
             case Symbol::down:
@@ -124,6 +127,7 @@ private:
 
     CliSession& session;
     Terminal terminal;
+    InputDevice& kb;
 };
 
 } // namespace detail

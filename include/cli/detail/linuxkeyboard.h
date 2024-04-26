@@ -32,13 +32,14 @@
 
 #include <thread>
 #include <memory>
+#include <stdexcept>
 
 #include <cstdio>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/select.h>
 #include <cassert>
-
+#include <condition_variable>
 #include "inputdevice.h"
 
 
@@ -106,15 +107,29 @@ class LinuxKeyboard : public InputDevice
 public:
     explicit LinuxKeyboard(Scheduler& _scheduler) :
         InputDevice(_scheduler),
+        enabled(false),
         servant( [this]() noexcept { Read(); } )
     {
-        ToManualMode();
+        ActivateInput();
     }
     ~LinuxKeyboard() override
     {
         ToStandardMode();
         is.Stop();
         servant.join();
+    }
+    void ActivateInput() override
+    {
+        ToManualMode();
+        std::lock_guard<std::mutex> lock(mtx);
+        enabled = true;
+        cv.notify_one();
+    }
+    void DeactivateInput() override
+    {
+        ToStandardMode();
+        std::lock_guard<std::mutex> lock(mtx);
+        enabled = false;
     }
 
 private:
@@ -125,6 +140,10 @@ private:
         {
             while (true)
             {
+                {
+                    std::unique_lock<std::mutex> lock(mtx);
+                    cv.wait(lock, [this]{ return enabled; }); // release mtx, suspend thread execution until enabled becomes true
+                }
                 auto k = Get();
                 Notify(k);
             }
@@ -205,10 +224,13 @@ private:
         tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     }
 
+    bool enabled;
     termios oldt;
     termios newt;
     InputSource is;
     std::thread servant;
+    std::mutex mtx;
+    std::condition_variable cv;
 };
 
 } // namespace detail
