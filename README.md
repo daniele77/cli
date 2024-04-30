@@ -314,30 +314,23 @@ You can add menus to existing menus, to get a hierarchy:
 
 ```C++
 auto rootMenu = make_unique<Menu>("myprompt");
-
 auto menuA = make_unique<Menu>("a_prompt");
-rootMenu->Insert( std::move(menuA) );
-
 auto menuAA = make_unique<Menu>("aa_prompt");
-menuA->Insert( std::move(menuAA) );
-
 auto menuAB = make_unique<Menu>("ab_prompt");
-menuA->Insert( std::move(menuAB) );
-
 auto menuAC = make_unique<Menu>("ac_prompt");
-menuA->Insert( std::move(menuAC) );
-
 auto menuACA = make_unique<Menu>("aca_prompt");
-menuAC->Insert( std::move(menuACA) );
-
 auto menuB = make_unique<Menu>("b_prompt");
-rootMenu->Insert( std::move(menuB) );
-
 auto menuBA = make_unique<Menu>("ba_prompt");
-menuB->Insert( std::move(menuBA) );
-
 auto menuBB = make_unique<Menu>("bb_prompt");
+
+menuAC->Insert( std::move(menuACA) );
+menuB->Insert( std::move(menuBA) );
 menuB->Insert( std::move(menuBB) );
+menuA->Insert( std::move(menuAA) );
+menuA->Insert( std::move(menuAB) );
+menuA->Insert( std::move(menuAC) );
+rootMenu->Insert( std::move(menuA) );
+rootMenu->Insert( std::move(menuB) );
 ```
 
 This results in this tree:
