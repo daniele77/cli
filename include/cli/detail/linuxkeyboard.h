@@ -177,6 +177,7 @@ private:
             case 8:
                 return std::make_pair(KeyType::backspace,' '); break;
             case 10: return std::make_pair(KeyType::ret,' '); break;
+            case 12: return std::make_pair(KeyType::clear, ' '); break;
             case 27: // symbol
                 ch = GetChar();
                 if ( ch == 91 ) // arrow keys

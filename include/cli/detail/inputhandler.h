@@ -121,6 +121,12 @@ private:
                 terminal.SetLine( line );
                 break;
             }
+            case Symbol::clear:
+            {
+                session.Prompt();
+                terminal.ResetCursor();
+                break;
+            }
         }
 
     }

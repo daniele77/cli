@@ -46,7 +46,8 @@ enum class Symbol
     up,
     down,
     tab,
-    eof
+    eof,
+    clear
 };
 
 class Terminal
@@ -193,9 +194,16 @@ class Terminal
                 position = 0;
                 break;
             }
+            case KeyType::clear:
+            {
+                out << CLEAR_ESCAPE << std::flush;
+                return std::make_pair(Symbol::clear, std::string());
+                break;
+            }
             case KeyType::ignored:
                 // TODO
                 break;
+            
         }
 
         return std::make_pair(Symbol::nothing, std::string());
@@ -205,6 +213,8 @@ class Terminal
     std::string currentLine;
     std::size_t position = 0; // next writing position in currentLine
     std::ostream &out;
+    const std::string_view CLEAR_ESCAPE = "\033[H\033[J"; 
+
 };
 
 } // namespace detail
