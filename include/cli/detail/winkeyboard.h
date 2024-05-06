@@ -160,6 +160,9 @@ private:
             case 8:
                 return std::make_pair(KeyType::backspace, c);
                 break;
+            case 12: // CTRL-L
+                return std::make_pair(KeyType::clear, ' ');
+                break;
             case 13:
                 return std::make_pair(KeyType::ret, c);
                 break;
