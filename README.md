@@ -1,4 +1,6 @@
 ![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
+[![CodeQL](https://github.com/daniele77/cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/codeql.yml)
+
 
 # cli
 
