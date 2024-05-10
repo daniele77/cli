@@ -172,11 +172,11 @@ private:
             case EOF:
             case 4:  // EOT
                 return std::make_pair(KeyType::eof,' ');
-                break;
             case 127:
             case 8:
-                return std::make_pair(KeyType::backspace,' '); break;
-            case 10: return std::make_pair(KeyType::ret,' '); break;
+                return std::make_pair(KeyType::backspace,' ');
+            case 10:
+                return std::make_pair(KeyType::ret,' ');
             case 27: // symbol
                 ch = GetChar();
                 if ( ch == 91 ) // arrow keys
@@ -188,7 +188,6 @@ private:
                             ch = GetChar();
                             if ( ch == 126 ) return std::make_pair(KeyType::canc,' ');
                             else return std::make_pair(KeyType::ignored,' ');
-                            break;
                         case 65: return std::make_pair(KeyType::up,' ');
                         case 66: return std::make_pair(KeyType::down,' ');
                         case 68: return std::make_pair(KeyType::left,' ');
@@ -199,6 +198,34 @@ private:
                     }
                 }
                 break;
+            // readline emacs mode line edit shortcut
+            case 1:  // C-a
+                return std::make_pair(KeyType::home,' ');
+            case 5:  // C-e
+                return std::make_pair(KeyType::end,' ');
+            case 2:  // C-b
+                return std::make_pair(KeyType::left,' ');
+            case 6:  // C-f
+                return std::make_pair(KeyType::right,' ');
+            case 14: // C-n
+                return std::make_pair(KeyType::down,' ');
+            case 16: // C-p
+                return std::make_pair(KeyType::up,' ');
+            case 20: // C-t
+                return std::make_pair(KeyType::transpose_chars,' ');
+            case 21: // C-u
+                return std::make_pair(KeyType::unix_line_discard,' ');
+            case 22: // C-k
+                return std::make_pair(KeyType::kill_line,' ');
+            case 23: // C-w
+                return std::make_pair(KeyType::unix_word_rubout,' ');
+            case 25: // C-y
+                return std::make_pair(KeyType::yank,' ');
+            case 12: // C-l
+                return std::make_pair(KeyType::clear_screen,' ');
+            case 18: // C-r
+                return std::make_pair(KeyType::reverse_search_history,' ');
+
             default: // ascii
             {
                 const char c = static_cast<char>(ch);

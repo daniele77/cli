@@ -121,6 +121,18 @@ private:
                 terminal.SetLine( line );
                 break;
             }
+            case Symbol::clrscr:
+            {
+                session.Prompt();
+                terminal.ResetCursor();
+                terminal.SetLine(terminal.GetLine());
+                break;
+            }
+            case Symbol::reverse_search_history:
+            {
+                // TODO
+                break;
+            }
         }
 
     }
