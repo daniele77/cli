@@ -123,8 +123,11 @@ private:
             }
             case Symbol::clear:
             {
+                const auto currentLine = terminal.GetLine();
+                terminal.Clear();
                 session.Prompt();
                 terminal.ResetCursor();
+                terminal.SetLine(currentLine);
                 break;
             }
         }

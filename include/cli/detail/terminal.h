@@ -57,6 +57,8 @@ class Terminal
 
     void ResetCursor() { position = 0; }
 
+    void Clear() const { out << "\033[H\033[J" << std::flush; }
+
     void SetLine(const std::string &newLine)
     {
         out << beforeInput
@@ -195,15 +197,11 @@ class Terminal
                 break;
             }
             case KeyType::clear:
-            {
-                out << CLEAR_ESCAPE << std::flush;
                 return std::make_pair(Symbol::clear, std::string());
                 break;
-            }
             case KeyType::ignored:
                 // TODO
                 break;
-            
         }
 
         return std::make_pair(Symbol::nothing, std::string());
@@ -213,8 +211,6 @@ class Terminal
     std::string currentLine;
     std::size_t position = 0; // next writing position in currentLine
     std::ostream &out;
-    const std::string_view CLEAR_ESCAPE = "\033[H\033[J"; 
-
 };
 
 } // namespace detail

@@ -475,12 +475,16 @@ protected:
                 switch( c )
                 {
                     case static_cast<char>(EOF):
+                        [[fallthrough]];
                     case 4:  // EOT
                         Notify(std::make_pair(KeyType::eof,' ')); break;
                     case 8: // Backspace
+                        [[fallthrough]];
                     case 127:  // Backspace or Delete
                         Notify(std::make_pair(KeyType::backspace, ' ')); break;
                     //case 10: Notify(std::make_pair(KeyType::ret,' ')); break;
+                    case 12: // ctrl+L
+                        Notify(std::make_pair(KeyType::clear, ' ')); break;
                     case 27: step = Step::_2; break;  // symbol
                     case 13: step = Step::wait_0; break;  // wait for 0 (ENTER key)
                     default: // ascii
