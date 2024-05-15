@@ -36,6 +36,7 @@
 #include "server.h"
 #include "inputdevice.h"
 #include "genericasioscheduler.h"
+#include "screen.h"
 
 namespace cli
 {
@@ -545,7 +546,7 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    InputHandler poll;
+    InputHandler<TelnetScreen> poll;
 };
 
 template <typename ASIOLIB>

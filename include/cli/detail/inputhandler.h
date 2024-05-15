@@ -42,6 +42,7 @@ namespace cli
 namespace detail
 {
 
+template <typename SCREEN>
 class InputHandler
 {
 public:
@@ -135,7 +136,7 @@ private:
     }
 
     CliSession& session;
-    Terminal terminal;
+    Terminal<SCREEN> terminal;
     InputDevice& kb;
 };
 

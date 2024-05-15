@@ -50,6 +50,7 @@ enum class Symbol
     clear
 };
 
+template <typename SCREEN>
 class Terminal
 {
   public:
@@ -57,7 +58,7 @@ class Terminal
 
     void ResetCursor() { position = 0; }
 
-    void Clear() const { out << "\033[H\033[J" << std::flush; }
+    void Clear() const { SCREEN::Clear(out); }
 
     void SetLine(const std::string &newLine)
     {
