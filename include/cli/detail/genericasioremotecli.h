@@ -476,11 +476,9 @@ protected:
                 switch( c )
                 {
                     case static_cast<char>(EOF):
-                        [[fallthrough]];
                     case 4:  // EOT
                         Notify(std::make_pair(KeyType::eof,' ')); break;
                     case 8: // Backspace
-                        [[fallthrough]];
                     case 127:  // Backspace or Delete
                         Notify(std::make_pair(KeyType::backspace, ' ')); break;
                     //case 10: Notify(std::make_pair(KeyType::ret,' ')); break;
