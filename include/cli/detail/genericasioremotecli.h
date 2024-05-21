@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "../cli.h"
-#include "inputhandler.h"
+#include "commandprocessor.h"
 #include "server.h"
 #include "inputdevice.h"
 #include "genericasioscheduler.h"
@@ -546,7 +546,7 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    InputHandler<TelnetScreen> poll;
+    CommandProcessor<TelnetScreen> poll;
 };
 
 template <typename ASIOLIB>

@@ -31,7 +31,7 @@
 #define CLI_CLILOCALSESSION_H
 
 #include <ostream> // std::ostream
-#include "detail/inputhandler.h"
+#include "detail/commandprocessor.h"
 #include "cli.h" // CliSession
 #include "detail/keyboard.h"
 #include "detail/screen.h"
@@ -71,7 +71,7 @@ public:
 
 private:
     detail::Keyboard kb;
-    detail::InputHandler<detail::LocalScreen> ih;
+    detail::CommandProcessor<detail::LocalScreen> ih;
 };
 
 using CliLocalSession = CliLocalTerminalSession;
