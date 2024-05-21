@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2021 Daniele Pallastrelli
+ * Copyright (C) 2016-2024 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,20 +27,18 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_KEYBOARD_H_
-#define CLI_DETAIL_KEYBOARD_H_
+#ifndef CLI_DETAIL_PLATFORM_H_
+#define CLI_DETAIL_PLATFORM_H_
 
-#include "platform.h"
-
-#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
-    #include "linuxkeyboard.h"
-    namespace cli { namespace detail { using Keyboard = LinuxKeyboard; } }
-#elif defined(CLI_OS_WIN)
-    #include "winkeyboard.h"
-    namespace cli { namespace detail { using Keyboard = WinKeyboard; } }
+#if defined(__unix__) || defined(__unix) || defined(__linux__)
+    #define CLI_OS_LINUX
+#elif defined(WIN32) || defined(_WIN32) || defined(_WIN64)
+    #define CLI_OS_WIN
+#elif defined(__APPLE__) || defined(__MACH__)
+    #define CLI_OS_MAC
 #else
     #error "Platform not supported (yet)."
 #endif
 
-#endif // CLI_DETAIL_KEYBOARD_H_
+#endif // CLI_DETAIL_PLATFORM_H_
 
