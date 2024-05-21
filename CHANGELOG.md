@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Parent menu shortcut (issue [#233](https://github.com/daniele77/cli/issues/233))
  - Integer overflow warning detected by clang++ (issue [#236](https://github.com/daniele77/cli/issues/236))
  - Enable Keyboard Handling in Command Handlers on Linux Platform (issue [#239](https://github.com/daniele77/cli/issues/239))
+ - Add clear screen command using ctrl + L  (issue [#229](https://github.com/daniele77/cli/issues/229))
 
 ## [2.1.0] - 2023-06-29
 

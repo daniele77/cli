@@ -189,6 +189,10 @@ This indicates you're in the root menu.
 
 Use the Tab key to get suggestions for completing command or menu names as you type.
 
+### Screen Clearing
+
+Press `Ctrl-L` to clear the screen at any time.
+
 ### Parameter parsing
 
 The CLI interpreter can handle sentences using single quotes (`'`) and double quotes (`"`).
