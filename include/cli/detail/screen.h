@@ -1,6 +1,6 @@
 /*******************************************************************************
  * CLI - A simple command line interface.
- * Copyright (C) 2016-2021 Daniele Pallastrelli
+ * Copyright (C) 2016-2024 Daniele Pallastrelli
  *
  * Boost Software License - Version 1.0 - August 17th, 2003
  *
@@ -27,56 +27,20 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_CLILOCALSESSION_H
-#define CLI_CLILOCALSESSION_H
+#ifndef CLI_DETAIL_SCREEN_H_
+#define CLI_DETAIL_SCREEN_H_
 
-#include <ostream> // std::ostream
-#include "detail/commandprocessor.h"
-#include "cli.h" // CliSession
-#include "detail/keyboard.h"
-#include "detail/screen.h"
+#include "platform.h"
+#include "telnetscreen.h"
 
-namespace cli
-{
+#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
+    namespace cli { namespace detail { using LocalScreen = TelnetScreen; } }
+#elif defined(CLI_OS_WIN)
+    #include "winscreen.h"
+    namespace cli { namespace detail { using LocalScreen = WinScreen; } }
+#else
+    #error "Platform not supported (yet)."
+#endif
 
-class Scheduler; // forward declaration
-
-/**
- * @brief CliLocalTerminalSession represents a local session.
- * You should instantiate it to start an interactive prompt on the standard
- * input/output of your application.
- * The handlers of the commands will be invoked in the same thread the @c Scheduler runs. 
- */
-class CliLocalTerminalSession : public CliSession
-{
-public:
-
-    /**
-     * @brief Construct a new Cli Local Terminal Session object that uses the specified @c std::ostream
-     * for output. You can also specify a size for the command history. 
-     * 
-     * @param _cli The cli object that defines the menu hierarchy for this session
-     * @param scheduler The scheduler that will process the command handlers
-     * @param _out the output stream where command output will be printed
-     * @param historySize the size of the command history
-     */
-    CliLocalTerminalSession(Cli& _cli, Scheduler& scheduler, std::ostream& _out, std::size_t historySize = 100) :
-        CliSession(_cli, _out, historySize),
-        kb(scheduler),
-        ih(*this, kb)
-    {
-        Enter();
-        Prompt();
-    }
-
-private:
-    detail::Keyboard kb;
-    detail::CommandProcessor<detail::LocalScreen> ih;
-};
-
-using CliLocalSession = CliLocalTerminalSession;
-
-} // namespace cli
-
-#endif // CLI_CLILOCALSESSION_H
+#endif // CLI_DETAIL_SCREEN_H_
 

@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_DETAIL_INPUTHANDLER_H_
-#define CLI_DETAIL_INPUTHANDLER_H_
+#ifndef CLI_DETAIL_COMMANDPROCESSOR_H_
+#define CLI_DETAIL_COMMANDPROCESSOR_H_
 
 #include <functional>
 #include <string>
@@ -42,10 +42,27 @@ namespace cli
 namespace detail
 {
 
-class InputHandler
+/**
+ * @class CommandProcessor
+ * @brief This class handles user input and processes commands in a CLI session.
+ *
+ * The CommandProcessor class is responsible for handling user input from an InputDevice,
+ * processing the input into commands, and executing these commands in a CLI session.
+ * It also provides functionality for command history navigation and command auto-completion.
+ *
+ * @tparam SCREEN The type of the terminal screen.
+ */
+template <typename SCREEN>
+class CommandProcessor
 {
 public:
-    InputHandler(CliSession& _session, InputDevice& _kb) :
+    /**
+     * @brief Construct a new CommandProcessor object.
+     *
+     * @param _session The CLI session to be managed.
+     * @param _kb The input device to be used.
+     */
+    CommandProcessor(CliSession& _session, InputDevice& _kb) :
         session(_session),
         terminal(session.OutStream()),
         kb(_kb)
@@ -55,12 +72,22 @@ public:
 
 private:
 
+    /**
+     * @brief Handle a keypress event.
+     *
+     * @param k The key that was pressed.
+     */
     void Keypressed(std::pair<KeyType, char> k)
     {
         const std::pair<Symbol,std::string> s = terminal.Keypressed(k);
         NewCommand(s);
     }
 
+    /**
+     * @brief Process a new command.
+     *
+     * @param s The symbol and string representing the command.
+     */
     void NewCommand(const std::pair<Symbol, std::string>& s)
     {
         switch (s.first)
@@ -121,17 +148,27 @@ private:
                 terminal.SetLine( line );
                 break;
             }
+            case Symbol::clear:
+            {
+                const auto currentLine = terminal.GetLine();
+                terminal.Clear();
+                session.Prompt();
+                terminal.ResetCursor();
+                terminal.SetLine(currentLine);
+                break;
+            }
         }
 
     }
 
     CliSession& session;
-    Terminal terminal;
+    Terminal<SCREEN> terminal;
     InputDevice& kb;
 };
 
 } // namespace detail
 } // namespace cli
 
-#endif // CLI_DETAIL_INPUTHANDLER_H_
+#endif // CLI_DETAIL_COMMANDPROCESSOR_H_
+
 

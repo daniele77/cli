@@ -46,15 +46,19 @@ enum class Symbol
     up,
     down,
     tab,
-    eof
+    eof,
+    clear
 };
 
+template <typename SCREEN>
 class Terminal
 {
   public:
     explicit Terminal(std::ostream &_out) : out(_out) {}
 
     void ResetCursor() { position = 0; }
+
+    void Clear() const { SCREEN::Clear(out); }
 
     void SetLine(const std::string &newLine)
     {
@@ -193,6 +197,9 @@ class Terminal
                 position = 0;
                 break;
             }
+            case KeyType::clear:
+                return std::make_pair(Symbol::clear, std::string());
+                break;
             case KeyType::ignored:
                 // TODO
                 break;
