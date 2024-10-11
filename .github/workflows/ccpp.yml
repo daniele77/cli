@@ -87,17 +87,20 @@ jobs:
         gcovr: true
         opencppcoverage: true
 
-    - name: setup dependencies
+    - name: setup dependencies - Unix
+      if: runner.os == 'Linux'
       run: |
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
           sudo apt-get -y update
           sudo apt-get -y install -y ninja-build libboost-all-dev
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+    - name: setup dependencies - macOS
+      if: runner.os == 'macOS'
+      run: |
           brew install ninja boost
-        elif [[ "$RUNNER_OS" == "Windows" ]]; then
+    - name: setup dependencies - Windows
+      if: runner.os == 'Windows'
+      run: |
           choco install ninja
           choco install boost-msvc-14.1
-        fi
 
     - name: Configure CMake
       run: |
