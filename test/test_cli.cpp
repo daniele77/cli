@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(Basics)
     rootMenu->Insert("int_cmd", [](ostream& out, int par){ out << par << "\n"; }, "int_cmd help", {"int_par"} );
     rootMenu->Insert("string_cmd", [](ostream& out, const string& par){ out << par << "\n"; }, "string_cmd help", {"string_par"} );
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
 
     stringstream oss;
 
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE(parameters)
     rootMenu->Insert("long_double_cmd", [](ostream& out, long double par){ out << par << "\n"; }, "long_double_cmd help", {"long_double_par"} );
     rootMenu->Insert("string_cmd", [](ostream& out, const string& par){ out << par << "\n"; }, "string_cmd help", {"string_par"} );
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
 
     stringstream oss;
 
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE(freeform)
         out << "\n";
     }, "cmd_printer help", {"<string values>"} );
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
     stringstream oss;
 
     UserInput(cli, oss, R"(cmd_printer_by_value a b 'c d e' f)");
@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(freeform)
 BOOST_AUTO_TEST_CASE(borderLine)
 {
     auto rootMenu = make_unique<Menu>("cli");
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
 
     stringstream oss;
 
@@ -323,10 +323,10 @@ BOOST_AUTO_TEST_CASE(Submenus)
     auto subSubMenu = make_unique<Menu>("subsub");
     subSubMenu->Insert("double_int_cmd", [](ostream& out, int par1, int par2){ out << par1 << par2 << "\n"; } );
     subSubMenu->Insert("double_string_cmd", [](ostream& out, const string& par1, const string& par2){ out << par1 << par2 << "\n"; } );
-    subMenu->Insert(move(subSubMenu));
-    rootMenu->Insert(move(subMenu));
+    subMenu->Insert(std::move(subSubMenu));
+    rootMenu->Insert(std::move(subMenu));
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
 
     stringstream oss;
 
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(ExitActions)
     rootMenu->Insert("int_cmd", [](ostream& out, int par){ out << par << "\n"; }, "int_cmd help", {"int_par"} );
     rootMenu->Insert("string_cmd", [](ostream& out, const string& par){ out << par << "\n"; }, "string_cmd help", {"string_par"} );
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
     bool exitActionDone = false;
     cli.ExitAction([&](std::ostream&) noexcept { exitActionDone=true; });
 
@@ -415,7 +415,7 @@ BOOST_AUTO_TEST_CASE(Exceptions)
     rootMenu->Insert("stdexception", [](ostream&){ throw std::logic_error("myerror"); } );
     rootMenu->Insert("customexception", [](ostream&){ throw 42; } );
 
-    Cli cli(move(rootMenu));
+    Cli cli(std::move(rootMenu));
 
     stringstream oss;
 

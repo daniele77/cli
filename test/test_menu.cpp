@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(Basics)
     auto subMenu = make_unique<Menu>("submenu");
     auto subSubMenu = make_unique<Menu>("subsubmenu");
     subSubMenu->Insert("bar", [](ostream&){});
-    subMenu->Insert(move(subSubMenu));
+    subMenu->Insert(std::move(subSubMenu));
     subMenu->Insert("foo", [](ostream&){});
-    menu.Insert(move(subMenu));
+    menu.Insert(std::move(subMenu));
     
     /*
         menu
