@@ -92,7 +92,7 @@ jobs:
           Invoke-WebRequest -Uri https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip -OutFile asio.zip
           Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
           # Set ASIO_INCLUDE_DIR environment variable
-        echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
+          echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: |
