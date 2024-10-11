@@ -18,7 +18,7 @@ jobs:
           - llvm-13.0.0
           - gcc-11
         generator:
-          - "Ninja"
+          - "Ninja Multi-Config"
         build_type:
           - Release
           - Debug
@@ -40,29 +40,16 @@ jobs:
 
           # Set up preferred package generators, for given build configurations
           - build_type: Release
-            developer_mode: OFF
             package_generator: TBZ2
 
           - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
             build_type: Debug
-            developer_mode: ON
           - os: windows-2022
             compiler: msvc
             generator: "Visual Studio 17 2022"
             build_type: Release
-            developer_mode: ON
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-            developer_mode: OFF
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            developer_mode: OFF
             package_generator: ZIP
 
 
@@ -101,7 +88,11 @@ jobs:
       run: |
           choco install ninja
           choco install boost-msvc-14.1
-          choco install asio
+          # Download and extract Asio
+          Invoke-WebRequest -Uri https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip -OutFile asio.zip
+          Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
+          # Set ASIO_INCLUDE_DIR environment variable
+        echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: |
