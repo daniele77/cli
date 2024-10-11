@@ -136,13 +136,7 @@ namespace cli
          * 
          * However, you can develop your own, just derive a class from @c HistoryStorage .
          */
-        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>()) :
-            globalHistoryStorage(std::move(historyStorage)),
-            rootMenu(std::move(_rootMenu)),
-            enterAction{},
-            exitAction{}
-        {
-        }
+        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>());
 
         /**
          * @brief Add a global enter action that is called every time a session (local or remote) is established.
@@ -314,7 +308,7 @@ namespace cli
     {
     public:
         CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize = 100);
-        virtual ~CliSession() noexcept { coutPtr->UnRegister(out); }
+        virtual ~CliSession() noexcept;
 
         // disable value semantics
         CliSession(const CliSession&) = delete;
@@ -863,6 +857,16 @@ namespace cli
 
     // ********************************************************************
 
+    // Cli implementation
+
+    inline Cli::Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) :
+        globalHistoryStorage{std::move(historyStorage)},
+        rootMenu{std::move(_rootMenu)},
+        enterAction{},
+        exitAction{}
+    {
+    }
+
     // CliSession implementation
 
     inline CliSession::CliSession(Cli& _cli, std::ostream& _out, std::size_t historySize) :
@@ -958,6 +962,11 @@ namespace cli
         v1.resize(static_cast<std::size_t>(std::distance(v1.begin(), ip)));
 
         return v1;
+    }
+
+    inline CliSession::~CliSession() noexcept
+    {
+        coutPtr->UnRegister(out);
     }
 
     // Menu implementation
