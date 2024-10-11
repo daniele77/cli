@@ -33,10 +33,8 @@ jobs:
         gcovr: false
         opencppcoverage: false
 
-    - name: Install vcpkg
-      run: |
-        git clone https://github.com/microsoft/vcpkg.git
-        ./vcpkg/bootstrap-vcpkg.sh
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11 # Always specify the specific _version_ of the
 
     - name: Install dependencies on Windows
       if: runner.os == 'Windows'
@@ -44,8 +42,8 @@ jobs:
 
     - name: Install Asio using vcpkg
       run: |
-        ./vcpkg/vcpkg install asio
-        ./vcpkg/vcpkg integrate install
+        vcpkg install asio
+        vcpkg integrate install
 
     - name: Configure CMake
       run: cmake -S . -B build -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
