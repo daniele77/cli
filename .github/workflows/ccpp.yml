@@ -107,7 +107,7 @@ jobs:
 
     - name: run tests - Unix
       if: runner.os != 'Windows'
-      working-directory: ./build/test
+      working-directory: ./build/test/${{matrix.build_type}}
       run: |
-        # cd /home/runner/work/cli/cli/build/test
+        # cd /home/runner/work/cli/cli/build/test/
         ./test_suite
