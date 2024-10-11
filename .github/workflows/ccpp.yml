@@ -69,6 +69,31 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Setup Cache
+      uses: ./.github/actions/setup_cache
+      with:
+        compiler: ${{ matrix.compiler }}
+        build_type: ${{ matrix.build_type }}
+        generator: ${{ matrix.generator }}
+
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{ matrix.compiler }}
+        vcvarsall: ${{ contains(matrix.os, 'windows' )}}
+
+        cmake: true
+        ninja: true
+        vcpkg: false
+        ccache: true
+        clangtidy: true
+
+        cppcheck: true
+
+        gcovr: true
+        opencppcoverage: true
+
     - name: setup dependencies
       run: |
         sudo apt-get -y update
