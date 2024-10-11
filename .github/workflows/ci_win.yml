@@ -1,0 +1,55 @@
+name: CI_win
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-latest]
+        os: [windows-latest]
+        compiler: [llvm-13.0.0, gcc-11]
+        generator: ["Ninja"]
+        build_type: [Release, Debug]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up CMake
+      uses: jwlawson/actions-setup-cmake@v1
+
+    - name: Install vcpkg
+      run: |
+        git clone https://github.com/microsoft/vcpkg.git
+        ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Install dependencies on Linux and macOS
+      if: runner.os != 'Windows'
+      run: |
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install ninja
+        fi
+
+    - name: Install dependencies on Windows
+      if: runner.os == 'Windows'
+      run: choco install ninja
+
+    - name: Install Asio using vcpkg
+      run: |
+        ./vcpkg/vcpkg install asio
+        ./vcpkg/vcpkg integrate install
+
+    - name: Configure CMake
+      run: cmake -S . -B build -G "${{ matrix.generator }}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+
+    - name: Build
+      run: cmake --build build --config ${{matrix.build_type}}
+
+    - name: run tests
+      working-directory: ./build
+      run: ctest -C ${{matrix.build_type}}
