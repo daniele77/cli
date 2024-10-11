@@ -3,26 +3,90 @@ name: C/C++ CI of Cli
 on: [push,pull_request]
 
 jobs:
-  build:
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
 
-    runs-on: ubuntu-latest
-    
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-latest
+          - macos-12
+        compiler:
+          # you can specify the version after `-` like "llvm-13.0.0".
+          - llvm-13.0.0
+          - gcc-11
+        generator:
+          - "Ninja Multi-Config"
+        build_type:
+          - Release
+          - Debug
+
+        exclude:
+          # mingw is determined by this author to be too buggy to support
+          - os: macos-12
+            compiler: gcc-11
+          - os: ubuntu-20.04
+            compiler: llvm-13.0.0
+
+        include:
+          # Add appropriate variables for gcov version required. This will intentionally break
+          # if you try to use a compiler that does not have gcov set
+          - compiler: gcc-11
+            gcov_executable: gcov
+          - compiler: llvm-13.0.0
+            gcov_executable: "llvm-cov gcov"
+
+          # Set up preferred package generators, for given build configurations
+          - build_type: Release
+            developer_mode: OFF
+            package_generator: TBZ2
+
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Debug
+            developer_mode: ON
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Release
+            developer_mode: ON
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Debug
+            developer_mode: OFF
+          - os: windows-2022
+            compiler: msvc
+            generator: "Visual Studio 17 2022"
+            build_type: Release
+            developer_mode: OFF
+            package_generator: ZIP
+
+
+
     steps:
     - uses: actions/checkout@v2
     - name: setup dependencies
       run: |
         sudo apt-get -y update
         sudo apt-get -y install libboost-all-dev libasio-dev
-    - name: run cmake
+    - name: Configure CMake
       run: |
         mkdir build
         cd build
-        cmake .. -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-    - name: make
+        cmake .. -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+    - name: Build
       run: |
-        cd /home/runner/work/cli/cli/build
-        make all
-    - name: run tests
+        # cd /home/runner/work/cli/cli/build
+        # make all
+          cmake --build ./build --config ${{matrix.build_type}}
+
+    - name: run tests - Unix
+      if: runner.os != 'Windows'
+      working-directory: ./build/test
       run: |
-        cd /home/runner/work/cli/cli/build/test
+        # cd /home/runner/work/cli/cli/build/test
         ./test_suite
