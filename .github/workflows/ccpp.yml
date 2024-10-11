@@ -88,17 +88,19 @@ jobs:
       run: |
           choco install ninja
           choco install boost-msvc-14.1
-          # Download and extract Asio
-          Invoke-WebRequest -Uri https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip -OutFile asio.zip
-          Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
-          # Set ASIO_INCLUDE_DIR environment variable
-          echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
+          # # Download and extract Asio
+          # Invoke-WebRequest -Uri https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip -OutFile asio.zip
+          # Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
+          # # Set ASIO_INCLUDE_DIR environment variable
+          # echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: |
-        mkdir build
-        cd build
-        cmake .. -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        # mkdir build
+        # cd build
+        # cmake .. -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=-DDISABLE_STACK_PROTECTION:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+
     - name: Build
       run: |
         # cd /home/runner/work/cli/cli/build
