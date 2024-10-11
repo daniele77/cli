@@ -7,10 +7,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-latest]
         os: [windows-latest]
-        compiler: [llvm-13.0.0, gcc-11]
-        generator: ["Ninja"]
+        compiler: [msvc]
+        generator: ["Visual Studio 17 2022"]
         build_type: [Release, Debug]
 
     steps:

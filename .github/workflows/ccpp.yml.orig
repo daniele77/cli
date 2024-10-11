@@ -12,11 +12,11 @@ jobs:
         os:
           - ubuntu-20.04
           - ubuntu-latest
-#          - macos-12
+          - macos-12
         compiler:
           # you can specify the version after `-` like "llvm-13.0.0".
-#          - llvm-13.0.0
-#          - clang++-14
+          - llvm-13.0.0
+          - clang++-14
           - gcc-11
           # - gcc-12
         generator:
