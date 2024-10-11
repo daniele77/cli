@@ -89,8 +89,16 @@ jobs:
 
     - name: setup dependencies
       run: |
-        sudo apt-get -y update
-        sudo apt-get -y install libboost-all-dev libasio-dev
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          sudo apt-get -y update
+          sudo apt-get -y install -y ninja-build libboost-all-dev
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install ninja boost
+        elif [[ "$RUNNER_OS" == "Windows" ]]; then
+          choco install ninja
+          choco install boost-msvc-14.1
+        fi
+
     - name: Configure CMake
       run: |
         mkdir build
