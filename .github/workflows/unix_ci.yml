@@ -116,4 +116,4 @@ jobs:
       run: |
         # cd /home/runner/work/cli/cli/build/test/
         # ./test_suite
-        ctest -C ${{matrix.build_type}}
+        ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
