@@ -107,7 +107,7 @@ jobs:
       run: |
         # cd /home/runner/work/cli/cli/build
         # make all
-          cmake --build ./build --config ${{matrix.build_type}}
+        cmake --build ./build --config ${{matrix.build_type}}
 
     - name: run tests - Unix
       if: runner.os != 'Windows'

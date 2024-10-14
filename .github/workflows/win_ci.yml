@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Boost
+      run: |
+        curl -L -o boost.zip https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
+        tar -xf boost.zip
+        move boost_1_81_0 boost
+
+    - name: Install ASIO standalone
+      run: |
+        curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
+        tar -xf asio.zip
+        move asio-asio-1-18-2 asio
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DASIO_INCLUDE_DIR=%cd%/asio/asio/include -DBOOST_ROOT=%cd%/boost -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Run tests
+      run: ctest --test-dir build --output-on-failure
