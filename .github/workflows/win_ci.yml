@@ -16,14 +16,22 @@ jobs:
     - name: Install Boost
       run: choco install boost-msvc-14.1
 
-    - name: Install ASIO standalone
-      run: |
-        curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
-        tar -xf asio.zip
-        move asio-asio-1-18-2 asio
+#    - name: Install ASIO standalone
+#      run: |
+#        curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
+#        tar -xf asio.zip
+#        move asio-asio-1-18-2 asio
+#
+    - name: Install Asio with vcpkg
+      uses: microsoft/vcpkg-action@v1
+      with:
+        # Configura le opzioni di vcpkg
+        buildtype: release
+        args: install asio
 
     - name: Configure CMake
-      run: cmake -S . -B build -DASIO_INCLUDEDIR=${GITHUB_WORKSPACE}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+    # run: cmake -S . -B build -DASIO_INCLUDEDIR=${GITHUB_WORKSPACE}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+    run: cmake -S . -B build -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Build
       run: cmake --build build --config Release
