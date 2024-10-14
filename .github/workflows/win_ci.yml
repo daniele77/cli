@@ -31,7 +31,7 @@ jobs:
 
     - name: Configure CMake
     # run: cmake -S . -B build -DASIO_INCLUDEDIR=${GITHUB_WORKSPACE}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-    run: cmake -S . -B build -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+      run: cmake -S . -B build -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Build
       run: cmake --build build --config Release
