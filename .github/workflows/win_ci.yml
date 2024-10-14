@@ -3,8 +3,15 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  Test:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+
+      matrix:
+        build_type:
+          - Release
+          - Debug
 
     steps:
     - name: Checkout repository
@@ -23,10 +30,11 @@ jobs:
         move asio-asio-1-18-2 asio
 
     - name: Configure CMake
-      run: cmake -S . -B build -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Build
-      run: cmake --build build --config Release
+      run: cmake --build build --config ${{matrix.build_type}}
 
     - name: Run tests
-      run: ctest --test-dir build --output-on-failure
+      working-directory: build
+      run: ctest -C ${{matrix.build_type}}
