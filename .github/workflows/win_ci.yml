@@ -15,9 +15,6 @@ jobs:
 
     - name: Install Boost
       run: choco install boost-msvc-14.1
-        # curl -L -o boost.zip https://boostorg.jfrog.io/artifactory/main/release/1.81.0/source/boost_1_81_0.zip
-        # tar -xf boost.zip
-        # move boost_1_81_0 boost
 
     - name: Install ASIO standalone
       run: |
@@ -26,8 +23,7 @@ jobs:
         move asio-asio-1-18-2 asio
 
     - name: Configure CMake
-      # run: cmake -S . -B build -DASIO_INCLUDE_DIR=%cd%/asio/asio/include -DBOOST_ROOT=%cd%/boost -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-      run: cmake -S . -B build -DASIO_INCLUDE_DIR=%cd%/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+      run: cmake -S . -B build -DASIO_INCLUDEDIR=%cd%/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Build
       run: cmake --build build --config Release
