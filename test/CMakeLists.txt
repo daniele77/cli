@@ -50,16 +50,16 @@ target_link_libraries(standalone_asio_test INTERFACE Threads::Threads)
 add_executable(
 	test_suite
 	driver.cpp
-#	test_history.cpp
-#	test_volatilehistorystorage.cpp
-#	test_filehistorystorage.cpp
+	test_history.cpp
+	test_volatilehistorystorage.cpp
+	test_filehistorystorage.cpp
 	test_split.cpp
-#	test_commonprefix.cpp
-#	test_menu.cpp
-#	test_cli.cpp
-#	test_loopscheduler.cpp
-#	test_standaloneasioscheduler.cpp
-#	test_boostasioscheduler.cpp
+	test_commonprefix.cpp
+	test_menu.cpp
+	test_cli.cpp
+	test_loopscheduler.cpp
+	test_standaloneasioscheduler.cpp
+	test_boostasioscheduler.cpp
 )
 # indicates the include paths
 target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})

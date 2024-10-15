@@ -38,5 +38,5 @@ jobs:
     - name: Run tests
       working-directory: build
       # working-directory: build/test/${{matrix.build_type}}
-      run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure --debug
+      run: ctest -C ${{matrix.build_type}} --output-on-failure --debug
       # run: ./test_suite -l all
