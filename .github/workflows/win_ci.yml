@@ -2,6 +2,10 @@ name: Windows CI
 
 on: [push, pull_request]
 
+env:
+  ACTIONS_RUNNER_DEBUG: true
+  ACTIONS_STEP_DEBUG: true
+
 jobs:
   Test:
     runs-on: windows-latest
@@ -15,7 +19,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up MSVC
       uses: ilammy/msvc-dev-cmd@v1
