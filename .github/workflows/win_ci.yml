@@ -36,7 +36,7 @@ jobs:
       run: cmake --build build --config ${{matrix.build_type}}
 
     - name: Run tests
-      # working-directory: build
-      working-directory: build/test/${{matrix.build_type}}
-      # run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
-      run: test_suite
+      working-directory: build
+      # working-directory: build/test/${{matrix.build_type}}
+      run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure --verbose
+      # run: test_suite
