@@ -1,4 +1,4 @@
-name: CI
+name: Windows CI
 
 on: [push, pull_request]
 
@@ -36,5 +36,7 @@ jobs:
       run: cmake --build build --config ${{matrix.build_type}}
 
     - name: Run tests
-      working-directory: build
-      run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
+      # working-directory: build
+      working-directory: build/test/${{matrix.build_type}}
+      # run: ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
+      run: test_suite

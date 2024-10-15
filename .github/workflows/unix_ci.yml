@@ -1,4 +1,4 @@
-name: C/C++ CI of Cli
+name: Unix CI
 
 on: [push,pull_request]
 
