@@ -9,53 +9,30 @@ jobs:
       fail-fast: false
 
       matrix:
-        os:
-          - ubuntu-20.04
-          - ubuntu-latest
-          - macos-12
-        compiler:
-          # you can specify the version after `-` like "llvm-13.0.0".
-          - llvm-13.0.0
-          - clang++-14
-          - gcc-11
-          # - gcc-12
+        os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-2022, windows-2019]
+        compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
-        generator:
-          - "Ninja Multi-Config"
-        build_type:
-          - Release
-          - Debug
-
+        # generator: ["Ninja Multi-Config", "Visual Studio 17 2022"]
+        generator: ["Ninja Multi-Config"]
+        build_type: [Release, Debug]
         exclude:
-          # mingw is determined by this author to be too buggy to support
-          - os: macos-12
-            compiler: gcc-11
+          # Exclude msvc on non-Windows platforms
           - os: ubuntu-20.04
+            compiler: msvc
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: macos-12
+            compiler: msvc
+          # Exclude gcc on Windows platforms
+          - os: windows-2022
+            compiler: gcc-11
+          - os: windows-2019
+            compiler: gcc-11
+          # Exclude llvm on Windows platforms
+          - os: windows-2022
             compiler: llvm-13.0.0
-
-        include:
-          # Add appropriate variables for gcov version required. This will intentionally break
-          # if you try to use a compiler that does not have gcov set
-          - compiler: gcc-11
-            gcov_executable: gcov
-          - compiler: llvm-13.0.0
-            gcov_executable: "llvm-cov gcov"
-
-          # Set up preferred package generators, for given build configurations
-          - build_type: Release
-            package_generator: TBZ2
-
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-            standard: 23
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            standard: 23
-            package_generator: ZIP
+          - os: windows-2019
+            compiler: llvm-13.0.0       
 
     steps:
     - uses: actions/checkout@v2
