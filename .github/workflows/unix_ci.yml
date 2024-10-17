@@ -13,19 +13,6 @@ jobs:
         compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
-        include:
-          # Ubuntu and macOS with Ninja
-          - os: ubuntu-20.04
-            generator: "Ninja Multi-Config"
-          - os: ubuntu-latest
-            generator: "Ninja Multi-Config"
-          - os: macos-12
-            generator: "Ninja Multi-Config"
-          # Windows with Visual Studio
-          - os: windows-2022
-            generator: "Visual Studio 17 2022"
-          - os: windows-2019
-            generator: "Visual Studio 17 2022"
         exclude:
           # Exclude msvc on non-Windows platforms
           - os: ubuntu-20.04
@@ -94,13 +81,13 @@ jobs:
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Configure CMake - Windows
       # windows need asio library path
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
+        cmake -S . -B ./build -G -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
   
     - name: Build
       run: |
