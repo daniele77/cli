@@ -87,7 +87,7 @@ jobs:
       # windows need asio library path
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -G -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
+        cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
   
     - name: Build
       run: |
