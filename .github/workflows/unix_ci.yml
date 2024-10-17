@@ -12,9 +12,20 @@ jobs:
         os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-2022, windows-2019]
         compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
-        # generator: ["Ninja Multi-Config", "Visual Studio 17 2022"]
-        generator: ["Ninja Multi-Config"]
         build_type: [Release, Debug]
+        include:
+          # Ubuntu and macOS with Ninja
+          - os: ubuntu-20.04
+            generator: "Ninja Multi-Config"
+          - os: ubuntu-latest
+            generator: "Ninja Multi-Config"
+          - os: macos-12
+            generator: "Ninja Multi-Config"
+          # Windows with Visual Studio
+          - os: windows-2022
+            generator: "Visual Studio 17 2022"
+          - os: windows-2019
+            generator: "Visual Studio 17 2022"
         exclude:
           # Exclude msvc on non-Windows platforms
           - os: ubuntu-20.04
@@ -28,6 +39,9 @@ jobs:
             compiler: gcc-11
           - os: windows-2019
             compiler: gcc-11
+          # Exclude gcc on mac platforms
+          - os: macos-12
+            compiler: gcc-11
           # Exclude llvm on Windows platforms
           - os: windows-2022
             compiler: llvm-13.0.0
@@ -35,7 +49,7 @@ jobs:
             compiler: llvm-13.0.0       
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1
