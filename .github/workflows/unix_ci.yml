@@ -103,12 +103,12 @@ jobs:
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Configure CMake - Windows
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
   
     - name: Build
       run: |
@@ -123,4 +123,4 @@ jobs:
       run: |
         # cd /home/runner/work/cli/cli/build/test/
         # ./test_suite
-        ctest -C ${{matrix.build_type}} --rerun-failed --output-on-failure
+        ctest -C ${{matrix.build_type}} --output-on-failure

@@ -16,7 +16,7 @@ jobs:
         build_type:
           - Release
           - Debug
-        standard: [14, 17, 20]
+        standard: [14, 17, 20, 23]
   
     steps:
     - name: Checkout repository
