@@ -9,56 +9,38 @@ jobs:
       fail-fast: false
 
       matrix:
-        os:
-          - ubuntu-20.04
-          - ubuntu-latest
-          - macos-12
-        compiler:
-          # you can specify the version after `-` like "llvm-13.0.0".
-          - llvm-13.0.0
-          - clang++-14
-          - gcc-11
-          # - gcc-12
+        os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-2022, windows-2019]
+        compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
-        generator:
-          - "Ninja Multi-Config"
-        build_type:
-          - Release
-          - Debug
-
+        build_type: [Release, Debug]
         exclude:
-          # mingw is determined by this author to be too buggy to support
+          # Exclude msvc on non-Windows platforms
+          - os: ubuntu-20.04
+            compiler: msvc
+          - os: ubuntu-latest
+            compiler: msvc
+          - os: macos-12
+            compiler: msvc
+          # Exclude gcc on Windows platforms
+          - os: windows-2022
+            compiler: gcc-11
+          - os: windows-2019
+            compiler: gcc-11
+          # Exclude gcc on mac platforms
           - os: macos-12
             compiler: gcc-11
-          - os: ubuntu-20.04
+          # Exclude llvm on Windows platforms
+          - os: windows-2022
             compiler: llvm-13.0.0
-
-        include:
-          # Add appropriate variables for gcov version required. This will intentionally break
-          # if you try to use a compiler that does not have gcov set
-          - compiler: gcc-11
-            gcov_executable: gcov
-          - compiler: llvm-13.0.0
-            gcov_executable: "llvm-cov gcov"
-
-          # Set up preferred package generators, for given build configurations
-          - build_type: Release
-            package_generator: TBZ2
-
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Debug
-          - os: windows-2022
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-            build_type: Release
-            package_generator: ZIP
-
-
+          - os: windows-2019
+            compiler: llvm-13.0.0       
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Set up MSVC
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1
@@ -92,10 +74,6 @@ jobs:
           choco install ninja
           choco install boost-msvc-14.1
           # # Download and extract Asio
-          # Invoke-WebRequest -Uri https://sourceforge.net/projects/asio/files/asio/1.18.2%20%28Stable%29/asio-1.18.2.zip -OutFile asio.zip
-          # Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
-          # # Set ASIO_INCLUDE_DIR environment variable
-          # echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
           curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
           tar -xf asio.zip
           move asio-asio-1-18-2 asio
@@ -103,12 +81,13 @@ jobs:
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Configure CMake - Windows
+      # windows need asio library path
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
   
     - name: Build
       run: |
@@ -117,7 +96,8 @@ jobs:
         cmake --build ./build --config ${{matrix.build_type}}
 
     - name: run tests
-      # if: runner.os != 'Windows'
+      # on windows test_suite throws an exception, but only on the CI environment!
+      if: runner.os != 'Windows'
       # working-directory: ./build/test/${{matrix.build_type}}
       working-directory: ./build
       run: |
