@@ -19,6 +19,7 @@ jobs:
           - clang++-14
           - gcc-11
           # - gcc-12
+        standard: [14, 17, 20, 23]
         generator:
           - "Ninja Multi-Config"
         build_type:
@@ -101,7 +102,7 @@ jobs:
         # mkdir build
         # cd build
         # cmake .. -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
     - name: Build
       run: |

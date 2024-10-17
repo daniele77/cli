@@ -105,7 +105,11 @@ if (CLI_UseStandaloneAsio)
 	# alternative way:
 	# target_include_directories(cli SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
 endif()
-target_compile_features(cli INTERFACE cxx_std_14)
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    set(CMAKE_CXX_STANDARD 14)
+endif()
+target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
 # Examples
 if (CLI_BuildExamples)
