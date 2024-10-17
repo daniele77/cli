@@ -96,22 +96,28 @@ jobs:
           # Expand-Archive -Path asio.zip -DestinationPath $env:USERPROFILE\asio
           # # Set ASIO_INCLUDE_DIR environment variable
           # echo "ASIO_INCLUDE_DIR=$env:USERPROFILE\asio\asio-1.18.2\include" >> $env:GITHUB_ENV
-
-    - name: Configure CMake
+          curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
+          tar -xf asio.zip
+          move asio-asio-1-18-2 asio
+  
+    - name: Configure CMake - Unix
+      if: runner.os != 'Windows'
       run: |
-        # mkdir build
-        # cd build
-        # cmake .. -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
         cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
 
+    - name: Configure CMake - Windows
+      if: runner.os == 'Windows'
+      run: |
+        cmake -S . -B ./build -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests:BOOL=${{ runner.os != 'Windows' }} -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+  
     - name: Build
       run: |
         # cd /home/runner/work/cli/cli/build
         # make all
         cmake --build ./build --config ${{matrix.build_type}}
 
-    - name: run tests - Unix
-      if: runner.os != 'Windows'
+    - name: run tests
+      # if: runner.os != 'Windows'
       # working-directory: ./build/test/${{matrix.build_type}}
       working-directory: ./build
       run: |

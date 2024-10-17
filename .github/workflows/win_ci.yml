@@ -16,7 +16,8 @@ jobs:
         build_type:
           - Release
           - Debug
-
+        standard: [14, 17, 20]
+  
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -34,7 +35,7 @@ jobs:
         move asio-asio-1-18-2 asio
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DCMAKE_CXX_STANDARD=${{matrix.standard}}
 
     - name: Build
       run: cmake --build build --config ${{matrix.build_type}}
