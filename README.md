@@ -1,6 +1,7 @@
-![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
+[![CI of Cli](https://github.com/daniele77/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/daniele77/cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/codeql.yml)
 
+[:heart: Sponsor](https://github.com/sponsors/daniele77)
 
 # cli
 
@@ -10,9 +11,6 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ![demo_telnet_session](https://user-images.githubusercontent.com/5451767/51046612-d1dadc00-15c6-11e9-83c2-beadb3593348.gif)
 
-![C/C++ CI of Cli](https://github.com/daniele77/cli/workflows/C/C++%20CI%20of%20Cli/badge.svg)
-
-[:heart: Sponsor](https://github.com/sponsors/daniele77)
 
 **IMPORTANT: Breaking API changes!** Version 2.0 of `cli` has made breaking changes in order to add more functionality.
 To migrate your application to new `cli` version, see the section
