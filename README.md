@@ -11,11 +11,6 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 ![demo_telnet_session](https://user-images.githubusercontent.com/5451767/51046612-d1dadc00-15c6-11e9-83c2-beadb3593348.gif)
 
-
-**IMPORTANT: Breaking API changes!** Version 2.0 of `cli` has made breaking changes in order to add more functionality.
-To migrate your application to new `cli` version, see the section
-"Async programming and Schedulers" of this file, or the examples that come with the library.
-
 ## Features
 
 * Header only
