@@ -80,6 +80,11 @@ BOOST_AUTO_TEST_CASE(Insertion)
     history.NewCommand("item3");
     history.NewCommand("item4");
 
+    BOOST_CHECK_EQUAL(history.At(0), "item1");
+    BOOST_CHECK_EQUAL(history.At(1), "item2");
+    BOOST_CHECK_EQUAL(history.At(2), "item3");
+    BOOST_CHECK_EQUAL(history.At(3), "item4");
+
     BOOST_CHECK_EQUAL(history.Previous(""), "item4");
     BOOST_CHECK_EQUAL(history.Previous("item4"), "item3");
     BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
@@ -89,6 +94,12 @@ BOOST_AUTO_TEST_CASE(Insertion)
     BOOST_CHECK_EQUAL(history.Previous("foo"), "item2");
 
     history.NewCommand("item5");
+
+    BOOST_CHECK_EQUAL(history.At(0), "item1");
+    BOOST_CHECK_EQUAL(history.At(1), "item2");
+    BOOST_CHECK_EQUAL(history.At(2), "foo");
+    BOOST_CHECK_EQUAL(history.At(3), "item4");
+    BOOST_CHECK_EQUAL(history.At(4), "item5");
 
     BOOST_CHECK_EQUAL(history.Previous(""), "item5");
     BOOST_CHECK_EQUAL(history.Previous("item5"), "item4");
@@ -150,6 +161,10 @@ BOOST_AUTO_TEST_CASE(Copies)
     const std::vector<std::string> v = { "item1", "item2", "item3" };
     history.LoadCommands(v);
 
+    BOOST_CHECK_EQUAL(history.At(0), "item1");
+    BOOST_CHECK_EQUAL(history.At(1), "item2");
+    BOOST_CHECK_EQUAL(history.At(2), "item3");
+
     BOOST_CHECK_EQUAL(history.Previous(""), "item3");
     BOOST_CHECK_EQUAL(history.Previous("item3"), "item2");
     BOOST_CHECK_EQUAL(history.Previous("item2"), "item1");
@@ -157,6 +172,12 @@ BOOST_AUTO_TEST_CASE(Copies)
 
     history.NewCommand("itemA");
     history.NewCommand("itemB");
+
+    BOOST_CHECK_EQUAL(history.At(0), "item1");
+    BOOST_CHECK_EQUAL(history.At(1), "item2");
+    BOOST_CHECK_EQUAL(history.At(2), "item3");
+    BOOST_CHECK_EQUAL(history.At(3), "itemA");
+    BOOST_CHECK_EQUAL(history.At(4), "itemB");
 
     BOOST_CHECK_EQUAL(history.Previous(""), "itemB");
     BOOST_CHECK_EQUAL(history.Previous("itemB"), "itemA");
@@ -175,12 +196,20 @@ BOOST_AUTO_TEST_CASE(Copies)
     const std::vector<std::string> v1 = { "item1", "item2", "item3" };
     history1.LoadCommands(v1);
 
+    BOOST_CHECK_EQUAL(history1.At(0), "item1");
+    BOOST_CHECK_EQUAL(history1.At(1), "item2");
+    BOOST_CHECK_EQUAL(history1.At(2), "item3");
+
     BOOST_CHECK_EQUAL(history1.Previous(""), "item3");
     BOOST_CHECK_EQUAL(history1.Previous("item3"), "item2");
     BOOST_CHECK_EQUAL(history1.Previous("item2"), "item2");
 
     history1.NewCommand("itemA");
     history1.NewCommand("itemB");
+
+    BOOST_CHECK_EQUAL(history1.At(2), "item3");
+    BOOST_CHECK_EQUAL(history1.At(3), "itemA");
+    BOOST_CHECK_EQUAL(history1.At(4), "itemB");
 
     BOOST_CHECK_EQUAL(history1.Previous(""), "itemB");
     BOOST_CHECK_EQUAL(history1.Previous("itemB"), "itemA");
@@ -198,6 +227,10 @@ BOOST_AUTO_TEST_CASE(Copies)
     history2.NewCommand("itemC");
     history2.NewCommand("itemD");
     history2.NewCommand("itemE");
+
+    BOOST_CHECK_EQUAL(history2.At(2), "itemC");
+    BOOST_CHECK_EQUAL(history2.At(3), "itemD");
+    BOOST_CHECK_EQUAL(history2.At(4), "itemE");
 
     auto cmds2 = history2.GetCommands();
     const std::vector<std::string> expected2 = { "itemC", "itemD", "itemE" };
