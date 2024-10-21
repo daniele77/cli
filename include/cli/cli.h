@@ -361,6 +361,7 @@ namespace cli
         void ExecFromHistory(unsigned index)
         {
             const auto cmd = history.At(index);
+            history.ForgetLatest();
             Feed(cmd);
         }
 

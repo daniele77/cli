@@ -153,6 +153,12 @@ public:
         return buffer[index];
     }
 
+    void ForgetLatest()
+    {
+        assert(!buffer.empty());
+        buffer.pop_front();
+    }
+
 private:
 
     // oldest has index = size-1 and id = idOfOldest
