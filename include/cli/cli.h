@@ -358,6 +358,13 @@ namespace cli
 
         void ShowHistory() const { history.Show(out); }
 
+        void ExecFromHistory(unsigned index)
+        {
+            history.ForgetLatest();
+            const auto cmd = history.At(index);
+            Feed(cmd);
+        }
+
         std::string PreviousCmd(const std::string& line)
         {
             return history.Previous(line);
@@ -890,13 +897,16 @@ namespace cli
                 [this](std::ostream&){ Exit(); },
                 "Quit the session"
             );
-#ifdef CLI_HISTORY_CMD
             globalScopeMenu->Insert(
                 "history",
                 [this](std::ostream&){ ShowHistory(); },
                 "Show the history"
             );
-#endif
+            globalScopeMenu->Insert(
+                "!", {"history entry index"},
+                [this](std::ostream&, unsigned cmdIndex){ ExecFromHistory(cmdIndex); },
+                "Exec a command by index in the history"
+            );
         }
 
     inline void CliSession::Feed(const std::string& cmd)
@@ -909,7 +919,6 @@ namespace cli
 
         try
         {
-
             // global cmds check
             bool found = globalScopeMenu->ScanCmds(strs, *this);
 

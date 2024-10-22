@@ -241,4 +241,39 @@ BOOST_AUTO_TEST_CASE(EscapedCases)
     BOOST_CHECK_EQUAL(strs[0], R"(foo\"bar)");
 }
 
+BOOST_AUTO_TEST_CASE(Symbols)
+{
+    VS strs;
+
+    split(strs, "!foo"); // two words!
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "!");
+    BOOST_CHECK_EQUAL(strs[1], "foo");
+
+    split(strs, "    !    foo    "); // two words
+    BOOST_CHECK_EQUAL(strs.size(), 2);
+    BOOST_CHECK_EQUAL(strs[0], "!");
+    BOOST_CHECK_EQUAL(strs[1], "foo");
+
+    split(strs, "!42!69!"); // 5 words
+    BOOST_CHECK_EQUAL(strs.size(), 5);
+    BOOST_CHECK_EQUAL(strs[0], "!");
+    BOOST_CHECK_EQUAL(strs[1], "42");
+    BOOST_CHECK_EQUAL(strs[2], "!");
+    BOOST_CHECK_EQUAL(strs[3], "69");
+    BOOST_CHECK_EQUAL(strs[4], "!");
+
+    split(strs, " 38!42!69! 72 ! 33"); // 9 words
+    BOOST_CHECK_EQUAL(strs.size(), 9);
+    BOOST_CHECK_EQUAL(strs[0], "38");
+    BOOST_CHECK_EQUAL(strs[1], "!");
+    BOOST_CHECK_EQUAL(strs[2], "42");
+    BOOST_CHECK_EQUAL(strs[3], "!");
+    BOOST_CHECK_EQUAL(strs[4], "69");
+    BOOST_CHECK_EQUAL(strs[5], "!");
+    BOOST_CHECK_EQUAL(strs[6], "72");
+    BOOST_CHECK_EQUAL(strs[7], "!");
+    BOOST_CHECK_EQUAL(strs[8], "33");
+}
+
 BOOST_AUTO_TEST_SUITE_END()
