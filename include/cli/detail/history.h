@@ -166,14 +166,14 @@ private:
     std::size_t IndexToId(std::size_t index) const
     {
         if (index > idOfOldest+buffer.size()-1)
-            throw std::out_of_range("Index not found in buffer");
+            throw std::out_of_range("Index not found in history");
         return idOfOldest + buffer.size() - 1 - index;
     }
 
     std::size_t IdToIndex(std::size_t id) const
     {
         if (id < idOfOldest || id > idOfOldest+buffer.size()-1)
-            throw std::out_of_range("Index not found in buffer");
+            throw std::out_of_range("Index not found in history");
         return idOfOldest + buffer.size() - 1 - id;
     }
 

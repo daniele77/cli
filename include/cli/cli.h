@@ -360,8 +360,8 @@ namespace cli
 
         void ExecFromHistory(unsigned index)
         {
-            const auto cmd = history.At(index);
             history.ForgetLatest();
+            const auto cmd = history.At(index);
             Feed(cmd);
         }
 
@@ -919,7 +919,6 @@ namespace cli
 
         try
         {
-
             // global cmds check
             bool found = globalScopeMenu->ScanCmds(strs, *this);
 

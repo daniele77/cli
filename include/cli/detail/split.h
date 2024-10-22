@@ -101,6 +101,10 @@ private:
             state = State::escape;
             splitResult.emplace_back("");
         }
+        else if (c == '!')
+        {
+            splitResult.emplace_back(1, c);
+        }
         else
         {
             state = State::word;
@@ -114,6 +118,11 @@ private:
         {
             state = State::space;
         }
+        else if (c == '!')
+        {
+            splitResult.emplace_back(1, c);
+            state = State::space;
+        }
         else if (c == '"' || c == '\'')
         {
             NewSentence(c);
@@ -122,7 +131,7 @@ private:
         {
             prev_state = state;
             state = State::escape;
-        }
+        }      
         else
         {
             assert(!splitResult.empty());
