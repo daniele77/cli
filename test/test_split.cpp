@@ -274,6 +274,14 @@ BOOST_AUTO_TEST_CASE(Symbols)
     BOOST_CHECK_EQUAL(strs[6], "72");
     BOOST_CHECK_EQUAL(strs[7], "!");
     BOOST_CHECK_EQUAL(strs[8], "33");
+
+    split(strs, R"( 38!"42!69"! "72 ! 33" )"); // 5 words
+    BOOST_CHECK_EQUAL(strs.size(), 5);
+    BOOST_CHECK_EQUAL(strs[0], "38");
+    BOOST_CHECK_EQUAL(strs[1], "!");
+    BOOST_CHECK_EQUAL(strs[2], "42!69");
+    BOOST_CHECK_EQUAL(strs[3], "!");
+    BOOST_CHECK_EQUAL(strs[4], "72 ! 33");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

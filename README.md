@@ -174,9 +174,12 @@ This indicates you're in the root menu.
 ### Commands in any menu
 
 - `help`: Prints a list of available commands with descriptions.
+- `history`: Displays the list of previously entered commands.
+- `exit`: Terminates the CLI application.
 - **Command execution:**
     - **Current menu:** Enter the name of a command available in the current menu to execute it.
     - **Submenu (full path):** Specify the complete path (separated by spaces) to a command within a submenu to execute it.
+    - **History execution:** Use `!` followed by the identifier of a history item to execute that command again.
 
 ### Autocompletion
 
