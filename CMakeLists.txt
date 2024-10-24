@@ -70,7 +70,7 @@ endif()
 if (CLI_UseBoostAsio)
     set(Boost_NO_BOOST_CMAKE ON)
     add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
-    find_package(Boost 1.55 REQUIRED COMPONENTS system)
+    find_package(Boost 1.66 REQUIRED COMPONENTS system)
 endif()
 
 if (CLI_UseStandaloneAsio)

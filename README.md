@@ -32,7 +32,7 @@ A cross-platform header only C++14 library for interactive command line interfac
 
 The library has no dependencies if you don't need remote sessions.
 
-The library depends on asio (either the standalone version or the boost version)
+The library depends on asio (either the standalone version or the boost version >= 1.66)
 *only* to provide telnet server (i.e., remote sessions).
 
 ## Installation

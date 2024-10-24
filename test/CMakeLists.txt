@@ -37,7 +37,7 @@ set(Boost_NO_BOOST_CMAKE ON)
 add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
 # finds boost, triggers an error otherwise
-find_package(Boost 1.55 REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework system)
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
@@ -66,7 +66,7 @@ target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 # indicates the shared library variant
 target_compile_definitions(test_suite PRIVATE "BOOST_TEST_DYN_LINK=1")
 # indicates the link paths
-target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} standalone_asio_test cli::cli)
+target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} Boost::system standalone_asio_test cli::cli)
 
 # declares a test with our executable
 add_test(NAME cli_test COMMAND test_suite)
