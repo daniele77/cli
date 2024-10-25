@@ -3,16 +3,16 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [2.2.0] - 2024-10-25
 
- - Fix issue with remote session on ARM platforms (issue [#220](https://github.com/daniele77/cli/issues/220))
+ - Add clear screen command using ctrl + L  (issue [#229](https://github.com/daniele77/cli/issues/229))
+ - Add history view and execute an history command with bang + id (issue [#235](https://github.com/daniele77/cli/issues/235))
  - Custom handler for wrong commands (issue [#223](https://github.com/daniele77/cli/issues/223))
  - Parent menus does not chain (issue [#234](https://github.com/daniele77/cli/issues/234))
  - Parent menu shortcut (issue [#233](https://github.com/daniele77/cli/issues/233))
  - Integer overflow warning detected by clang++ (issue [#236](https://github.com/daniele77/cli/issues/236))
  - Enable Keyboard Handling in Command Handlers on Linux Platform (issue [#239](https://github.com/daniele77/cli/issues/239))
- - Add clear screen command using ctrl + L  (issue [#229](https://github.com/daniele77/cli/issues/229))
- - Add history view and execute an history command with bang + id (issue [#235](https://github.com/daniele77/cli/issues/235))
+ - Fix issue with remote session on ARM platforms (issue [#220](https://github.com/daniele77/cli/issues/220))
 
 ## [2.1.0] - 2023-06-29
 
