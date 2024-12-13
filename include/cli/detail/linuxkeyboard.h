@@ -100,14 +100,13 @@ private:
 };
 
 //
-
-
 class LinuxKeyboard : public InputDevice
 {
 public:
     explicit LinuxKeyboard(Scheduler& _scheduler) :
         InputDevice(_scheduler),
         enabled(false),
+        closing(false),
         servant( [this]() noexcept { Read(); } )
     {
         ActivateInput();
@@ -116,10 +115,17 @@ public:
     {
         ToStandardMode();
         is.Stop();
+        
+        {
+            std::lock_guard<std::mutex> lock(mtx);
+            closing = true;          // Signal to stop
+            cv.notify_one();          // Wake up the thread if waiting
+        }
+
         servant.join();
     }
     void ActivateInput() override
-    {
+    {   
         ToManualMode();
         std::lock_guard<std::mutex> lock(mtx);
         enabled = true;
@@ -142,7 +148,11 @@ private:
             {
                 {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this]{ return enabled; }); // release mtx, suspend thread execution until enabled becomes true
+                    cv.wait(lock, [this]{ return enabled || closing; }); // release mtx, suspend thread execution until enabled becomes true
+                    if (closing) 
+                    {
+                        break;
+                    }
                 }
                 auto k = Get();
                 Notify(k);
@@ -226,16 +236,18 @@ private:
     }
 
     bool enabled;
+    bool closing;
     termios oldt;
     termios newt;
     InputSource is;
-    std::thread servant;
     std::mutex mtx;
     std::condition_variable cv;
+    std::thread servant;
 };
 
 } // namespace detail
 } // namespace cli
 
 #endif // CLI_DETAIL_LINUXKEYBOARD_H_
+
 
