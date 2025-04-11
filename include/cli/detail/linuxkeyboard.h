@@ -100,36 +100,26 @@ private:
 };
 
 //
+
 class LinuxKeyboard : public InputDevice
 {
 public:
     explicit LinuxKeyboard(Scheduler& _scheduler) :
         InputDevice(_scheduler),
         enabled(false),
-        closing(false),
         servant( [this]() noexcept { Read(); } )
     {
-        ActivateInput();
+        ActivateInputImpl();
     }
     ~LinuxKeyboard() override
     {
         ToStandardMode();
         is.Stop();
-        
-        {
-            std::lock_guard<std::mutex> lock(mtx);
-            closing = true;          // Signal to stop
-            cv.notify_one();          // Wake up the thread if waiting
-        }
-
         servant.join();
     }
     void ActivateInput() override
-    {   
-        ToManualMode();
-        std::lock_guard<std::mutex> lock(mtx);
-        enabled = true;
-        cv.notify_one();
+    {
+        ActivateInputImpl();
     }
     void DeactivateInput() override
     {
@@ -137,8 +127,17 @@ public:
         std::lock_guard<std::mutex> lock(mtx);
         enabled = false;
     }
+    
+    private:
 
-private:
+    // we need a private non virtual method to call from the constructor
+    void ActivateInputImpl()
+    {
+        ToManualMode();
+        std::lock_guard<std::mutex> lock(mtx);
+        enabled = true;
+        cv.notify_one();
+    }
 
     void Read() noexcept
     {
@@ -148,11 +147,7 @@ private:
             {
                 {
                     std::unique_lock<std::mutex> lock(mtx);
-                    cv.wait(lock, [this]{ return enabled || closing; }); // release mtx, suspend thread execution until enabled becomes true
-                    if (closing) 
-                    {
-                        break;
-                    }
+                    cv.wait(lock, [this]{ return enabled; }); // release mtx, suspend thread execution until enabled becomes true
                 }
                 auto k = Get();
                 Notify(k);
@@ -236,7 +231,6 @@ private:
     }
 
     bool enabled;
-    bool closing;
     termios oldt;
     termios newt;
     InputSource is;
