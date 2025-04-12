@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest, macos-12, windows-2022, windows-2019]
+        os: [ubuntu-20.04, ubuntu-latest, macos-13, windows-2022, windows-2019]
         compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]

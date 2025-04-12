@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+ - Fix mutex initialization issue in cli library (pr [#249](https://github.com/daniele77/cli/pull/249))
+
 ## [2.2.0] - 2024-10-25
 
  - Add clear screen command using ctrl + L  (issue [#229](https://github.com/daniele77/cli/issues/229))
