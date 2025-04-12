@@ -114,11 +114,8 @@ int main()
     {
         // main application that creates an asio io_context and uses it
         IoContext iocontext;
-        boost::asio::deadline_timer timer(
-            iocontext,
-            boost::posix_time::seconds(5)
-        );
-        timer.async_wait([](const boost::system::error_code&){ cout << "Timer expired!\n"; });
+        boost::asio::steady_timer timer(iocontext, std::chrono::seconds(5));
+        timer.async_wait([](const error_code&){ cout << "Timer expired!\n"; });
 
         // cli setup
         UserInterface interface(iocontext);
