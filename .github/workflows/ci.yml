@@ -10,7 +10,7 @@ jobs:
 
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, macos-13, windows-2022, windows-2019]
-        compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
+        compiler: [llvm-13.0.0, clang++-latest, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
         exclude:
@@ -36,7 +36,7 @@ jobs:
             compiler: llvm-13.0.0       
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     # - name: Set up MSVC
     #  if: runner.os == 'Windows'
@@ -77,7 +77,7 @@ jobs:
           curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
           tar -xf asio.zip
           move asio-asio-1-18-2 asio
-  
+
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
