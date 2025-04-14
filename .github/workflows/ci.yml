@@ -9,13 +9,13 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-20.04, ubuntu-latest, macos-13, windows-2022, windows-2019]
+        os: [ubuntu-22.04, ubuntu-latest, macos-13, windows-2022, windows-2019]
         compiler: [llvm-13.0.0, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
         exclude:
           # Exclude msvc on non-Windows platforms
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             compiler: msvc
           - os: ubuntu-latest
             compiler: msvc
@@ -82,9 +82,6 @@ jobs:
       if: runner.os != 'Windows'
       run: |
         cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-        if [[ "${{ matrix.compiler }}" == "llvm-13.0.0" && "${{ runner.os }}" == "Linux" ]]; then
-          cmake -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++" -DCMAKE_SHARED_LINKER_FLAGS="${CMAKE_SHARED_LINKER_FLAGS} -stdlib=libc++" -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-        fi
 
     - name: Configure CMake - Windows
       # windows need asio library path
