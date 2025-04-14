@@ -10,7 +10,7 @@ jobs:
 
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, macos-13, windows-2022, windows-2019]
-        compiler: [llvm-13.0.0, clang++-latest, gcc-11, msvc]
+        compiler: [llvm-17.0.2, clang++-14, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
         exclude:
@@ -31,9 +31,9 @@ jobs:
             compiler: gcc-11
           # Exclude llvm on Windows platforms
           - os: windows-2022
-            compiler: llvm-13.0.0
+            compiler: llvm-17.0.2
           - os: windows-2019
-            compiler: llvm-13.0.0       
+            compiler: llvm-17.0.2       
 
     steps:
     - uses: actions/checkout@v4
