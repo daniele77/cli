@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-22.04, macos-15, windows-2022, windows-2019]
+        os: [ubuntu-22.04, macos-14, windows-2022, windows-2019]
         compiler: [llvm-17.0.2, clang++-15, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
@@ -17,7 +17,7 @@ jobs:
           # Exclude msvc on non-Windows platforms
           - os: ubuntu-22.04
             compiler: msvc
-          - os: macos-15
+          - os: macos-14
             compiler: msvc
           # Exclude gcc on Windows platforms
           - os: windows-2022
@@ -25,7 +25,7 @@ jobs:
           - os: windows-2019
             compiler: gcc-11
           # Exclude gcc on mac platforms
-          - os: macos-15
+          - os: macos-14
             compiler: gcc-11
           # Exclude llvm on Windows platforms
           - os: windows-2022
@@ -68,7 +68,6 @@ jobs:
       run: |
           brew install ninja
           brew install boost
-          echo "BOOST_ROOT=$(brew --prefix boost)" >> $GITHUB_ENV
           brew install asio
           
     - name: setup dependencies - Windows
@@ -81,15 +80,10 @@ jobs:
           tar -xf asio.zip
           move asio-asio-1-18-2 asio
 
-    - name: Configure CMake - Unix (Linux)
-      if: runner.os == 'Linux'
+    - name: Configure CMake - Unix
+      if: runner.os != 'Windows'
       run: |
         cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
-
-    - name: Configure CMake - macOS
-      if: runner.os == 'macOS'
-      run: |
-        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DBOOST_ROOT=$BOOST_ROOT -DBoost_NO_SYSTEM_PATHS=ON -DBoost_NO_BOOST_CMAKE=ON
 
     - name: Configure CMake - Windows
       # windows need asio library path
