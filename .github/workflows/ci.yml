@@ -67,7 +67,7 @@ jobs:
       if: runner.os == 'macOS'
       run: |
           brew install ninja
-          brew install boost boost-system
+          brew install boost
           brew install asio
           
     - name: setup dependencies - Windows
@@ -83,13 +83,33 @@ jobs:
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
-        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake \
+          -S . \
+          -B ./build \
+          -G "Ninja Multi-Config" \
+          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+          -DCLI_BuildTests=ON \
+          -DCLI_BuildExamples=ON \
+          -DCLI_UseBoostAsio=ON \
+          -DBOOST_ERROR_CODE_HEADER_ONLY=ON \
+          -DBOOST_SYSTEM_NO_LIB=ON
 
     - name: Configure CMake - Windows
       # windows need asio library path
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
+        cmake \
+          -S . \
+          -B ./build \
+          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+          -DCLI_BuildTests=ON \
+          -DCLI_BuildExamples=ON \
+          -DCLI_UseBoostAsio=ON \
+          -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include \
+          -DBOOST_ERROR_CODE_HEADER_ONLY=ON \
+          -DBOOST_SYSTEM_NO_LIB=ON
   
     - name: Build
       run: |
