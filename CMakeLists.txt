@@ -27,7 +27,7 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 
 project(
     cli
@@ -64,46 +64,60 @@ if(WIN32)
     endmacro()
 
     get_WIN32_WINNT(ver)
-    add_definitions(-D_WIN32_WINNT=${ver})
-endif()
-
-if (CLI_UseBoostAsio)
-    set(Boost_NO_BOOST_CMAKE ON)
-    add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
-    find_package(Boost 1.66 REQUIRED COMPONENTS system)
-endif()
-
-if (CLI_UseStandaloneAsio)
-    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
-    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
+    # add_definitions(-D_WIN32_WINNT=${ver})
 endif()
 
 find_package(Threads REQUIRED)
 
-# Add Library
+# ----------------------------
+# Boost
+# ----------------------------
+if(CLI_UseBoostAsio)
+    # Create a dummy INTERFACE library to carry Boost headers
+    add_library(BoostSystem INTERFACE)
+    target_compile_definitions(BoostSystem INTERFACE
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_LIB
+    )
+
+    find_package(Boost REQUIRED) # without COMPONENTS, header-only usage
+    target_include_directories(BoostSystem SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+
+    install(TARGETS BoostSystem EXPORT cliTargets)
+endif()
+
+# ----------------------------
+# Standalone Asio
+# ----------------------------
+if(CLI_UseStandaloneAsio)
+    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
+endif()
+
+# ----------------------------
+# Main CLI interface library
+# ----------------------------
 add_library(cli INTERFACE)
-# Add target alias
 add_library(cli::cli ALIAS cli)
 
 target_include_directories(cli
     INTERFACE
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
 target_link_libraries(cli INTERFACE Threads::Threads)
-if (CLI_UseBoostAsio)
-    target_link_libraries(cli INTERFACE Boost::system)
-    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
-endif()
-if (CLI_UseStandaloneAsio)
-	add_library(standalone_asio INTERFACE IMPORTED)
-	target_include_directories(standalone_asio SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
-	target_link_libraries(standalone_asio INTERFACE Threads::Threads)
-    target_link_libraries(cli INTERFACE standalone_asio)
 
-	# alternative way:
-	# target_include_directories(cli SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+if(CLI_UseBoostAsio)
+    target_link_libraries(cli INTERFACE BoostSystem)
+    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED)
+endif()
+
+if(CLI_UseStandaloneAsio)
+    add_library(standalone_asio INTERFACE IMPORTED)
+    target_include_directories(standalone_asio SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+    target_link_libraries(standalone_asio INTERFACE Threads::Threads)
+    target_link_libraries(cli INTERFACE standalone_asio)
 endif()
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
@@ -111,18 +125,24 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
 endif()
 target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
+# ----------------------------
 # Examples
-if (CLI_BuildExamples)
+# ----------------------------
+if(CLI_BuildExamples)
     add_subdirectory(examples)
 endif()
 
+# ----------------------------
 # Tests
-if (CLI_BuildTests)
+# ----------------------------
+if(CLI_BuildTests)
     enable_testing()
     add_subdirectory(test)
 endif()
 
+# ----------------------------
 # Install
+# ----------------------------
 if(NOT CMAKE_SKIP_INSTALL_RULES)
     install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
@@ -138,11 +158,7 @@ if(NOT CMAKE_SKIP_INSTALL_RULES)
         ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         CACHE PATH "Installation directory for pkg-config (cli.pc) file"
     )
-    configure_file(
-        "cli.pc.in"
-        "cli.pc"
-        @ONLY
-    )
+    configure_file("cli.pc.in" "cli.pc" @ONLY)
 
     install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
