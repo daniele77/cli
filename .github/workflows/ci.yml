@@ -9,7 +9,8 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022, windows-2019]
+        # os: [ubuntu-22.04, macos-14, windows-2022, windows-2025]
+        os: [ubuntu-22.04, windows-2022, windows-2025]
         compiler: [llvm-17.0.2, clang++-15, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
@@ -22,7 +23,7 @@ jobs:
           # Exclude gcc on Windows platforms
           - os: windows-2022
             compiler: gcc-11
-          - os: windows-2019
+          - os: windows-2025
             compiler: gcc-11
           # Exclude gcc on mac platforms
           - os: macos-14
@@ -30,7 +31,7 @@ jobs:
           # Exclude llvm on Windows platforms
           - os: windows-2022
             compiler: llvm-17.0.2
-          - os: windows-2019
+          - os: windows-2025
             compiler: llvm-17.0.2       
 
     steps:
