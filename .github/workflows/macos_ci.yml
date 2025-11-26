@@ -1,0 +1,56 @@
+name: CI
+
+on: [push,pull_request]
+
+jobs:
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [macos-1]
+        compiler: [llvm-17.0.2, clang++-15]
+        standard: [14, 17, 20, 23]
+        build_type: [Release, Debug]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{ matrix.compiler }}
+        vcvarsall: ${{ contains(matrix.os, 'windows' )}}
+
+        cmake: true
+        ninja: true
+        vcpkg: false
+        ccache: true
+        clangtidy: true
+
+        cppcheck: true
+
+        gcovr: true
+        opencppcoverage: true
+          
+    - name: setup dependencies
+      run: |
+          brew install ninja
+          brew install boost
+          brew install asio
+      
+    - name: Configure CMake
+      run: |
+        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+
+    - name: Build
+      run: |
+        cmake --build ./build --config ${{matrix.build_type}}
+
+    - name: run test
+      working-directory: ./build
+      run: |
+        # cd /home/runner/work/cli/cli/build/test/
+        # ./test_suite
+        ctest -C ${{matrix.build_type}} --output-on-failure
