@@ -43,6 +43,10 @@ option(CLI_BuildTests "Build the unit tests." OFF)
 option(CLI_UseBoostAsio "Use the boost asio library." OFF)
 option(CLI_UseStandaloneAsio "Use the standalone asio library." OFF)
 
+# Add Library
+add_library(cli INTERFACE)
+# Add target alias
+add_library(cli::cli ALIAS cli)
 
 if(WIN32)
     macro(get_WIN32_WINNT version)
@@ -69,19 +73,20 @@ endif()
 
 if (CLI_UseBoostAsio)
     set(Boost_NO_BOOST_CMAKE ON)
-    add_definitions(-DBOOST_ALL_NO_LIB)
-
-    # Prima proviamo a trovare Boost::system (versioni classiche)
     find_package(Boost 1.66 QUIET COMPONENTS system)
 
-    if (NOT Boost_SYSTEM_FOUND)
-        message(STATUS "Boost.System non trovato: uso la modalità header-only")
-        add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
-        add_definitions(-DBOOST_SYSTEM_NO_LIB)
-
-        # Cerca solo le headers (funziona con homebrew >=1.86)
-        find_package(Boost 1.66 REQUIRED)
+    if (Boost_SYSTEM_FOUND)
+        message(STATUS "Found Boost.System: using compiled library")
+        target_link_libraries(cli INTERFACE Boost::system)
+    else()
+        message(STATUS "Boost.System not found: falling back to header-only")
+        target_compile_definitions(cli INTERFACE
+            BOOST_ERROR_CODE_HEADER_ONLY
+            BOOST_SYSTEM_NO_LIB
+        )
     endif()
+
+    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
 endif()
 
 if (CLI_UseStandaloneAsio)
@@ -90,11 +95,6 @@ if (CLI_UseStandaloneAsio)
 endif()
 
 find_package(Threads REQUIRED)
-
-# Add Library
-add_library(cli INTERFACE)
-# Add target alias
-add_library(cli::cli ALIAS cli)
 
 target_include_directories(cli
     INTERFACE

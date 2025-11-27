@@ -38,25 +38,15 @@ add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
 find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
 
-if (NOT Boost_SYSTEM_FOUND)
-    message(STATUS "Boost.System mancante: uso header-only anche per i test")
-    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
-    add_definitions(-DBOOST_SYSTEM_NO_LIB)
-
-    # cerca solo headers (unit_test_framework rimane comunque solo-header, ok)
-    find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework)
+if (Boost_SYSTEM_FOUND)
+    message(STATUS "Using Boost.System library for tests")
+else()
+    message(STATUS "Boost.System missing: using header-only mode for tests")
+    target_compile_definitions(test_suite PRIVATE
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_LIB
+    )
 endif()
-find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
-
-if (NOT Boost_SYSTEM_FOUND)
-    message(STATUS "Boost.System mancante: uso header-only anche per i test")
-    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
-    add_definitions(-DBOOST_SYSTEM_NO_LIB)
-
-    # cerca solo headers (unit_test_framework rimane comunque solo-header, ok)
-    find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework)
-endif()
-
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
@@ -85,7 +75,15 @@ target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 # indicates the shared library variant
 target_compile_definitions(test_suite PRIVATE "BOOST_TEST_DYN_LINK=1")
 # indicates the link paths
-target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} Boost::system standalone_asio_test cli::cli)
+target_link_libraries(test_suite
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    standalone_asio_test
+    cli::cli
+)
+# add it only if found
+if (Boost_SYSTEM_FOUND)
+    target_link_libraries(test_suite Boost::system)
+endif()
 
 # declares a test with our executable
 add_test(NAME cli_test COMMAND test_suite)
