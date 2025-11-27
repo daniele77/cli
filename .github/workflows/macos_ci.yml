@@ -39,7 +39,7 @@ jobs:
       run: |
           brew update
           brew install ninja
-          brew install boost
+          brew install boost --build-from-source
           brew install asio
       
     - name: Configure CMake
