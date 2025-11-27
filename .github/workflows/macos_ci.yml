@@ -9,9 +9,9 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [macos-14]
+        os: [macos-14, macos-15, macos-26]
         compiler: [llvm-17.0.2, clang++-15]
-        standard: [14, 17, 20, 23]
+        standard: [14, 17, 20, 23, 26]
         build_type: [Release, Debug]
 
     steps:
