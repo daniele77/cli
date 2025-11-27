@@ -39,22 +39,25 @@ jobs:
       run: |
           brew update
           brew install ninja
-          brew install boost --build-from-source
+          brew install boost
           brew install asio
       
     - name: Configure CMake
       run: |
         cmake -S . -B ./build \
               -G Ninja \
-              -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-              -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
+              -DCMAKE_CXX_FLAGS="-DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_LIB" \
               -DCLI_BuildTests=ON \
               -DCLI_BuildExamples=ON \
               -DCLI_UseBoostAsio=ON \
               -DBOOST_ROOT=$BOOST_ROOT \
               -DBOOST_INCLUDEDIR=$BOOST_ROOT/include \
               -DBOOST_LIBRARYDIR=$BOOST_ROOT/lib \
-              -DBoost_NO_BOOST_CMAKE=ON
+              -DBoost_NO_BOOST_CMAKE=ON \
+              -DBoost_USE_STATIC_LIBS=OFF \
+              -DBoost_USE_STATIC_RUNTIME=OFF
 
     - name: Build
       run: |
