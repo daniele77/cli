@@ -90,8 +90,24 @@ jobs:
       # windows need asio library path
       if: runner.os == 'Windows'
       run: |
-        cmake -S . -B ./build -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON -DASIO_INCLUDEDIR=${{ github.workspace }}/asio/asio/include
-  
+        Start-Sleep -Seconds 2
+      
+        # Correctly constructs the path for Windows
+        $AsioPath = Join-Path $env:GITHUB_WORKSPACE "asio/asio/include"
+        # Converts to forward slash (CMake handles them better)
+        $AsioPath = $AsioPath -replace "\\", "/"
+      
+        echo "ASIO path: $AsioPath"
+        dir $AsioPath
+      
+        cmake -S . -B ./build `
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} `
+          -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
+          -DCLI_BuildTests=ON `
+          -DCLI_BuildExamples=ON `
+          -DCLI_UseBoostAsio=ON `
+          -DASIO_INCLUDEDIR="$AsioPath"
+      
     - name: Build
       run: |
         # cd /home/runner/work/cli/cli/build

@@ -10,7 +10,7 @@ jobs:
 
       matrix:
         os: [macos-14, macos-15, macos-26]
-        compiler: [llvm-17.0.2, clang++-15]
+        compiler: [apple-clang, llvm-18, llvm-19]
         standard: [14, 17, 20, 23, 26]
         build_type: [Release, Debug]
 
