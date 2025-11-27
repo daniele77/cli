@@ -45,6 +45,7 @@
 #include "volatilehistorystorage.h"
 #include <iostream>
 #include <utility>
+#include <numeric>
 
 namespace cli
 {
@@ -262,6 +263,7 @@ namespace cli
         virtual void Disable() { enabled = false; }
         virtual bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) = 0;
         virtual void Help(std::ostream& out) const = 0;
+	virtual void FunctionHelp(std::ostream& out) const = 0;
         // Returns the collection of completions relatives to this command.
         // For simple commands, provides a base implementation that use the name of the command
         // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
@@ -323,9 +325,15 @@ namespace cli
 
         void Current(Menu* menu) { current = menu; }
 
+	Menu* Current() {return current;}
+
         std::ostream& OutStream() { return out; }
 
         void Help() const;
+
+	void FunctionHelp(const std::string& arg);
+
+	void WrongCommandHandler(std::ostream& out, const std::string& cmd);
 
         void Enter() 
         {
@@ -443,6 +451,15 @@ namespace cli
 
     // ********************************************************************
 
+auto getName = [](const Command& cmd) -> const std::string& {
+    class Accessor : public Command {
+    public:
+        using Command::Name; // Expose the protected method
+    };
+    return static_cast<const Accessor&>(cmd).Name();
+};
+
+
     class Menu : public Command
     {
     public:
@@ -460,7 +477,8 @@ namespace cli
             description(std::move(desc)),
             prompt(_prompt.empty() ? _name : _prompt),
             cmds(std::make_shared<Cmds>())
-        {}
+        {
+            }
 
         template <typename R, typename ... Args>
         CmdHandler Insert(const std::string& cmdName, R (*f)(std::ostream&, Args...), const std::string& help, const std::vector<std::string>& parDesc={});
@@ -531,10 +549,101 @@ namespace cli
                 parent->Help(out);
         }
 
+
+		void MainFunctionHelp(std::ostream& out, const std::string& arg, CliSession& session) {
+			if (!IsEnabled()) return;
+            bool added = false;
+             if (parent && (parent->parent == nullptr)) {
+                Insert(
+                parent->Prompt(),
+                [this](std::ostream&){},
+                "(menu)"
+                );
+                added = true;
+             }
+
+			for (auto& cmd: *cmds) {
+				std::string cmdName = getName(*cmd);
+                auto originalMenu = session.Current();
+				if (HandleCommand({cmdName}, {arg}, session)) {
+					cmd->FunctionHelp(out);
+                    session.Current(originalMenu);
+                    if (added == true) {
+                        cmds->pop_back();
+                    }
+
+					return;
+				}
+                session.Current(originalMenu);
+			}
+			if (parent != nullptr) {
+				if (added == true) {
+                        cmds->pop_back();
+                }
+                parent->MainFunctionHelp(out, arg, session);
+			}
+			else {
+				session.WrongCommandHandler(out, arg);
+                if (added == true) {
+                        cmds->pop_back();
+                }
+
+			}
+	}
+
+
         void Help(std::ostream& out) const override
         {
             if (!IsEnabled()) return;
             out << " - " << Name() << "\n\t" << description << "\n";
+        }
+
+        void FunctionHelp(std::ostream& out) const override
+        {
+            if (!IsEnabled()) return;
+            out << "\t" << description << "\n";
+        }
+
+        bool CheckCommand(const std::string& arg, CliSession& session) 
+        {
+            bool added = false;
+            std::vector<std::string> cmdNames;
+            if (parent && (parent->parent == nullptr)) {
+                Insert(
+                parent->Prompt(),
+                [this](std::ostream&){},
+                "(menu)"
+                );
+                added = true;
+            }
+
+            for (auto& cmd: *cmds) {
+                std::string cmdName = getName(*cmd);
+                cmdNames.push_back(cmdName);
+            }
+
+
+            auto originalMenu = session.Current();
+            if (HandleCommand(cmdNames, {arg}, session)) {
+                session.Current(originalMenu);
+                if (added == true) {
+                    cmds->pop_back();
+                }
+                return true;
+            }
+            session.Current(originalMenu);
+
+            if (parent != nullptr) {
+                if (added == true) {
+                    cmds->pop_back();
+                }
+                return parent->CheckCommand(arg, session);
+            }
+
+            if (added == true) {
+                cmds->pop_back();
+            }
+            return false;
         }
 
         // returns:
@@ -576,6 +685,8 @@ namespace cli
 
             return Command::GetCompletionRecursive(line);
         }
+
+
 
     private:
 
@@ -799,11 +910,18 @@ namespace cli
         {
             if (!IsEnabled()) return;
             out << " - " << Name();
-            if (parameterDesc.empty())
+            if (parameterDesc.empty() && std::strcmp(TypeDesc<std::vector<std::string>>::Name(), "<list of strings>"))
                 PrintDesc<Args...>::Dump(out);
             for (auto& s: parameterDesc)
                 out << " <" << s << '>';
             out << "\n\t" << description << "\n";
+        }
+        void FunctionHelp(std::ostream& out) const override
+        {
+            if (!IsEnabled()) return;
+            if (parameterDesc.empty() && std::strcmp(TypeDesc<std::vector<std::string>>::Name(), "<list of strings>"))
+                PrintDesc<std::vector<std::string>>::Dump(out);            
+            out << "\t" << description << "\n";
         }
 
     private:
@@ -847,12 +965,20 @@ namespace cli
         {
             if (!IsEnabled()) return;
             out << " - " << Name();
-            if (parameterDesc.empty())
-                PrintDesc<std::vector<std::string>>::Dump(out);            
+            if (parameterDesc.empty() && std::strcmp(TypeDesc<std::vector<std::string>>::Name(), "<list of strings>"))
+                PrintDesc<std::vector<std::string>>::Dump(out);          
             for (auto& s: parameterDesc)
                 out << " <" << s << '>';
             out << "\n\t" << description << "\n";
         }
+        void FunctionHelp(std::ostream& out) const override
+        {
+            if (!IsEnabled()) return;
+            if (parameterDesc.empty() && std::strcmp(TypeDesc<std::vector<std::string>>::Name(), "<list of strings>"))
+                PrintDesc<std::vector<std::string>>::Dump(out);            
+            out << "\t" << description << "\n";
+        }
+
 
     private:
 
@@ -889,8 +1015,22 @@ namespace cli
             coutPtr->Register(out);
             globalScopeMenu->Insert(
                 "help",
-                [this](std::ostream&){ Help(); },
-                "This help message"
+                [this](std::ostream&, const std::vector<std::string>& args) {
+			if (args.empty()) {
+				Help(); 
+			}
+			else if (args.size() > 1) {
+				std::string result = std::accumulate(args.begin(), args.end(), std::string(),
+        			[](const std::string& a, const std::string& b) {
+            			return a.empty() ? b : a + " " + b; // Add a space between strings
+        			});
+				this->cli.WrongCommandHandler(out, result);
+			}
+			else {
+				FunctionHelp(args[0]);
+			}
+			},
+			"This help message"
             );
             globalScopeMenu->Insert(
                 "exit",
@@ -956,6 +1096,24 @@ namespace cli
         globalScopeMenu->MainHelp(out);
         current -> MainHelp( out );
     }
+
+    inline void CliSession::FunctionHelp(const std::string& arg)
+    {
+        if (globalScopeMenu->CheckCommand(arg, *this)) {
+            globalScopeMenu->MainFunctionHelp(out, arg, *this);
+        } else if (current->CheckCommand(arg, *this)) {
+            current->MainFunctionHelp(out, arg, *this);
+        } else {
+            WrongCommandHandler(out, arg); // Command not found in either scope
+        }
+    }
+
+    inline void CliSession::WrongCommandHandler(std::ostream& out, const std::string& cmd)
+    {
+	    cli.WrongCommandHandler(out, cmd);
+    }
+
+
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const
     {
