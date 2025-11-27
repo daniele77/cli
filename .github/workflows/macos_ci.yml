@@ -15,13 +15,14 @@ jobs:
         build_type: [Release, Debug]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1
       with:
         compiler: ${{ matrix.compiler }}
-        vcvarsall: ${{ contains(matrix.os, 'windows' )}}
+        vcvarsall: false
 
         cmake: true
         ninja: true
@@ -36,17 +37,28 @@ jobs:
           
     - name: setup dependencies
       run: |
+          brew update
           brew install ninja
           brew install boost
           brew install asio
       
     - name: Configure CMake
       run: |
-        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+              -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+              -DCLI_BuildTests=ON \
+              -DCLI_BuildExamples=ON \
+              -DCLI_UseBoostAsio=ON \
+              -DBOOST_ROOT=$BOOST_ROOT \
+              -DBOOST_INCLUDEDIR=$BOOST_ROOT/include \
+              -DBOOST_LIBRARYDIR=$BOOST_ROOT/lib \
+              -DBoost_NO_BOOST_CMAKE=ON
 
     - name: Build
       run: |
-        cmake --build ./build --config ${{matrix.build_type}}
+        cmake --build ./build --config ${{matrix.build_type}} --parallel $(sysctl -n hw.logicalcpu)
 
     - name: run test
       working-directory: ./build
