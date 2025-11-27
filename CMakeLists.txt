@@ -103,10 +103,6 @@ target_include_directories(cli
 )
 
 target_link_libraries(cli INTERFACE Threads::Threads)
-if (CLI_UseBoostAsio)
-    target_link_libraries(cli INTERFACE Boost::system)
-    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
-endif()
 if (CLI_UseStandaloneAsio)
 	add_library(standalone_asio INTERFACE IMPORTED)
 	target_include_directories(standalone_asio SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
