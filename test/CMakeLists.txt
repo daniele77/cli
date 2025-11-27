@@ -38,16 +38,6 @@ add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
 find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
 
-if (Boost_SYSTEM_FOUND)
-    message(STATUS "Using Boost.System library for tests")
-else()
-    message(STATUS "Boost.System missing: using header-only mode for tests")
-    target_compile_definitions(test_suite PRIVATE
-        BOOST_ERROR_CODE_HEADER_ONLY
-        BOOST_SYSTEM_NO_LIB
-    )
-endif()
-
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
 mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
@@ -80,9 +70,17 @@ target_link_libraries(test_suite
     standalone_asio_test
     cli::cli
 )
+
 # add it only if found
 if (Boost_SYSTEM_FOUND)
-    target_link_libraries(test_suite Boost::system)
+	message(STATUS "Using Boost.System library for tests")
+	target_link_libraries(test_suite Boost::system)
+else()
+    message(STATUS "Boost.System missing: using header-only mode for tests")
+    target_compile_definitions(test_suite PRIVATE
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_LIB
+    )
 endif()
 
 # declares a test with our executable
