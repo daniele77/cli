@@ -1,4 +1,4 @@
-name: CI
+name: CI linux and windows
 
 on: [push,pull_request]
 
