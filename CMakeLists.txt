@@ -85,7 +85,7 @@ if (CLI_UseBoostAsio)
             BOOST_SYSTEM_NO_LIB
         )
         # header-only needs comunque include
-        find_path(BOOST_INCLUDE_PATH "boost/version.hpp" HINTS /usr/local/include /opt/homebrew/include)
+        find_path(BOOST_INCLUDE_PATH "boost/version.hpp")
         target_include_directories(cli INTERFACE ${BOOST_INCLUDE_PATH})
     endif()
 
