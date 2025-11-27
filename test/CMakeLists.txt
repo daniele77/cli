@@ -36,8 +36,27 @@ set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 set(Boost_NO_BOOST_CMAKE ON)
 add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
-# finds boost, triggers an error otherwise
-find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework system)
+find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
+
+if (NOT Boost_SYSTEM_FOUND)
+    message(STATUS "Boost.System mancante: uso header-only anche per i test")
+    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+    add_definitions(-DBOOST_SYSTEM_NO_LIB)
+
+    # cerca solo headers (unit_test_framework rimane comunque solo-header, ok)
+    find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework)
+endif()
+find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
+
+if (NOT Boost_SYSTEM_FOUND)
+    message(STATUS "Boost.System mancante: uso header-only anche per i test")
+    add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+    add_definitions(-DBOOST_SYSTEM_NO_LIB)
+
+    # cerca solo headers (unit_test_framework rimane comunque solo-header, ok)
+    find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework)
+endif()
+
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})

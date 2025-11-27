@@ -69,8 +69,19 @@ endif()
 
 if (CLI_UseBoostAsio)
     set(Boost_NO_BOOST_CMAKE ON)
-    add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
-    find_package(Boost 1.66 REQUIRED COMPONENTS system)
+    add_definitions(-DBOOST_ALL_NO_LIB)
+
+    # Prima proviamo a trovare Boost::system (versioni classiche)
+    find_package(Boost 1.66 QUIET COMPONENTS system)
+
+    if (NOT Boost_SYSTEM_FOUND)
+        message(STATUS "Boost.System non trovato: uso la modalità header-only")
+        add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
+        add_definitions(-DBOOST_SYSTEM_NO_LIB)
+
+        # Cerca solo le headers (funziona con homebrew >=1.86)
+        find_package(Boost 1.66 REQUIRED)
+    endif()
 endif()
 
 if (CLI_UseStandaloneAsio)
