@@ -69,33 +69,30 @@ jobs:
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath"
 
-    - name: Set Boost DLL Path - Windows 💡 (Versione Migliorata)
+    - name: Set Boost DLL Path - Windows ✨ (Fix finale)
       if: runner.os == 'Windows'
       run: |
-        # 1. Trova la directory root di Boost (es. C:\...\boost-msvc-14.1.1.72.0)
-        # Ricerca meno specifica per la versione choco.
-        $boostRoot = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\boost-msvc-14.1*" -Directory | Select-Object -First 1
-        
-        if ($null -eq $boostRoot) {
-            Write-Error "ERRORE: Directory root di Boost (boost-msvc-14.1*) non trovata. Controlla il nome del pacchetto Chocolatey."
-            exit 1
-        }
-        
-        # 2. Ricerca Ricorsiva Aggressiva delle DLL.
-        # Spesso le DLL sono in sottocartelle come 'lib', 'lib\x64', 'lib-vc142-x64'.
-        # Cerchiamo qualsiasi file .dll sotto la root di Boost.
-        $boostDllFile = Get-ChildItem -Path "$($boostRoot.FullName)" -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-        
-        if ($null -eq $boostDllFile) {
-            Write-Error "ERRORE CRITICO: Nessun file DLL di Boost trovato sotto la directory: $($boostRoot.FullName)"
-            exit 1
-        }
-
-        # 3. Aggiungi il percorso PATH
-        $dllPath = $boostDllFile.Directory.FullName
-        echo "Aggiungo il percorso delle DLL di Boost: $dllPath"
-        # Aggiunge il percorso alla variabile d'ambiente PATH per i successivi step
-        echo "$dllPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding UTF8 -Append
+            # 1. Trova la directory root di Boost (usando il nome esatto del pacchetto da Chocolatey)
+            $boostRoot = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\boost-msvc-14.1" -Directory -ErrorAction Stop
+            
+            # 2. Ricerca Ricorsiva Aggressiva delle DLL.
+            # Le DLL Boost sono spesso in una sottocartella che riflette il toolset MSVC, es. 'lib\x64' o 'lib-vc141-mt-x64'.
+            # Cerchiamo qualsiasi file .dll sotto la root di Boost.
+            $boostDllFile = Get-ChildItem -Path "$($boostRoot.FullName)" -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            
+            if ($null -eq $boostDllFile) {
+                Write-Error "ERRORE CRITICO: Nessun file DLL di Boost trovato sotto la directory: $($boostRoot.FullName)"
+                # Aggiungiamo un debug per vedere cosa c'è nella cartella root di Boost
+                Write-Host "Contenuto della cartella Boost:"
+                Get-ChildItem -Path "$($boostRoot.FullName)" -Recurse
+                exit 1
+            }
+    
+            # 3. Aggiungi il percorso PATH
+            $dllPath = $boostDllFile.Directory.FullName
+            echo "Aggiungo il percorso delle DLL di Boost: $dllPath"
+            # Aggiunge il percorso alla variabile d'ambiente PATH per i successivi step
+            echo "$dllPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding UTF8 -Append
 
     - name: Build
       run: |
