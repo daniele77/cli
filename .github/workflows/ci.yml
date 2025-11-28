@@ -112,16 +112,11 @@ jobs:
 
     - name: Build
       run: |
-        # cd /home/runner/work/cli/cli/build
-        # make all
         cmake --build ./build --config ${{matrix.build_type}}
 
     - name: run tests
       # on windows test_suite throws an exception, but only on the CI environment!
-      if: runner.os != 'Windows'
-      # working-directory: ./build/test/${{matrix.build_type}}
+      # if: runner.os != 'Windows'
       working-directory: ./build
       run: |
-        # cd /home/runner/work/cli/cli/build/test/
-        # ./test_suite
         ctest -C ${{matrix.build_type}} --output-on-failure
