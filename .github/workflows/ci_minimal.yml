@@ -76,8 +76,7 @@ jobs:
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath" `
-          -DBOOST_INCLUDEDIR="${{ steps.install-boost.outputs.BOOST_ROOT }}/include/"  `
-          -DBOOST_LIBRARYDIR="${{ steps.install-boost.outputs.BOOST_ROOT }}/lib/"
+          -DBOOST_ROOT="${{ steps.install-boost.outputs.BOOST_ROOT }}"
       env:
         BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
