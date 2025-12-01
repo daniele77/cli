@@ -76,9 +76,9 @@ jobs:
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath" `
-          -DBOOST_ROOT="${{ steps.install-boost.outputs.BOOST_ROOT }}"
+          -DBOOST_ROOT="${{ steps.install-boost.outputs.BOOST_ROOT }}/stage"
       env:
-        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}/stage
 
     - name: 🔨 Build Project
       run: |
@@ -90,4 +90,4 @@ jobs:
         # Usa CTest per eseguire i test, compresi quelli basati su Boost Unit Test Framework
         ctest -C ${{matrix.build_type}} --output-on-failure
       env:
-        PATH: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+        PATH: ${{ steps.install-boost.outputs.BOOST_ROOT }}/stage/lib:$PATH
