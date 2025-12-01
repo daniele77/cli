@@ -85,6 +85,13 @@ jobs:
                 # Aggiungiamo un debug per vedere cosa c'è nella cartella root di Boost
                 Write-Host "Contenuto della cartella Boost:"
                 Get-ChildItem -Path "$($boostRoot.FullName)" -Recurse
+
+                Write-Host "Contenuto della cartella lib:"
+                Get-ChildItem -Path "C:\ProgramData\chocolatey\lib" -Recurse
+
+                Write-Host "Contenuto della cartella lib\boost-msvc-14.1:"
+                Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\boost-msvc-14.1" -Recurse
+
                 exit 1
             }
     
