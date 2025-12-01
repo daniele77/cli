@@ -36,18 +36,14 @@ jobs:
         gcovr: true
         opencppcoverage: true
 
-    - name: 📦 Download and Build Boost (system, unit_test_framework)
-      id: boost
-      uses: egor-tensin/build-boost@v1.4
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2
+      id: install-boost
       with:
-        version: '1.84.0' 
-        libraries: 'system,unit_test_framework' 
-
-    - name: Show paths
-      run: |
-        printf 'Boost has been unpacked to: %s\n' '${{ steps.boost.outputs.root }}'
-        printf 'Libraries can be found here: %s\n' '${{ steps.boost.outputs.librarydir }}'
-      shell: bash
+          # REQUIRED: Specify the required boost version
+          # A list of supported versions can be found here:
+          # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+          boost_version: 1.89.0
 
     - name: 🔗 Setup Other Dependencies (Asio)
       run: |
@@ -77,6 +73,8 @@ jobs:
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath"
+      env:
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: 🔨 Build Project
       run: |
@@ -87,3 +85,5 @@ jobs:
       run: |
         # Usa CTest per eseguire i test, compresi quelli basati su Boost Unit Test Framework
         ctest -C ${{matrix.build_type}} --output-on-failure
+      env:
+        PATH: ${{ steps.install-boost.outputs.BOOST_ROOT }}
