@@ -101,4 +101,4 @@ jobs:
     - name: run tests
       working-directory: ./build
       run: |
-        ctest -C ${{matrix.build_type}} --output-on-failure
+        ctest -C ${{matrix.build_type}} --output-on-failure --test-dir .
