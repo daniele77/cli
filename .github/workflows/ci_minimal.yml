@@ -37,14 +37,17 @@ jobs:
         opencppcoverage: true
 
     - name: 📦 Download and Build Boost (system, unit_test_framework)
-      uses: actions-toolkit/boost-build@v1.0.3
+      id: boost
+      uses: egor-tensin/build-boost@v1
       with:
-        # Puoi specificare la versione desiderata, ad esempio 1.84.0
-        boost_version: '1.84.0' 
-        # msvc-14.3 è il toolset tipico per VS 2022 (Windows-2025)
-        toolset: msvc-14.3 
-        # Compila solo le librerie necessarie (riduce il tempo di build)
-        with_libraries: 'system,unit_test_framework' 
+        version: '1.84.0' 
+        libraries: 'system,unit_test_framework' 
+
+    - name: Show paths
+      run: |
+        printf 'Boost has been unpacked to: %s\n' '${{ steps.boost.outputs.root }}'
+        printf 'Libraries can be found here: %s\n' '${{ steps.boost.outputs.librarydir }}'
+      shell: bash
 
     - name: 🔗 Setup Other Dependencies (Asio)
       run: |
