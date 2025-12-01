@@ -64,8 +64,17 @@ jobs:
         echo "ASIO path: $AsioPath"
         dir $AsioPath
 
-        echo "BOOST path: ${{ steps.install-boost.outputs.BOOST_ROOT }}"
-        dir ${{ steps.install-boost.outputs.BOOST_ROOT }}
+        # Variabili esportate dall'azione MarkusJx/install-boost
+        $BoostRoot = "${{ steps.install-boost.outputs.BOOST_ROOT }}"
+        $BoostLibDir = "${{ steps.install-boost.outputs.BOOST_LIBRARYDIR }}"
+
+        echo "ASIO path: $AsioPath"
+        echo "BOOST_ROOT path: $BoostRoot"
+        echo "BOOST_LIBRARYDIR path: $BoostLibDir"
+
+        # DEBUG: Verifica se i percorsi esistono
+        dir $BoostRoot
+        dir $BoostLibDir
 
         # Esegue la configurazione CMake
         # Le variabili BOOST_ROOT e BOOST_LIBRARYDIR sono impostate dallo step precedente
@@ -76,9 +85,11 @@ jobs:
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath" `
-          -DBOOST_ROOT="${{ steps.install-boost.outputs.BOOST_ROOT }}/stage"
+          -DBOOST_ROOT="${{ steps.install-boost.outputs.BOOST_ROOT }}" `
+          -DBoost_ROOT="$BoostRoot" `           # Specifica la radice (per gli header)
+          -DBoost_LIBRARYDIR="$BoostLibDir"     # Specifica la directory delle librerie (cruciale per il linking)
       env:
-        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}/stage
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: 🔨 Build Project
       run: |
@@ -90,4 +101,4 @@ jobs:
         # Usa CTest per eseguire i test, compresi quelli basati su Boost Unit Test Framework
         ctest -C ${{matrix.build_type}} --output-on-failure
       env:
-        PATH: ${{ steps.install-boost.outputs.BOOST_ROOT }}/stage/lib:$PATH
+        PATH: ${{ steps.install-boost.outputs.BOOST_LIBRARYDIR }}:$PATH
