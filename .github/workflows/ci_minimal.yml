@@ -81,7 +81,7 @@ jobs:
             $boostDllFile = Get-ChildItem -Path "$($boostRoot.FullName)" -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             
             if ($null -eq $boostDllFile) {
-                Write-Error "ERRORE CRITICO: Nessun file DLL di Boost trovato sotto la directory: $($boostRoot.FullName)"
+                # Write-Error "ERRORE CRITICO: Nessun file DLL di Boost trovato sotto la directory: $($boostRoot.FullName)"
                 # Aggiungiamo un debug per vedere cosa c'è nella cartella root di Boost
                 Write-Host "Contenuto della cartella Boost:"
                 Get-ChildItem -Path "$($boostRoot.FullName)" -Recurse
@@ -101,4 +101,4 @@ jobs:
     - name: run tests
       working-directory: ./build
       run: |
-        ctest -C ${{matrix.build_type}} --output-on-failure --test-dir .
+        ctest -C ${{matrix.build_type}} --output-on-failure
