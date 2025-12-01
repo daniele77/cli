@@ -36,6 +36,10 @@ jobs:
         gcovr: true
         opencppcoverage: true
 
+    - name: Create Build Directory
+      run: |
+        mkdir boost
+
     - name: 📦 Download and Build Boost (system, unit_test_framework)
       id: boost
       uses: egor-tensin/build-boost@v1
