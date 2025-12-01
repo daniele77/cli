@@ -1,9 +1,10 @@
 name: CI windows
 
-on: [push,pull_request]
+on: [push, pull_request]
 
 jobs:
   Test:
+    # Esegue il job su un ambiente Windows (windows-2025 al momento dell'uso)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -15,52 +16,57 @@ jobs:
         build_type: [Release]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: 🔄 Checkout Repository
+      uses: actions/checkout@v4
 
-    - name: Setup Cpp
+    - name: 🛠️ Setup Cpp Tools
       uses: aminya/setup-cpp@v1
       with:
+        # Configura MSVC e le variabili d'ambiente (vcvarsall)
         compiler: ${{ matrix.compiler }}
         vcvarsall: ${{ contains(matrix.os, 'windows' )}}
-
+        # Richiede l'installazione di CMake e Ninja
         cmake: true
         ninja: true
         vcpkg: false
         ccache: true
+        # Installazione di strumenti di analisi/copertura
         clangtidy: true
-
         cppcheck: true
-
         gcovr: true
         opencppcoverage: true
 
-    - name: setup dependencies - Windows
+    - name: 📦 Download and Build Boost (system, unit_test_framework)
+      uses: actions-toolkit/boost-build@v1.0.3
+      with:
+        # Puoi specificare la versione desiderata, ad esempio 1.84.0
+        boost_version: '1.84.0' 
+        # msvc-14.3 è il toolset tipico per VS 2022 (Windows-2025)
+        toolset: msvc-14.3 
+        # Compila solo le librerie necessarie (riduce il tempo di build)
+        with_libraries: 'system,unit_test_framework' 
+
+    - name: 🔗 Setup Other Dependencies (Asio)
       run: |
-          choco install ninja
-          choco install boost-msvc-14.1
-
-          # Stampa la directory 'lib' di choco per debug
-          echo "Contenuto di C:\ProgramData\chocolatey\lib:"
-          dir C:\ProgramData\chocolatey\lib
-
           # Download and extract Asio
           curl -L -o asio.zip https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip
           tar -xf asio.zip
           move asio-asio-1-18-2 asio
 
-    - name: Configure CMake - Windows
-      # windows need asio library path
+    - name: ⚙️ Configure CMake - Windows
+      shell: powershell
       run: |
         Start-Sleep -Seconds 2
 
-        # Correctly constructs the path for Windows
+        # Costruisce il percorso assoluto della directory include di Asio
         $AsioPath = Join-Path $env:GITHUB_WORKSPACE "asio/asio/include"
-        # Converts to forward slash (CMake handles them better)
         $AsioPath = $AsioPath -replace "\\", "/"
 
         echo "ASIO path: $AsioPath"
         dir $AsioPath
 
+        # Esegue la configurazione CMake
+        # Le variabili BOOST_ROOT e BOOST_LIBRARYDIR sono impostate dallo step precedente
         cmake -S . -B ./build `
           -DCMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} `
           -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
@@ -69,43 +75,12 @@ jobs:
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath"
 
-    - name: Set Boost DLL Path - Windows ✨ (Fix finale)
-      if: runner.os == 'Windows'
-      run: |
-            # 1. Trova la directory root di Boost (usando il nome esatto del pacchetto da Chocolatey)
-            $boostRoot = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\boost-msvc-14.1" -Directory -ErrorAction Stop
-            
-            # 2. Ricerca Ricorsiva Aggressiva delle DLL.
-            # Le DLL Boost sono spesso in una sottocartella che riflette il toolset MSVC, es. 'lib\x64' o 'lib-vc141-mt-x64'.
-            # Cerchiamo qualsiasi file .dll sotto la root di Boost.
-            $boostDllFile = Get-ChildItem -Path "$($boostRoot.FullName)" -Filter "*.dll" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            
-            if ($null -eq $boostDllFile) {
-                # Write-Error "ERRORE CRITICO: Nessun file DLL di Boost trovato sotto la directory: $($boostRoot.FullName)"
-                # Aggiungiamo un debug per vedere cosa c'è nella cartella root di Boost
-                Write-Host "Contenuto della cartella Boost:"
-                Get-ChildItem -Path "$($boostRoot.FullName)" -Recurse
-
-                Write-Host "Contenuto della cartella lib:"
-                Get-ChildItem -Path "C:\ProgramData\chocolatey\lib" -Recurse
-
-                Write-Host "Contenuto della cartella lib\boost-msvc-14.1:"
-                Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\boost-msvc-14.1" -Recurse
-
-                exit 1
-            }
-    
-            # 3. Aggiungi il percorso PATH
-            $dllPath = $boostDllFile.Directory.FullName
-            echo "Aggiungo il percorso delle DLL di Boost: $dllPath"
-            # Aggiunge il percorso alla variabile d'ambiente PATH per i successivi step
-            echo "$dllPath" | Out-File -FilePath $env:GITHUB_PATH -Encoding UTF8 -Append
-
-    - name: Build
+    - name: 🔨 Build Project
       run: |
         cmake --build ./build --config ${{matrix.build_type}}
 
-    - name: run tests
+    - name: ✅ Run Tests
       working-directory: ./build
       run: |
+        # Usa CTest per eseguire i test, compresi quelli basati su Boost Unit Test Framework
         ctest -C ${{matrix.build_type}} --output-on-failure
