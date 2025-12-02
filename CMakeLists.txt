@@ -66,11 +66,9 @@ target_link_libraries(cli INTERFACE Threads::Threads)
 # Boost.Asio support
 # ---------------------------------------------------------------
 if(CLI_UseBoostAsio)
-    # Enable modern search for *_ROOT variables
-    cmake_policy(SET CMP0074 NEW)
-
-    # Keep FindBoost enabled for compatibility
-    cmake_policy(SET CMP0167 OLD)
+    cmake_policy(SET CMP0074 NEW)   # abilita <PackageName>_ROOT
+    cmake_policy(SET CMP0144 NEW)   # abilita variabili maiuscole tipo BOOST_ROOT
+    cmake_policy(SET CMP0167 OLD)   # riattiva FindBoost per CMake recenti
 
     set(Boost_NO_BOOST_CMAKE ON)
     find_package(Boost 1.66 QUIET COMPONENTS system date_time)
