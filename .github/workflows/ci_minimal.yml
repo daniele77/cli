@@ -65,7 +65,7 @@ jobs:
         dir $AsioPath
 
         # Variabili esportate dall'azione MarkusJx/install-boost
-        $BoostRoot = "${{ steps.install-boost.outputs.BOOST_ROOT }}/stage"
+        $BoostRoot = "${{ steps.install-boost.outputs.BOOST_ROOT }}"
 
         echo "ASIO path: $AsioPath"
         echo "BOOST_ROOT path: $BoostRoot"
@@ -87,7 +87,7 @@ jobs:
           -DASIO_INCLUDEDIR="$AsioPath" `
           -DBOOST_ROOT="$BoostRoot"
       env:
-        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}/stage
+        BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
     - name: 🔨 Build Project
       run: |

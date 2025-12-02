@@ -36,6 +36,12 @@ set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 set(Boost_NO_BOOST_CMAKE ON)
 add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
+# Enable modern search for *_ROOT variables
+cmake_policy(SET CMP0074 NEW)
+
+# Keep FindBoost enabled for compatibility
+cmake_policy(SET CMP0167 OLD)
+
 find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
 
 # finds standalone asio, triggers an error otherwise
