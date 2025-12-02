@@ -74,9 +74,6 @@ jobs:
         echo "Contents of BOOST_ROOT:"
         dir $BoostRoot
 
-        echo "Contents of BOOST_ROOT/include:"
-        dir $BoostRoot/include
-
         echo "Contents of BOOST_ROOT/lib:"
         dir $BoostRoot/lib
 
