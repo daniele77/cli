@@ -44,7 +44,7 @@ jobs:
           # A list of supported versions can be found here:
           # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
           boost_version: 1.89.0
-          boost_install_dir: ${{ runner.temp }}/boost
+          boost_install_dir: ${{ runner.temp }}
 
     - name: 🔗 Setup Other Dependencies (Asio)
       run: |
@@ -88,8 +88,6 @@ jobs:
           -DASIO_INCLUDEDIR="$AsioPath" `
           -DBoost_ROOT="$BoostRoot" `
           -DBOOST_ROOT="$BoostRoot" `
-          -DBoost_INCLUDE_DIR="$BoostRoot" `
-          -DBoost_LIBRARY_DIR="$BoostRoot/lib" `
           -DCMAKE_PREFIX_PATH="$BoostRoot" `
           -DBoost_USE_STATIC_LIBS=OFF `
           -DBoost_USE_STATIC_RUNTIME=OFF `
