@@ -88,6 +88,8 @@ jobs:
           -DASIO_INCLUDEDIR="$AsioPath" `
           -DBoost_ROOT="$BoostRoot" `
           -DBOOST_ROOT="$BoostRoot" `
+          -DBoost_INCLUDE_DIR="$BoostRoot"/include `
+          -DBoost_LIBRARY_DIR="$BoostRoot/lib" `
           -DCMAKE_PREFIX_PATH="$BoostRoot" `
           -DBoost_USE_STATIC_LIBS=OFF `
           -DBoost_USE_STATIC_RUNTIME=OFF `
