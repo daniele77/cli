@@ -77,6 +77,12 @@ jobs:
         echo "Contents of BOOST_ROOT/lib:"
         dir $BoostRoot/lib
 
+        echo "Contents of BOOST_ROOT/lib/cmake:"
+        dir $BoostRoot/lib/cmake
+
+        echo "Contents of BOOST_ROOT/lib/cmake/boost_system-1.89.0:"
+        dir $BoostRoot/lib/cmake/boost_system-1.89.0
+
         # Esegue la configurazione CMake
         cmake -S . -B ./build `
           -DCMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} `
@@ -85,6 +91,7 @@ jobs:
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=ON `
           -DASIO_INCLUDEDIR="$AsioPath" `
+          -DCMAKE_PREFIX_PATH="$BoostRoot/lib/cmake/boost_system-1.89.0" `
           -DBoost_ROOT="$BoostRoot" `
           -DBOOST_ROOT="$BoostRoot"
       env:
