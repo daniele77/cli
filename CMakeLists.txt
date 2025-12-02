@@ -72,6 +72,8 @@ if(CLI_UseBoostAsio)
 
     set(Boost_NO_BOOST_CMAKE ON)
     find_package(Boost 1.66 QUIET COMPONENTS system date_time)
+    ### find_package(Boost CONFIG REQUIRED QUIET COMPONENTS system date_time)
+    add_definitions(-DBOOST_ALL_NO_LIB) # for windows
 
     if(Boost_FOUND)
         message(STATUS "Using compiled Boost libraries on ${CMAKE_SYSTEM_NAME}")
