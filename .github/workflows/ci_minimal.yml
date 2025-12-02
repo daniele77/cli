@@ -67,6 +67,7 @@ jobs:
 
         # Variabili esportate dall'azione MarkusJx/install-boost
         $BoostRoot = "${{ steps.install-boost.outputs.BOOST_ROOT }}"
+        $BoostRoot = $BoostRoot -replace "\\", "/"
 
         echo "ASIO path: $AsioPath"
         echo "BOOST_ROOT path: $BoostRoot"
