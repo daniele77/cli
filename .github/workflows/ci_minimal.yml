@@ -44,6 +44,7 @@ jobs:
           # A list of supported versions can be found here:
           # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
           boost_version: 1.89.0
+          boost_install_dir: ${{ runner.temp }}/boost
 
     - name: 🔗 Setup Other Dependencies (Asio)
       run: |
