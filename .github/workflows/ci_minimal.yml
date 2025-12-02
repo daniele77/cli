@@ -87,6 +87,7 @@ jobs:
           -DASIO_INCLUDEDIR="$AsioPath" `
           -DBoost_ROOT="$BoostRoot" `
           -DBOOST_ROOT="$BoostRoot" `
+          -DBoost_USE_STATIC_LIBS=ON `
           -DBoost_DEBUG=ON
       env:
         BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
