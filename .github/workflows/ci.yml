@@ -115,8 +115,8 @@ jobs:
         cmake --build ./build --config ${{matrix.build_type}}
 
     - name: run tests
-      # on windows test_suite throws an exception, but only on the CI environment!
-      # if: runner.os != 'Windows'
+      # on windows test_suite throws an exception because it cannot find boost libraries path :-(
+      if: runner.os != 'Windows'
       working-directory: ./build
       run: |
         ctest -C ${{matrix.build_type}} --output-on-failure
