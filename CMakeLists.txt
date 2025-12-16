@@ -66,9 +66,9 @@ target_link_libraries(cli INTERFACE Threads::Threads)
 # Boost.Asio support
 # ---------------------------------------------------------------
 if(CLI_UseBoostAsio)
-    cmake_policy(SET CMP0074 NEW)   # abilita <PackageName>_ROOT
-    cmake_policy(SET CMP0144 NEW)   # abilita variabili maiuscole tipo BOOST_ROOT
-    cmake_policy(SET CMP0167 OLD)   # riattiva FindBoost per CMake recenti
+    cmake_policy(SET CMP0074 NEW)   # enable <PackageName>_ROOT
+    cmake_policy(SET CMP0144 NEW)   # enable uppercase variables like BOOST_ROOT
+    cmake_policy(SET CMP0167 OLD)   # restore FindBoost for newest CMake
 
     set(Boost_NO_BOOST_CMAKE ON)
     find_package(Boost 1.66 QUIET COMPONENTS system date_time)
@@ -101,9 +101,10 @@ endif()
 # Standalone Asio support
 # ---------------------------------------------------------------
 if(CLI_UseStandaloneAsio)
-    find_path(STANDALONE_ASIO_INCLUDE_PATH "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
     if(NOT STANDALONE_ASIO_INCLUDE_PATH)
-        message(FATAL_ERROR "Standalone Asio headers not found")
+        message(FATAL_ERROR "Standalone Asio headers not found. Set ASIO_INCLUDEDIR or STANDALONE_ASIO_INCLUDE_PATH.")
     endif()
 
     add_library(standalone_asio INTERFACE IMPORTED)
@@ -126,8 +127,7 @@ target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 if(WIN32)
     # Set _WIN32_WINNT for Windows 10+
     if(NOT DEFINED _WIN32_WINNT)
-        # add_definitions(-D_WIN32_WINNT=0x0A00)
-        target_compile_definitions(cli PRIVATE _WIN32_WINNT=0x0A00)
+        add_definitions(-D_WIN32_WINNT=0x0A00)
     endif()
 endif()
 
