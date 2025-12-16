@@ -126,7 +126,8 @@ target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 if(WIN32)
     # Set _WIN32_WINNT for Windows 10+
     if(NOT DEFINED _WIN32_WINNT)
-        add_definitions(-D_WIN32_WINNT=0x0A00)
+        # add_definitions(-D_WIN32_WINNT=0x0A00)
+        target_compile_definitions(cli PRIVATE _WIN32_WINNT=0x0A00)
     endif()
 endif()
 
