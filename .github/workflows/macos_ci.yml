@@ -38,7 +38,6 @@ jobs:
     - name: setup dependencies
       run: |
           brew update
-          brew install ninja
           brew install boost
           brew install asio
       

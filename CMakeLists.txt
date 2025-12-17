@@ -71,13 +71,12 @@ if(CLI_UseBoostAsio)
     cmake_policy(SET CMP0167 OLD)   # restore FindBoost for newest CMake
 
     set(Boost_NO_BOOST_CMAKE ON)
-    find_package(Boost 1.66 QUIET COMPONENTS system)
-    # find_package(Boost CONFIG REQUIRED QUIET COMPONENTS system)
+    find_package(Boost 1.66 QUIET COMPONENTS system date_time)
     add_definitions(-DBOOST_ALL_NO_LIB) # for windows
 
     if(Boost_FOUND)
         message(STATUS "Using compiled Boost libraries on ${CMAKE_SYSTEM_NAME}")
-        target_link_libraries(cli INTERFACE Boost::system Boost)
+        target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
     else()
         message(STATUS "Boost libraries not found. Falling back to header-only mode.")
         target_compile_definitions(cli INTERFACE

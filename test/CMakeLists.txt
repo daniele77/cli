@@ -41,7 +41,6 @@ cmake_policy(SET CMP0144 NEW)   # enable uppercase variables like BOOST_ROOT
 cmake_policy(SET CMP0167 OLD)   # re-enable FindBoost for recent CMake versions
 
 find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
-### find_package(Boost CONFIG REQUIRED QUIET COMPONENTS unit_test_framework system)
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
