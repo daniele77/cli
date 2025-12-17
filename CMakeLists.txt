@@ -77,7 +77,7 @@ if(CLI_UseBoostAsio)
 
     if(Boost_FOUND)
         message(STATUS "Using compiled Boost libraries on ${CMAKE_SYSTEM_NAME}")
-        target_include_directories(cli INTERFACE ${Boost_INCLUDE_DIRS})
+        # target_include_directories(cli INTERFACE ${Boost_INCLUDE_DIRS})
         target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
     else()
         message(STATUS "Boost libraries not found. Falling back to header-only mode.")
