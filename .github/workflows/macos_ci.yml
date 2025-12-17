@@ -13,6 +13,7 @@ jobs:
         compiler: [apple-clang, llvm-18, llvm-19]
         standard: [14, 17, 20, 23, 26]
         build_type: [Release, Debug]
+        use_boost_asio: [ON, OFF]
 
     steps:
     - name: Checkout repository
@@ -50,7 +51,7 @@ jobs:
               -DCMAKE_CXX_FLAGS="-DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_LIB" \
               -DCLI_BuildTests=ON \
               -DCLI_BuildExamples=ON \
-              -DCLI_UseBoostAsio=ON
+              -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} `
 
     - name: Build
       run: |
