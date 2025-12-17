@@ -72,7 +72,14 @@ jobs:
     - name: Configure CMake - Unix
       if: runner.os != 'Windows'
       run: |
-        cmake -S . -B ./build -G "Ninja Multi-Config" -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} -DCMAKE_CXX_STANDARD=${{matrix.standard}} -DCLI_BuildTests=ON -DCLI_BuildExamples=ON -DCLI_UseBoostAsio=ON
+        cmake -S . -B ./build \
+          -G "Ninja Multi-Config" \
+          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+          -DCLI_BuildTests=ON \
+          -DCLI_BuildExamples=ON \
+          -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} \
+          -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON")
 
     - name: Configure CMake - Windows
       # windows need asio library path
@@ -94,6 +101,7 @@ jobs:
           -DCLI_BuildTests=ON `
           -DCLI_BuildExamples=ON `
           -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} `
+          -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON") `
           -DASIO_INCLUDEDIR="$AsioPath"
 
     - name: Set Boost DLL Path - Windows

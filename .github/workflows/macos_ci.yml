@@ -51,7 +51,8 @@ jobs:
               -DCMAKE_CXX_FLAGS="-DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_LIB" \
               -DCLI_BuildTests=ON \
               -DCLI_BuildExamples=ON \
-              -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} `
+              -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} \
+              -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON")
 
     - name: Build
       run: |
