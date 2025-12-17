@@ -13,7 +13,7 @@ jobs:
         compiler: [llvm-17.0.2, clang++-15, gcc-11, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
-        use_boost_asio: [ON, OFF]
+        asio_library: [boost, standalone, none]
         exclude:
           # Exclude msvc on non-Windows platforms
           - os: ubuntu-22.04
@@ -78,8 +78,8 @@ jobs:
           -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
           -DCLI_BuildTests=ON \
           -DCLI_BuildExamples=ON \
-          -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} \
-          -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON")
+          -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
+          -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
 
     - name: Configure CMake - Windows
       # windows need asio library path
@@ -95,13 +95,16 @@ jobs:
         echo "ASIO path: $AsioPath"
         dir $AsioPath
 
+        $UseBoostAsio = if ("${{ matrix.asio_library }}" -eq "boost") { "ON" } else { "OFF" }
+        $UseStandaloneAsio = if ("${{ matrix.asio_library }}" -eq "standalone") { "ON" } else { "OFF" }
+
         cmake -S . -B ./build `
           -DCMAKE_BUILD_TYPE:STRING=${{ matrix.build_type }} `
           -DCMAKE_CXX_STANDARD=${{ matrix.standard }} `
           -DCLI_BuildTests=ON `
           -DCLI_BuildExamples=ON `
-          -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} `
-          -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON") `
+          -DCLI_UseBoostAsio=$UseBoostAsio `
+          -DCLI_UseStandaloneAsio=$UseStandaloneAsio `
           -DASIO_INCLUDEDIR="$AsioPath"
 
     - name: Set Boost DLL Path - Windows

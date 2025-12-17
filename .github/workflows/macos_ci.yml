@@ -13,7 +13,7 @@ jobs:
         compiler: [apple-clang, llvm-18, llvm-19]
         standard: [14, 17, 20, 23, 26]
         build_type: [Release, Debug]
-        use_boost_asio: [ON, OFF]
+        asio_library: [boost, standalone, none]
 
     steps:
     - name: Checkout repository
@@ -51,8 +51,8 @@ jobs:
               -DCMAKE_CXX_FLAGS="-DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_LIB" \
               -DCLI_BuildTests=ON \
               -DCLI_BuildExamples=ON \
-              -DCLI_UseBoostAsio=${{ matrix.use_boost_asio }} \
-              -DCLI_UseStandaloneAsio=$([ "${{ matrix.use_boost_asio }}" == "ON" ] && echo "OFF" || echo "ON")
+              -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
+              -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
 
     - name: Build
       run: |
