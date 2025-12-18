@@ -40,17 +40,6 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install -y ninja-build libboost-all-dev libasio-dev
 
-      if: runner.os != 'Windows'
-      run: |
-        cmake -S . -B ./build \
-          -G "Ninja Multi-Config" \
-          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
-          -DCLI_BuildTests=ON \
-          -DCLI_BuildExamples=ON \
-          -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
-          -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
-
     - name: Build
       run: |
         cmake --build ./build --config ${{matrix.build_type}}
