@@ -1,4 +1,4 @@
-name: CI linux and windows
+name: CI windows
 
 on: [push,pull_request]
 
@@ -9,38 +9,20 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-22.04, windows-2022, windows-2025]
-        compiler: [llvm-17.0.2, clang++-15, gcc-11, msvc]
+        os: [windows-2022, windows-2025]
+        compiler: [clang++-15, msvc]
         standard: [14, 17, 20, 23]
         build_type: [Release, Debug]
         asio_library: [boost, standalone, none]
-        exclude:
-          # Exclude msvc on non-Windows platforms
-          - os: ubuntu-22.04
-            compiler: msvc
-          # Exclude gcc on Windows platforms
-          - os: windows-2022
-            compiler: gcc-11
-          - os: windows-2025
-            compiler: gcc-11
-          # Exclude llvm on Windows platforms
-          - os: windows-2022
-            compiler: llvm-17.0.2
-          - os: windows-2025
-            compiler: llvm-17.0.2
 
     steps:
     - uses: actions/checkout@v4
-
-    # - name: Set up MSVC
-    #  if: runner.os == 'Windows'
-    #  uses: ilammy/msvc-dev-cmd@v1
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1
       with:
         compiler: ${{ matrix.compiler }}
-        vcvarsall: ${{ contains(matrix.os, 'windows' )}}
+        vcvarsall: true
 
         cmake: true
         ninja: true
@@ -53,14 +35,7 @@ jobs:
         gcovr: true
         opencppcoverage: true
 
-    - name: setup dependencies - Unix
-      if: runner.os == 'Linux'
-      run: |
-          sudo apt-get -y update
-          sudo apt-get -y install -y ninja-build libboost-all-dev libasio-dev
-
-    - name: setup dependencies - Windows
-      if: runner.os == 'Windows'
+    - name: setup dependencies
       run: |
           choco install ninja
           choco install boost-msvc-14.1
@@ -69,21 +44,8 @@ jobs:
           tar -xf asio.zip
           move asio-asio-1-18-2 asio
 
-    - name: Configure CMake - Unix
-      if: runner.os != 'Windows'
-      run: |
-        cmake -S . -B ./build \
-          -G "Ninja Multi-Config" \
-          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
-          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
-          -DCLI_BuildTests=ON \
-          -DCLI_BuildExamples=ON \
-          -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
-          -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
-
-    - name: Configure CMake - Windows
+    - name: Configure CMake
       # windows need asio library path
-      if: runner.os == 'Windows'
       run: |
         Start-Sleep -Seconds 2
 
@@ -107,8 +69,7 @@ jobs:
           -DCLI_UseStandaloneAsio=$UseStandaloneAsio `
           -DASIO_INCLUDEDIR="$AsioPath"
 
-    - name: Set Boost DLL Path - Windows
-      if: runner.os == 'Windows'
+    - name: Set Boost DLL Path
       run: |
         # Find the directory of Boost DLLs installed by choco (usually in 'lib' under the root)
         $boostPath = "C:\ProgramData\chocolatey\lib\boost-msvc-14.1.*\lib"
@@ -126,9 +87,8 @@ jobs:
       run: |
         cmake --build ./build --config ${{matrix.build_type}}
 
-    - name: run tests
-      # on windows test_suite throws an exception because it cannot find boost libraries path :-(
-      if: runner.os != 'Windows'
-      working-directory: ./build
-      run: |
-        ctest -C ${{matrix.build_type}} --output-on-failure
+# on windows test_suite throws an exception because it cannot find boost libraries path :-(
+#    - name: run tests
+#      working-directory: ./build
+#      run: |
+#        ctest -C ${{matrix.build_type}} --output-on-failure

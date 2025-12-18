@@ -1,0 +1,61 @@
+name: CI linux
+
+on: [push,pull_request]
+
+jobs:
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-22.04]
+        compiler: [llvm-17.0.2, clang++-15, gcc-11]
+        standard: [14, 17, 20, 23]
+        build_type: [Release, Debug]
+        asio_library: [boost, standalone, none]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{ matrix.compiler }}
+        vcvarsall: false
+
+        cmake: true
+        ninja: true
+        vcpkg: false
+        ccache: true
+        clangtidy: true
+
+        cppcheck: true
+
+        gcovr: true
+        opencppcoverage: true
+
+    - name: setup dependencies
+      run: |
+          sudo apt-get -y update
+          sudo apt-get -y install -y ninja-build libboost-all-dev libasio-dev
+
+      if: runner.os != 'Windows'
+      run: |
+        cmake -S . -B ./build \
+          -G "Ninja Multi-Config" \
+          -DCMAKE_BUILD_TYPE:STRING=${{matrix.build_type}} \
+          -DCMAKE_CXX_STANDARD=${{matrix.standard}} \
+          -DCLI_BuildTests=ON \
+          -DCLI_BuildExamples=ON \
+          -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
+          -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
+
+    - name: Build
+      run: |
+        cmake --build ./build --config ${{matrix.build_type}}
+
+    - name: run tests
+      working-directory: ./build
+      run: |
+        ctest -C ${{matrix.build_type}} --output-on-failure
