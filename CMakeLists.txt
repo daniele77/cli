@@ -27,7 +27,7 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.8...3.31)
 
 project(
     cli
@@ -38,65 +38,17 @@ project(
 
 include(GNUInstallDirs)
 
+# ---------------------------------------------------------------
+# Options
+# ---------------------------------------------------------------
 option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
-option(CLI_UseBoostAsio "Use the boost asio library." OFF)
-option(CLI_UseStandaloneAsio "Use the standalone asio library." OFF)
+option(CLI_UseBoostAsio "Use Boost.Asio library." OFF)
+option(CLI_UseStandaloneAsio "Use standalone Asio library." OFF)
 
-
-if(WIN32)
-    macro(get_WIN32_WINNT version)
-        if(CMAKE_SYSTEM_VERSION)
-            set(ver ${CMAKE_SYSTEM_VERSION})
-            string(REGEX MATCH "^([0-9]+).([0-9])" ver ${ver})
-            string(REGEX MATCH "^([0-9]+)" verMajor ${ver})
-            # Check for Windows 10, b/c we'll need to convert to hex 'A'.
-            if("${verMajor}" MATCHES "10")
-                set(verMajor "A")
-                string(REGEX REPLACE "^([0-9]+)" ${verMajor} ver ${ver})
-            endif()
-            # Remove all remaining '.' characters.
-            string(REPLACE "." "" ver ${ver})
-            # Prepend each digit with a zero.
-            string(REGEX REPLACE "([0-9A-Z])" "0\\1" ver ${ver})
-            set(${version} "0x${ver}")
-        endif()
-    endmacro()
-
-    get_WIN32_WINNT(ver)
-    # add_definitions(-D_WIN32_WINNT=${ver})
-endif()
-
-find_package(Threads REQUIRED)
-
-# ----------------------------
-# Boost
-# ----------------------------
-if(CLI_UseBoostAsio)
-    # Create a dummy INTERFACE library to carry Boost headers
-    add_library(BoostSystem INTERFACE)
-    target_compile_definitions(BoostSystem INTERFACE
-        BOOST_ERROR_CODE_HEADER_ONLY
-        BOOST_SYSTEM_NO_LIB
-    )
-
-    find_package(Boost REQUIRED) # without COMPONENTS, header-only usage
-    target_include_directories(BoostSystem SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
-
-    install(TARGETS BoostSystem EXPORT cliTargets)
-endif()
-
-# ----------------------------
-# Standalone Asio
-# ----------------------------
-if(CLI_UseStandaloneAsio)
-    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
-    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
-endif()
-
-# ----------------------------
-# Main CLI interface library
-# ----------------------------
+# ---------------------------------------------------------------
+# Library
+# ---------------------------------------------------------------
 add_library(cli INTERFACE)
 add_library(cli::cli ALIAS cli)
 
@@ -106,43 +58,94 @@ target_include_directories(cli
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+find_package(Threads REQUIRED)
 target_link_libraries(cli INTERFACE Threads::Threads)
 
+# ---------------------------------------------------------------
+# Boost.Asio support
+# ---------------------------------------------------------------
 if(CLI_UseBoostAsio)
-    target_link_libraries(cli INTERFACE BoostSystem)
-    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED)
+    cmake_policy(SET CMP0074 NEW)   # enable <PackageName>_ROOT
+    cmake_policy(SET CMP0144 NEW)   # enable uppercase variables like BOOST_ROOT
+    cmake_policy(SET CMP0167 OLD)   # restore FindBoost for newest CMake
+
+    set(Boost_NO_BOOST_CMAKE ON)
+    find_package(Boost 1.66 QUIET COMPONENTS system date_time)
+    add_definitions(-DBOOST_ALL_NO_LIB) # for windows
+
+    if(Boost_FOUND)
+        message(STATUS "Using compiled Boost libraries on ${CMAKE_SYSTEM_NAME}")
+        target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
+    else()
+        message(STATUS "Boost libraries not found. Falling back to header-only mode.")
+        target_compile_definitions(cli INTERFACE
+            BOOST_ERROR_CODE_HEADER_ONLY
+            BOOST_SYSTEM_NO_LIB
+        )
+
+        # find headers (default locations)
+        find_path(BOOST_INCLUDE_PATH "boost/version.hpp")
+        if(NOT BOOST_INCLUDE_PATH)
+            message(FATAL_ERROR "Boost headers not found for header-only fallback!")
+        endif()
+        target_include_directories(cli INTERFACE ${BOOST_INCLUDE_PATH})
+    endif()
+
+    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
 endif()
 
+# ---------------------------------------------------------------
+# Standalone Asio support
+# ---------------------------------------------------------------
 if(CLI_UseStandaloneAsio)
+    find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
+    mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
+    if(NOT STANDALONE_ASIO_INCLUDE_PATH)
+        message(FATAL_ERROR "Standalone Asio headers not found. Set ASIO_INCLUDEDIR or STANDALONE_ASIO_INCLUDE_PATH.")
+    endif()
+
     add_library(standalone_asio INTERFACE IMPORTED)
     target_include_directories(standalone_asio SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
     target_link_libraries(standalone_asio INTERFACE Threads::Threads)
     target_link_libraries(cli INTERFACE standalone_asio)
 endif()
 
+# ---------------------------------------------------------------
+# C++ standard
+# ---------------------------------------------------------------
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 14)
 endif()
 target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
-# ----------------------------
+# ---------------------------------------------------------------
+# Windows specific
+# ---------------------------------------------------------------
+if(WIN32)
+    # Set _WIN32_WINNT for Windows 10+
+    if(NOT DEFINED _WIN32_WINNT)
+        add_definitions(-D_WIN32_WINNT=0x0A00)
+    endif()
+endif()
+
+# ---------------------------------------------------------------
 # Examples
-# ----------------------------
+# ---------------------------------------------------------------
 if(CLI_BuildExamples)
     add_subdirectory(examples)
 endif()
 
-# ----------------------------
+# ---------------------------------------------------------------
 # Tests
-# ----------------------------
+# ---------------------------------------------------------------
 if(CLI_BuildTests)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-# ----------------------------
+# ---------------------------------------------------------------
 # Install
-# ----------------------------
+# ---------------------------------------------------------------
 if(NOT CMAKE_SKIP_INSTALL_RULES)
     install(DIRECTORY include/cli DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
@@ -162,13 +165,6 @@ if(NOT CMAKE_SKIP_INSTALL_RULES)
 
     install(TARGETS cli EXPORT cliTargets LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
     install(EXPORT cliTargets FILE cliTargets.cmake NAMESPACE cli:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cli)
-
-    install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli"
-    )
-    install(
-        FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc"
-        DESTINATION ${PKGCONFIG_INSTALL_DIR}
-    )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cliConfig.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cli")
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cli.pc" DESTINATION ${PKGCONFIG_INSTALL_DIR})
 endif()

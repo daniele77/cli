@@ -27,7 +27,7 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.8...3.31)
 project(cli_test)
 enable_testing()
 
@@ -36,8 +36,11 @@ set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 set(Boost_NO_BOOST_CMAKE ON)
 add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
-# finds boost, triggers an error otherwise
-find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework system)
+cmake_policy(SET CMP0074 NEW)   # enable <PackageName>_ROOT
+cmake_policy(SET CMP0144 NEW)   # enable uppercase variables like BOOST_ROOT
+cmake_policy(SET CMP0167 OLD)   # re-enable FindBoost for recent CMake versions
+
+find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
@@ -66,7 +69,23 @@ target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 # indicates the shared library variant
 target_compile_definitions(test_suite PRIVATE "BOOST_TEST_DYN_LINK=1")
 # indicates the link paths
-target_link_libraries(test_suite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} Boost::system standalone_asio_test cli::cli)
+target_link_libraries(test_suite
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+    standalone_asio_test
+    cli::cli
+)
+
+# add it only if found
+if (Boost_SYSTEM_FOUND)
+	message(STATUS "Using Boost.System library for tests")
+	target_link_libraries(test_suite Boost::system)
+else()
+    message(STATUS "Boost.System missing: using header-only mode for tests")
+    target_compile_definitions(test_suite PRIVATE
+        BOOST_ERROR_CODE_HEADER_ONLY
+        BOOST_SYSTEM_NO_LIB
+    )
+endif()
 
 # declares a test with our executable
 add_test(NAME cli_test COMMAND test_suite)

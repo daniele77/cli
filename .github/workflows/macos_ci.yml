@@ -1,0 +1,66 @@
+name: CI macOS
+
+on: [push,pull_request]
+
+jobs:
+  Test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [macos-15, macos-26]
+        compiler: [apple-clang, llvm-18, llvm-19]
+        standard: [14, 17, 20, 23, 26]
+        build_type: [Release, Debug]
+        asio_library: [boost, standalone, none]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Cpp
+      uses: aminya/setup-cpp@v1
+      with:
+        compiler: ${{ matrix.compiler }}
+        vcvarsall: false
+
+        cmake: true
+        ninja: true
+        vcpkg: false
+        ccache: true
+        clangtidy: true
+
+        cppcheck: true
+
+        gcovr: true
+        opencppcoverage: true
+          
+    - name: setup dependencies
+      run: |
+          brew update
+          brew install boost
+          brew install asio
+      
+    - name: Configure CMake
+      run: |
+        cmake -S . -B ./build \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DCMAKE_CXX_STANDARD=${{ matrix.standard }} \
+              -DCMAKE_CXX_FLAGS="-DBOOST_ERROR_CODE_HEADER_ONLY -DBOOST_SYSTEM_NO_LIB" \
+              -DCLI_BuildTests=ON \
+              -DCLI_BuildExamples=ON \
+              -DCLI_UseBoostAsio=$([ "${{ matrix.asio_library }}" == "boost" ] && echo "ON" || echo "OFF") \
+              -DCLI_UseStandaloneAsio=$([ "${{ matrix.asio_library }}" == "standalone" ] && echo "ON" || echo "OFF")
+
+    - name: Build
+      run: |
+        cmake --build ./build --config ${{matrix.build_type}} --parallel $(sysctl -n hw.logicalcpu)
+
+    - name: run test
+      working-directory: ./build
+      run: |
+        # cd /home/runner/work/cli/cli/build/test/
+        # ./test_suite
+        ctest -C ${{matrix.build_type}} --output-on-failure
