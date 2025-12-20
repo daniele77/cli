@@ -27,7 +27,7 @@
 # DEALINGS IN THE SOFTWARE.
 ################################################################################
 
-cmake_minimum_required(VERSION 3.8...3.31)
+cmake_minimum_required(VERSION 3.8...3.27)
 project(cli_test)
 enable_testing()
 
