@@ -18,6 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Cache Boost
+      uses: actions/cache@v4
+      with:
+        path: C:\ProgramData\chocolatey\lib\boost-msvc-14.1*
+        key: boost-msvc-14.1
+
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1
       with:
@@ -37,7 +43,7 @@ jobs:
 
     - name: setup dependencies
       run: |
-        choco install boost-msvc-14.1
+        choco install boost-msvc-14.1 --no-progress --limit-output
     
         Invoke-WebRequest `
           -Uri https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-18-2.zip `
@@ -49,8 +55,6 @@ jobs:
 
     - name: Configure CMake
       run: |
-        Start-Sleep -Seconds 2
-
         # Correctly constructs the path for Windows
         $AsioPath = Join-Path $env:GITHUB_WORKSPACE "asio/asio/include"
         # Converts to forward slash (CMake handles them better)
