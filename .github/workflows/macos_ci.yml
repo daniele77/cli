@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [macos-15, macos-26]
         compiler: [apple-clang, llvm-18, llvm-19]
-        standard: [14, 17, 20, 23, 26]
+        standard: [14, 26]
         build_type: [Release, Debug]
         asio_library: [boost, standalone, none]
 

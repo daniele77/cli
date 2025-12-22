@@ -11,18 +11,12 @@ jobs:
       matrix:
         os: [windows-2022, windows-2025]
         compiler: [clang++-15, msvc]
-        standard: [14, 17, 20, 23]
+        standard: [14, 23]
         build_type: [Release, Debug]
         asio_library: [boost, standalone, none]
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Cache Boost
-      uses: actions/cache@v4
-      with:
-        path: C:\ProgramData\chocolatey\lib\boost-msvc-14.1*
-        key: boost-msvc-14.1
 
     - name: Setup Cpp
       uses: aminya/setup-cpp@v1

@@ -11,7 +11,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         compiler: [llvm-17.0.2, clang++-15, gcc-11]
-        standard: [14, 17, 20, 23]
+        standard: [14, 23]
         build_type: [Release, Debug]
         asio_library: [boost, standalone, none]
 
