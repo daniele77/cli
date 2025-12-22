@@ -1,4 +1,6 @@
-[![CI of Cli](https://github.com/daniele77/cli/actions/workflows/ci.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/ci.yml)
+[![ubuntu CI of Cli](https://github.com/daniele77/cli/actions/workflows/ubuntu_ci.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/ubuntu_ci.yml)
+[![win CI of Cli](https://github.com/daniele77/cli/actions/workflows/win_ci.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/win_ci.yml)
+[![macos CI of Cli](https://github.com/daniele77/cli/actions/workflows/macos_ci.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/macos_ci.yml)
 [![CodeQL](https://github.com/daniele77/cli/actions/workflows/codeql.yml/badge.svg)](https://github.com/daniele77/cli/actions/workflows/codeql.yml)
 
 [:heart: Sponsor](https://github.com/sponsors/daniele77)
