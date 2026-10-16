@@ -2,8 +2,8 @@
 
 include(CMakeFindDependencyMacro)
 
-if (CLI_UseBoostAsio)
-    find_dependency(Boost REQUIRED COMPONENTS system)
+if (@CLI_UseBoostAsio@)
+    find_dependency(Boost REQUIRED COMPONENTS system date_time)
 endif()
 
 find_dependency(Threads REQUIRED)
