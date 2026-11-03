@@ -33,9 +33,7 @@ jobs:
           gcovr: true
           opencppcoverage: true
 
-      # Install Boost only when Boost.Asio is selected.
       - name: Install Boost dependencies
-        if: matrix.asio_library == 'boost'
         shell: pwsh
         run: |
           $vcpkgRoot = Join-Path $env:RUNNER_TEMP "vcpkg"
@@ -50,15 +48,19 @@ jobs:
             throw "Failed to bootstrap vcpkg"
           }
 
-          & "$vcpkgRoot/vcpkg.exe" install boost-system boost-date-time --triplet x64-windows
+          & "$vcpkgRoot/vcpkg.exe" install `
+            boost-system `
+            boost-date-time `
+            boost-test `
+            --triplet x64-windows
+
           if ($LASTEXITCODE -ne 0) {
             throw "Failed to install Boost dependencies"
           }
 
-          # Make vcpkg available to subsequent steps.
-          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "VCPKG_ROOT=$vcpkgRoot" |
+            Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-          # Make Boost runtime DLLs available to test executables.
           "$vcpkgRoot/installed/x64-windows/bin" |
             Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
@@ -74,10 +76,6 @@ jobs:
           tar -xf asio.zip
           Move-Item asio-asio-1-18-2 asio
 
-      - name: Check Clang target
-        if: matrix.compiler == 'clang++-15'
-        run: clang++ -v
-        
       - name: Configure CMake
         shell: pwsh
         run: |
@@ -92,14 +90,12 @@ jobs:
             "-DCLI_BuildTests=ON",
             "-DCLI_BuildExamples=ON",
             "-DCLI_UseBoostAsio=$($UseBoostAsio)",
-            "-DCLI_UseStandaloneAsio=$($UseStandaloneAsio)"
+            "-DCLI_UseStandaloneAsio=$($UseStandaloneAsio)",
+            "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake",
+            "-DVCPKG_TARGET_TRIPLET=x64-windows",
+            "-DBoost_ROOT=$env:VCPKG_ROOT/installed/x64-windows",
+            "-DBOOST_ROOT=$env:VCPKG_ROOT/installed/x64-windows"
           )
-
-          if ($UseBoostAsio) {
-            $CMakeArgs += "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
-            $CMakeArgs += "-DVCPKG_TARGET_TRIPLET=x64-windows"
-            $CMakeArgs += "-DBoost_ROOT=$env:VCPKG_ROOT/installed/x64-windows"
-          }
 
           if ($UseStandaloneAsio) {
             $AsioPath = Join-Path $env:GITHUB_WORKSPACE "asio/asio/include"
