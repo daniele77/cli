@@ -65,6 +65,18 @@ target_link_libraries(cli INTERFACE Threads::Threads)
 # Boost.Asio support
 # ---------------------------------------------------------------
 if(CLI_UseBoostAsio)
+    if(POLICY CMP0074)
+        cmake_policy(SET CMP0074 NEW)   # <PackageName>_ROOT
+    endif()
+
+    if(POLICY CMP0144)
+        cmake_policy(SET CMP0144 NEW)   # uppercase variables like BOOST_ROOT
+    endif()
+
+    if(POLICY CMP0167)
+        cmake_policy(SET CMP0167 OLD)   # re-enable FindBoost
+    endif()
+
     find_package(Boost 1.66 REQUIRED COMPONENTS system date_time)
     add_definitions(-DBOOST_ALL_NO_LIB) # for windows
     target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
