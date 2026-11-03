@@ -65,42 +65,9 @@ target_link_libraries(cli INTERFACE Threads::Threads)
 # Boost.Asio support
 # ---------------------------------------------------------------
 if(CLI_UseBoostAsio)
-    if(POLICY CMP0074)
-        cmake_policy(SET CMP0074 NEW)   # <PackageName>_ROOT
-    endif()
-
-    if(POLICY CMP0144)
-        cmake_policy(SET CMP0144 NEW)   # uppercase variables like BOOST_ROOT
-    endif()
-
-    if(POLICY CMP0167)
-        cmake_policy(SET CMP0167 OLD)   # re-enable FindBoost
-    endif()
-
-
-    set(Boost_NO_BOOST_CMAKE ON)
-    find_package(Boost 1.66 QUIET COMPONENTS system date_time)
+    find_package(Boost 1.66 REQUIRED COMPONENTS system date_time)
     add_definitions(-DBOOST_ALL_NO_LIB) # for windows
-
-    if(Boost_FOUND)
-        message(STATUS "Using compiled Boost libraries on ${CMAKE_SYSTEM_NAME}")
-        target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
-    else()
-        message(STATUS "Boost libraries not found. Falling back to header-only mode.")
-        target_compile_definitions(cli INTERFACE
-            BOOST_ERROR_CODE_HEADER_ONLY
-            BOOST_SYSTEM_NO_LIB
-        )
-
-        # find headers (default locations)
-        find_path(BOOST_INCLUDE_PATH "boost/version.hpp")
-        if(NOT BOOST_INCLUDE_PATH)
-            message(FATAL_ERROR "Boost headers not found for header-only fallback!")
-        endif()
-        target_include_directories(cli INTERFACE ${BOOST_INCLUDE_PATH})
-    endif()
-
-    target_compile_definitions(cli INTERFACE BOOST_ASIO_NO_DEPRECATED=1)
+    target_link_libraries(cli INTERFACE Boost::system Boost::date_time)
 endif()
 
 # ---------------------------------------------------------------

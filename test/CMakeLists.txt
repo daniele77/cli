@@ -33,30 +33,24 @@ enable_testing()
 
 set(Boost_ADDITIONAL_VERSIONS "1.66" "1.66.0")
 
-set(Boost_NO_BOOST_CMAKE ON)
 add_definitions( -DBOOST_ALL_NO_LIB ) # for windows
 
-if(POLICY CMP0074)
-    cmake_policy(SET CMP0074 NEW)   # <PackageName>_ROOT
-endif()
-
-if(POLICY CMP0144)
-    cmake_policy(SET CMP0144 NEW)   # uppercase variables like BOOST_ROOT
-endif()
-
-if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 OLD)   # re-enable FindBoost
-endif()
-
-
-find_package(Boost 1.66 QUIET COMPONENTS unit_test_framework system)
+find_package(Boost 1.66 REQUIRED COMPONENTS unit_test_framework system)
 
 # finds standalone asio, triggers an error otherwise
 find_path(STANDALONE_ASIO_INCLUDE_PATH NAMES "asio.hpp" HINTS ${ASIO_INCLUDEDIR})
 mark_as_advanced(STANDALONE_ASIO_INCLUDE_PATH)
 add_library(standalone_asio_test INTERFACE)
-target_include_directories(standalone_asio_test SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
-target_link_libraries(standalone_asio_test INTERFACE Threads::Threads)
+set(TEST_STANDALONEASIOSCHEDULER)
+if(CLI_UseStandaloneAsio)
+	if (NOT STANDALONE_ASIO_INCLUDE_PATH)
+        message(FATAL_ERROR "Standalone Asio headers not found. Set ASIO_ROOT, ASIO_INCLUDEDIR, or CMAKE_PREFIX_PATH to a valid Asio installation.")
+	else()
+		set(TEST_STANDALONEASIOSCHEDULER test_standaloneasioscheduler.cpp)
+		target_include_directories(standalone_asio_test SYSTEM INTERFACE ${STANDALONE_ASIO_INCLUDE_PATH})
+		target_link_libraries(standalone_asio_test INTERFACE Threads::Threads)
+	endif()
+endif()
 
 # creates the executable
 add_executable(
@@ -70,8 +64,8 @@ add_executable(
 	test_menu.cpp
 	test_cli.cpp
 	test_loopscheduler.cpp
-	test_standaloneasioscheduler.cpp
 	test_boostasioscheduler.cpp
+	${TEST_STANDALONEASIOSCHEDULER}
 )
 # indicates the include paths
 target_include_directories(test_suite SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
