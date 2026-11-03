@@ -502,11 +502,11 @@ For example, you can use [boost::nowide](https://github.com/boostorg/nowide) as 
 
 cli::Cli app{/*init code*/};
 
-// FileSession session{app}; // default
+// cli::CliFileSession session{app}; // default
 
 // now, all parameters is in a UTF-8 encoded std::string
-// pass boost::nowide::cin and boost::nowide::cout as parameters(FileSession requires std::istream and std::ostream)
-FileSession session{app, boost::nowide::cin, boost::nowide::cout};
+// pass boost::nowide::cin and boost::nowide::cout as parameters (CliFileSession requires std::istream and std::ostream)
+cli::CliFileSession session{app, boost::nowide::cin, boost::nowide::cout};
 
 /*....*/
 
@@ -524,7 +524,7 @@ Of course, you can also pass stream objects with other capabilities to achieve m
 ## License
 
 Distributed under the Boost Software License, Version 1.0.
-(See accompanying file [LICENSE.txt](LICENSE.txt) or copy at
+(See accompanying file [LICENSE](LICENSE) or copy at
 <http://www.boost.org/LICENSE_1_0.txt>)
 
 ## Contact
