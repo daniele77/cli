@@ -49,6 +49,7 @@ jobs:
           }
 
           & "$vcpkgRoot/vcpkg.exe" install `
+            boost-asio `
             boost-system `
             boost-date-time `
             boost-test `
@@ -64,6 +65,14 @@ jobs:
           "$vcpkgRoot/installed/x64-windows/bin" |
             Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+          $BoostAsioHeader = "$env:VCPKG_ROOT/installed/x64-windows/include/boost/asio.hpp"
+
+          if (!(Test-Path $BoostAsioHeader)) {
+              throw "Boost.Asio header not found: $BoostAsioHeader"
+          }
+
+          Write-Host "Boost.Asio header found"
+          
       # Download standalone Asio only when required.
       - name: Install standalone Asio
         if: matrix.asio_library == 'standalone'
