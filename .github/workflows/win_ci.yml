@@ -15,6 +15,10 @@ jobs:
         standard: [14, 23]
         build_type: [Release, Debug]
         asio_library: [boost, standalone, none]
+        exclude:
+          # VS 2026 STL on windows-2025 requires Clang >= 20
+          - os: windows-2025
+            compiler: clang++-15
 
     steps:
       - uses: actions/checkout@v4
