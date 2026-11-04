@@ -617,13 +617,13 @@ namespace cli
             {
                 auto cs = cmd->GetCompletionRecursive(rest);
                 for (const auto& c: cs)
-                    result.push_back(prefix + ' ' + c); // concat submenu with command
+                    result.push_back(c);
             }
             if (parent != nullptr)
             {
                 auto cs = parent->GetCompletionWithParent(rest);
                 for (const auto& c: cs)
-                    result.push_back(prefix + ' ' + c); // concat submenu with command
+                    result.push_back(c);
             }
             return result;
         }

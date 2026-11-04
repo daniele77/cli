@@ -129,7 +129,16 @@ private:
                     break;
                 if (completions.size() == 1)
                 {
-                    terminal.SetLine(completions[0]+' ');
+                    // e.g.:
+                    // line = "submenu pre"
+                    // completions[0] = "prefix"
+                    // result: "submenu prefix "
+                    auto lastSpace = line.find_last_of(' '); // find the last space in the line
+                    if (lastSpace != std::string::npos)
+                        line.erase(lastSpace + 1);
+                    else
+                        line.clear();
+                    terminal.SetLine(line + completions[0] + ' ');
                     break;
                 }
 
