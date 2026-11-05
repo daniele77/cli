@@ -69,6 +69,12 @@ public:
         Prompt();
     }
 
+protected:
+    virtual std::size_t TerminalWidth() const override
+    {
+        return screen.GetSize().first;
+    }
+
 private:
     detail::LocalScreen screen;
     detail::Keyboard kb;

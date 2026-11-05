@@ -41,6 +41,8 @@
 #include "detail/history.h"
 #include "detail/split.h"
 #include "detail/fromstring.h"
+#include "detail/helpformat.h"
+#include "detail/helpentry.h"
 #include "historystorage.h"
 #include "volatilehistorystorage.h"
 #include <iostream>
@@ -261,7 +263,7 @@ namespace cli
         virtual void Enable() { enabled = true; }
         virtual void Disable() { enabled = false; }
         virtual bool Exec(const std::vector<std::string>& cmdLine, CliSession& session) = 0;
-        virtual void Help(std::ostream& out) const = 0;
+        virtual void Help(detail::HelpGroup& entries) const = 0;
         // Returns the collection of completions relatives to this command.
         // For simple commands, provides a base implementation that use the name of the command
         // for aggregate commands (i.e., Menu), the function is redefined to give the menu command
@@ -376,6 +378,10 @@ namespace cli
         }
 
         std::vector<std::string> GetCompletions(std::string currentLine) const;
+
+    protected:
+
+        virtual std::size_t TerminalWidth() const { return 80; } // override this in derived classes to provide actual terminal width
 
     private:
 
@@ -522,19 +528,19 @@ namespace cli
             return prompt;
         }
 
-        void MainHelp(std::ostream& out)
+        void MainHelp(detail::HelpGroup& entries)
         {
             if (!IsEnabled()) return;
             for (const auto& cmd: *cmds)
-                cmd->Help(out);
+                cmd->Help(entries);
             if (parent != nullptr)
-                parent->Help(out);
+                parent->Help(entries);
         }
 
-        void Help(std::ostream& out) const override
+        void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            out << " - " << Name() << "\n\t" << description << "\n";
+            entries.push_back({ Name() + " >", description });   // ">" = submenu
         }
 
         // returns:
@@ -795,15 +801,16 @@ namespace cli
             return false;
         }
 
-        void Help(std::ostream& out) const override
+        void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            out << " - " << Name();
+            std::ostringstream usage;
+            usage << Name();
             if (parameterDesc.empty())
-                PrintDesc<Args...>::Dump(out);
+                PrintDesc<Args...>::Dump(usage);
             for (auto& s: parameterDesc)
-                out << " <" << s << '>';
-            out << "\n\t" << description << "\n";
+                usage << " <" << s << '>';
+            entries.push_back({ usage.str(), description });
         }
 
     private:
@@ -843,15 +850,16 @@ namespace cli
             }
             return false;
         }
-        void Help(std::ostream& out) const override
+        void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            out << " - " << Name();
+            std::ostringstream usage;
+            usage << Name();
             if (parameterDesc.empty())
-                PrintDesc<std::vector<std::string>>::Dump(out);            
+                PrintDesc<std::vector<std::string>>::Dump(usage);
             for (auto& s: parameterDesc)
-                out << " <" << s << '>';
-            out << "\n\t" << description << "\n";
+                usage << " <" << s << '>';
+            entries.push_back({ usage.str(), description });
         }
 
     private:
@@ -952,9 +960,17 @@ namespace cli
 
     inline void CliSession::Help() const
     {
-        out << "Commands available:\n";
-        globalScopeMenu->MainHelp(out);
-        current -> MainHelp( out );
+        detail::HelpGroup global, local;
+        globalScopeMenu->MainHelp(global);
+        current->MainHelp(local);
+
+        // alphabetically sort the local commands for display purposes
+        // (stable: keeps the relative order of commands with the same name)
+        std::stable_sort(local.begin(), local.end(),
+            [](const detail::HelpEntry& a, const detail::HelpEntry& b) { return a.usage < b.usage; });
+
+        out << "Commands available:\n\n";
+        detail::PrintHelp(out, { global, local }, TerminalWidth());
     }
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const

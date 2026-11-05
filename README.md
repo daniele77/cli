@@ -16,7 +16,7 @@ A cross-platform header only C++14 library for interactive command line interfac
 ## Features
 
 * Header only
-* Cross-platform (linux and windows)
+* Cross-platform (Linux, Windows and macOS)
 * Menus and submenus
 * Remote sessions (telnet)
 * Persistent history (navigation with arrow keys)

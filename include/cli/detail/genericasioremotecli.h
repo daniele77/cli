@@ -496,6 +496,11 @@ public:
     }
 protected:
 
+    virtual std::size_t TerminalWidth() const override
+    {
+        return screen.GetSize().first;
+    }
+
     void OnConnect() override
     {
         TelnetSession::OnConnect();

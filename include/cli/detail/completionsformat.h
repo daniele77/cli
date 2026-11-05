@@ -30,19 +30,17 @@
 #ifndef CLI_DETAIL_COMPLETIONSFORMAT_H_
 #define CLI_DETAIL_COMPLETIONSFORMAT_H_
 
-#include <functional>
+#include <vector>
 #include <string>
-#include "terminal.h"
-#include "inputdevice.h"
-#include "../cli.h" // CliSession
-#include "commonprefix.h"
-#include "completionsformat.h"
+#include "textlayout.h"
 
 namespace cli
 {
 namespace detail
 {
 
+// Prints a list of completions in a grid: items flow left to right,
+// every column is as wide as the longest item plus SPACING.
 class CompletionsFormat
 {
 public:
@@ -55,35 +53,35 @@ public:
     void Completions(std::vector<std::string> completions)
     {
         completions_ = std::move(completions);
-        max_size_ = std::size_t{0};
+        max_size_ = 0;
         for (const auto& c : completions_)
-            max_size_ = std::max(max_size_, c.size());
-        columns_ = width_ / (max_size_ + SPACING);
+            max_size_ = std::max(max_size_, DisplayWidth(c));
+        // at least one column, even if the longest item does not fit the width
+        columns_ = std::max<std::size_t>(1, width_ / (max_size_ + SPACING));
     }
 
-    void Format(std::ostream& out)
+    void Format(std::ostream& out) const
     {
-        auto col = columns_;
-        for (const auto& c : completions_)
+        const std::size_t cellWidth = max_size_ + SPACING;
+        for (std::size_t i = 0; i < completions_.size(); ++i)
         {
-            out << c;
-            out << std::string(max_size_ - c.size() + SPACING, ' ');
-            if (--col == 0)
-            {
-                out << std::endl;
-                col = columns_;
-            }
+            const bool endOfRow = (i + 1) % columns_ == 0;
+            const bool lastItem = (i + 1) == completions_.size();
+            if (endOfRow || lastItem)
+                out << completions_[i] << '\n'; // no trailing spaces, no blank line at the end
+            else
+                PadRight(out, completions_[i], cellWidth);
         }
-        out << std::endl;
+        out << std::flush;
     }
 
 private:
     static constexpr std::size_t SPACING = 5;
     const std::size_t width_;
-    const std::size_t height_;
+    const std::size_t height_; // not used yet
     std::vector<std::string> completions_;
-    std::size_t columns_;
-    std::size_t max_size_;
+    std::size_t columns_ = 1;
+    std::size_t max_size_ = 0;
 };
 
 } // namespace detail
