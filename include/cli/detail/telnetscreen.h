@@ -31,6 +31,8 @@
 #define CLI_DETAIL_TELNETSCREEN_H_
 
 #include <ostream>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 namespace cli
 {
@@ -40,6 +42,16 @@ namespace detail
 struct TelnetScreen
 {
     static void Clear(std::ostream& out) { out << "\033[H\033[J" << std::flush; }
+
+    static bool GetConsoleSize(int& cols, int& rows)
+    {
+        winsize ws{};
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
+            return false;
+        cols = ws.ws_col;
+        rows = ws.ws_row;
+        return true;
+    }
 };
 
 } // namespace detail

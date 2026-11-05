@@ -54,6 +54,15 @@ struct WinScreen
         FillConsoleOutputCharacter(hStdOut, ' ', csbi.dwSize.X * csbi.dwSize.Y, coord, &count);
         SetConsoleCursorPosition(hStdOut, coord);
     }
+    static bool GetConsoleSize(int& cols, int& rows)
+    {
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        if (!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+            return false;
+        cols = csbi.srWindow.Right  - csbi.srWindow.Left + 1;
+        rows = csbi.srWindow.Bottom - csbi.srWindow.Top  + 1;
+        return true;
+    }
 };
 
 } // namespace detail

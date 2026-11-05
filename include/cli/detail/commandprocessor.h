@@ -36,6 +36,7 @@
 #include "inputdevice.h"
 #include "../cli.h" // CliSession
 #include "commonprefix.h"
+#include "completionsformat.h"
 
 namespace cli
 {
@@ -149,9 +150,12 @@ private:
                     break;
                 }
                 session.OutStream() << '\n';
-                std::string items;
-                std::for_each( completions.begin(), completions.end(), [&items](auto& cmd){ items += '\t' + cmd; } );
-                session.OutStream() << items << '\n';
+
+                auto size = terminal.GetSize();
+                CompletionsFormat cf(size.first, size.second);
+                cf.Completions(std::move(completions));
+                cf.Format(session.OutStream());
+
                 session.Prompt();
                 terminal.ResetCursor();
                 terminal.SetLine( line );

@@ -60,6 +60,14 @@ class Terminal
 
     void Clear() const { SCREEN::Clear(out); }
 
+    std::pair<int, int> GetSize() const
+    {
+        int cols = 80;
+        int rows = 24;
+        SCREEN::GetConsoleSize(cols, rows);
+        return {cols, rows};
+    }
+
     void SetLine(const std::string &newLine)
     {
         out << beforeInput
@@ -138,7 +146,7 @@ class Terminal
                 position = 0;
                 return std::make_pair(Symbol::command, cmd);
             }
-            break;
+                break;
             case KeyType::ascii:
             {
                 const char c = static_cast<char>(k.second);
