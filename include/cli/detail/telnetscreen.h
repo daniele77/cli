@@ -32,7 +32,6 @@
 
 #include <ostream>
 #include "screen.h"
-#include "linuxscreen.h"
 
 namespace cli
 {
@@ -42,7 +41,7 @@ namespace detail
 class TelnetScreen : public Screen
 {
   public:
-    void Clear(std::ostream &out) override { LinuxScreen::Clear(out); }
+    void Clear(std::ostream &out) override { out << "\033[H\033[J" << std::flush; }
     std::pair<int, int> GetSize() const override { return {cols_, rows_}; }
     void OnWindowSize(int cols, int rows)
     {
