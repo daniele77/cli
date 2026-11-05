@@ -81,10 +81,10 @@ istream & operator >> (istream& in, Bar& p)
 }
 
 // needed only for generic help, you can omit this
-namespace cli { template <> struct TypeDesc<Bar> { static const char* Name() { return "<bar>"; } }; }
+namespace cli { template <> struct TypeDesc<Bar> { static const char* Name() { return "bar"; } }; }
 
 // needed only for generic help, you can omit this
-namespace cli { template <> struct TypeDesc<complex<double>> { static const char* Name() { return "<complex>"; } }; }
+namespace cli { template <> struct TypeDesc<complex<double>> { static const char* Name() { return "complex"; } }; }
 
 
 int main()
@@ -167,7 +167,7 @@ int main()
                 },
                 "Print the sum of the three numbers" );
         rootMenu->Insert(
-                "sort", {"list of strings separated by space"},
+                "sort", {"space separated list of strings"},
                 [](std::ostream& out, std::vector<std::string> data)
                 {
                     std::sort(data.begin(), data.end());

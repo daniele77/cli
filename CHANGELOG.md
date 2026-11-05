@@ -7,7 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
  - Fix mutex initialization issue in cli library (pr [#249](https://github.com/daniele77/cli/pull/249))
  - Autocompletion formatted according window size
- - Help prettier format 
+ - Help output improved format 
+ - Help output with colors
 
 ## [2.2.0] - 2024-10-25
 

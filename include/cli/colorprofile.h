@@ -44,6 +44,10 @@ enum BeforePrompt { beforePrompt };
 enum AfterPrompt { afterPrompt };
 enum BeforeInput { beforeInput };
 enum AfterInput { afterInput };
+enum BeforeCommandName { beforeCommandName };
+enum AfterCommandName { afterCommandName };
+enum BeforeParameter { beforeParameter };
+enum AfterParameter { afterParameter };
 
 inline std::ostream& operator<<(std::ostream& os, BeforePrompt)
 {
@@ -64,6 +68,31 @@ inline std::ostream& operator<<(std::ostream& os, BeforeInput)
 }
 
 inline std::ostream& operator<<(std::ostream& os, AfterInput)
+{
+    os << detail::rang::style::reset;
+    return os;
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, BeforeCommandName)
+{
+    if ( Color() ) { os << detail::rang::control::forceColor << detail::rang::fg::cyan << detail::rang::style::bold; }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, AfterCommandName)
+{
+    os << detail::rang::style::reset;
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, BeforeParameter)
+{
+    if ( Color() ) { os << detail::rang::control::forceColor << detail::rang::fgB::cyan << detail::rang::style::italic; }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, AfterParameter)
 {
     os << detail::rang::style::reset;
     return os;

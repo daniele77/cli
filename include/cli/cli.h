@@ -53,24 +53,24 @@ namespace cli
 
     // ********************************************************************
 
-    template < typename T > struct TypeDesc { static const char* Name() { return ""; } };
-    template <> struct TypeDesc< char > { static const char* Name() { return "<char>"; } };
-    template <> struct TypeDesc< unsigned char > { static const char* Name() { return "<unsigned char>"; } };
-    template <> struct TypeDesc< signed char > { static const char* Name() { return "<signed char>"; } };
-    template <> struct TypeDesc< short > { static const char* Name() { return "<short>"; } };
-    template <> struct TypeDesc< unsigned short > { static const char* Name() { return "<unsigned short>"; } };
-    template <> struct TypeDesc< int > { static const char* Name() { return "<int>"; } };
-    template <> struct TypeDesc< unsigned int > { static const char* Name() { return "<unsigned int>"; } };
-    template <> struct TypeDesc< long > { static const char* Name() { return "<long>"; } };
-    template <> struct TypeDesc< unsigned long > { static const char* Name() { return "<unsigned long>"; } };
-    template <> struct TypeDesc< long long > { static const char* Name() { return "<long long>"; } };
-    template <> struct TypeDesc< unsigned long long > { static const char* Name() { return "<unsigned long long>"; } };
-    template <> struct TypeDesc< float > { static const char* Name() { return "<float>"; } };
-    template <> struct TypeDesc< double > { static const char* Name() { return "<double>"; } };
-    template <> struct TypeDesc< long double > { static const char* Name() { return "<long double>"; } };
-    template <> struct TypeDesc< bool > { static const char* Name() { return "<bool>"; } };
-    template <> struct TypeDesc< std::string > { static const char* Name() { return "<string>"; } };
-    template <> struct TypeDesc< std::vector<std::string> > { static const char* Name() { return "<list of strings>"; } };
+    template <typename T> struct TypeDesc { static const char* Name() { return ""; } };
+    template <> struct TypeDesc<char> { static const char* Name() { return "char"; } };
+    template <> struct TypeDesc<unsigned char> { static const char* Name() { return "unsigned char"; } };
+    template <> struct TypeDesc<signed char> { static const char* Name() { return "signed char"; } };
+    template <> struct TypeDesc<short> { static const char* Name() { return "short"; } };
+    template <> struct TypeDesc<unsigned short> { static const char* Name() { return "unsigned short"; } };
+    template <> struct TypeDesc<int> { static const char* Name() { return "int"; } };
+    template <> struct TypeDesc<unsigned int> { static const char* Name() { return "unsigned int"; } };
+    template <> struct TypeDesc<long> { static const char* Name() { return "long"; } };
+    template <> struct TypeDesc<unsigned long> { static const char* Name() { return "unsigned long"; } };
+    template <> struct TypeDesc<long long> { static const char* Name() { return "long long"; } };
+    template <> struct TypeDesc<unsigned long long> { static const char* Name() { return "unsigned long long"; } };
+    template <> struct TypeDesc<float> { static const char* Name() { return "float"; } };
+    template <> struct TypeDesc<double> { static const char* Name() { return "double"; } };
+    template <> struct TypeDesc<long double> { static const char* Name() { return "long double"; } };
+    template <> struct TypeDesc<bool> { static const char* Name() { return "bool"; } };
+    template <> struct TypeDesc<std::string> { static const char* Name() { return "string"; } };
+    template <> struct TypeDesc<std::vector<std::string>> { static const char* Name() { return "words"; } };
 
     // ********************************************************************
 
@@ -94,7 +94,7 @@ namespace cli
             for (auto os: ostreams)
                 *os << static_cast<char>(c);
             return c;
-        }            
+        }
 
         void Register(std::ostream& o)
         {
@@ -109,7 +109,7 @@ namespace cli
 
         std::vector<std::ostream*> ostreams;
     };
-    
+
     // forward declarations
     class Menu;
     class CliSession;
@@ -128,28 +128,28 @@ namespace cli
 
         /**
          * @brief Construct a new Cli object having a given root menu that contains the first level commands available.
-         * 
+         *
          * @param _rootMenu is the @c Menu containing the first level commands available to the user.
          * @param historyStorage is the policy for the storage of the cli commands history. You must pass an instance of
          * a class derived from @c HistoryStorage. The library provides these policies:
          *   - @c VolatileHistoryStorage
          *   - @c FileHistoryStorage it's a persistent history. I.e., the command history is preserved after your application
          *     is restarted.
-         * 
+         *
          * However, you can develop your own, just derive a class from @c HistoryStorage .
          */
         Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>());
 
         /**
          * @brief Add a global enter action that is called every time a session (local or remote) is established.
-         * 
+         *
          * @param action the function to be called when a session exits, taking a @c std::ostream& parameter to write on that session console.
          */
         void EnterAction(const std::function< void(std::ostream&)>& action) { enterAction = action; }
 
         /**
          * @brief Add a global exit action that is called every time a session (local or remote) gets the "exit" command.
-         * 
+         *
          * @param action the function to be called when a session exits, taking a @c std::ostream& parameter to write on that session console.
          */
         void ExitAction(const std::function< void(std::ostream&)>& action) { exitAction = action; }
@@ -157,7 +157,7 @@ namespace cli
         /**
          * @brief Add an handler that will be called when a @c std::exception (or derived) is thrown inside a command handler.
          * If an exception handler is not set, the exception will be logget on the session output stream.
-         * 
+         *
          * @param handler the function to be called when an exception is thrown, taking a @c std::ostream& parameter to write on that session console,
          * the command entered and the exception thrown.
          */
@@ -169,7 +169,7 @@ namespace cli
         /**
          * @brief Add an handler that will be called when the user enter a wrong command (not existing command or having wrong parameters).
          * If an handler is not set, the library will print the message "wrong command" on the console.
-         * 
+         *
          * @param handler the function to be called when the user enter a wrong command, taking a @c std::ostream& parameter to write on that session console
          * and the command entered.
          */
@@ -180,8 +180,8 @@ namespace cli
 
         /**
          * @brief Get a global out stream object that can be used to print on every session currently connected (local and remote)
-         * 
-         * @return OutStream& the reference to the global out stream writing on every session console. 
+         *
+         * @return OutStream& the reference to the global out stream writing on every session console.
          */
         static OutStream& cout()
         {
@@ -329,7 +329,7 @@ namespace cli
 
         void Help() const;
 
-        void Enter() 
+        void Enter()
         {
             cli.EnterAction(out);
 
@@ -470,7 +470,7 @@ namespace cli
 
         template <typename R, typename ... Args>
         CmdHandler Insert(const std::string& cmdName, R (*f)(std::ostream&, Args...), const std::string& help, const std::vector<std::string>& parDesc={});
-        
+
         template <typename F>
         CmdHandler Insert(const std::string& cmdName, F f, const std::string& help = "", const std::vector<std::string>& parDesc={})
         {
@@ -540,7 +540,11 @@ namespace cli
         void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            entries.push_back({ Name() + " >", description });   // ">" = submenu
+            detail::HelpEntry e;
+            e.name = Name();
+            e.description = description;
+            e.isMenu = true;
+            entries.push_back(std::move(e));
         }
 
         // returns:
@@ -736,28 +740,28 @@ namespace cli
             static_cast<void>(last);
 
             assert(first == last);
-            
+
             f();
         }
     };
 
     template <typename ... Args>
-    struct PrintDesc;
+    struct ParamNames;
 
     template <typename P, typename ... Args>
-    struct PrintDesc<P, Args...>
+    struct ParamNames<P, Args...>
     {
-        static void Dump(std::ostream& out)
+        static void Collect(std::vector<std::string>& params)
         {
-            out << " " << TypeDesc< typename std::decay<P>::type >::Name();
-            PrintDesc<Args...>::Dump(out);
+            params.push_back(TypeDesc<typename std::decay<P>::type>::Name());
+            ParamNames<Args...>::Collect(params);
         }
     };
 
     template <>
-    struct PrintDesc<>
+    struct ParamNames<>
     {
-        static void Dump(std::ostream& /*out*/) {}
+        static void Collect(std::vector<std::string>& /*params*/) {}
     };
 
     // *******************************************
@@ -804,13 +808,13 @@ namespace cli
         void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            std::ostringstream usage;
-            usage << Name();
-            if (parameterDesc.empty())
-                PrintDesc<Args...>::Dump(usage);
-            for (auto& s: parameterDesc)
-                usage << " <" << s << '>';
-            entries.push_back({ usage.str(), description });
+            detail::HelpEntry e;
+            e.name = Name();
+            e.params = parameterDesc; // user declared parameter names, if any
+            if (e.params.empty())
+                ParamNames<Args...>::Collect(e.params);   // otherwise the type names
+            e.description = description;
+            entries.push_back(std::move(e));
         }
 
     private:
@@ -853,20 +857,20 @@ namespace cli
         void Help(detail::HelpGroup& entries) const override
         {
             if (!IsEnabled()) return;
-            std::ostringstream usage;
-            usage << Name();
-            if (parameterDesc.empty())
-                PrintDesc<std::vector<std::string>>::Dump(usage);
-            for (auto& s: parameterDesc)
-                usage << " <" << s << '>';
-            entries.push_back({ usage.str(), description });
+            detail::HelpEntry e;
+            e.name = Name();
+            e.params = parameterDesc; // user declared parameter names, if any
+            if (e.params.empty())
+                ParamNames<std::vector<std::string>>::Collect(e.params);   // otherwise collect type names
+            e.description = description;
+            entries.push_back(std::move(e));
         }
 
     private:
 
         const F func;
         const std::string description;
-        const std::vector<std::string> parameterDesc;
+        std::vector<std::string> parameterDesc;
     };
 
 
@@ -964,13 +968,17 @@ namespace cli
         globalScopeMenu->MainHelp(global);
         current->MainHelp(local);
 
-        // alphabetically sort the local commands for display purposes
-        // (stable: keeps the relative order of commands with the same name)
+        // commands in alphabetical order; stable_sort keeps overloads in the order of insertion
         std::stable_sort(local.begin(), local.end(),
-            [](const detail::HelpEntry& a, const detail::HelpEntry& b) { return a.usage < b.usage; });
+            [](const detail::HelpEntry& a, const detail::HelpEntry& b) { return a.name < b.name; });
+
+        // submenus in a separate group
+        detail::HelpGroup commands, menus;
+        for (auto& e : local)
+            (e.isMenu ? menus : commands).push_back(std::move(e));
 
         out << "Commands available:\n\n";
-        detail::PrintHelp(out, { global, local }, TerminalWidth());
+        detail::PrintHelp(out, { global, commands, menus }, TerminalWidth());
     }
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const

@@ -38,10 +38,15 @@ namespace cli
 namespace detail
 {
 
+// What a command says about itself, without deciding how it will be shown.
+// Layout (columns, wrapping) and decoration (<>, colors, ">" for menus)
+// are up to whoever renders the entries.
 struct HelpEntry
 {
-    std::string usage;        // "add <int> <int>"
-    std::string description;  // "Print the sum of two numbers"
+    std::string name;                 // "add"
+    std::vector<std::string> params;  // {"int", "int"}: names only, no decoration
+    std::string description;          // "Print the sum of two numbers"
+    bool isMenu = false;              // true for submenus (and the parent menu)
 };
 
 using HelpGroup = std::vector<HelpEntry>;

@@ -30,57 +30,122 @@
 #ifndef CLI_DETAIL_HELPFORMAT_H
 #define CLI_DETAIL_HELPFORMAT_H
 
+#include <algorithm>
+#include <cstddef>
 #include <string>
 #include <vector>
 #include <ostream>
 #include "textlayout.h"
 #include "helpentry.h"
 
+// Renders help entries as a two-column table:
+//
+//   name <param> <param>      Description, wrapped to the terminal width
+//                             with a hanging indent
+//
+// This is the only place that knows how a help entry is decorated and laid out.
+
 namespace cli
 {
 namespace detail
 {
 
-inline void PrintHelp(std::ostream& out,
-                        const std::vector<HelpGroup>& groups,
-                        std::size_t termWidth)
+// Writes "add <int> <int>" or "sub >".
+//
+// With styled == true the command name and the parameters are wrapped in the
+// style manipulators of colorprofile.h (which write nothing when colors are off).
+// The decoration must be written straight to the final stream and not to a
+// temporary string: with a console stream, rang changes the console attributes
+// at the moment of the call (Windows native console), so the text has to be
+// written to the real stream in the same moment.
+//
+// This is the only place that knows the text of a usage; the plain version
+// (styled == false) is the one used to measure widths.
+inline void WriteUsage(std::ostream& out, const HelpEntry& e, bool styled)
 {
-    constexpr std::size_t indent = 2;      // margine sinistro
-    constexpr std::size_t gap = 3;         // spazio tra le due colonne
-    constexpr std::size_t maxUsage = 32;   // sintassi più lunghe: descrizione sulla riga sotto
-    constexpr std::size_t minDesc = 20;    // larghezza minima della colonna descrizioni
+    if (styled) out << beforeCommandName;
+    out << e.name;
+    if (e.isMenu)
+        out << " >";
+    if (styled) out << afterCommandName;
+    for (const auto& p : e.params)
+    {
+        out << ' ';
+        if (styled) out << beforeParameter;
+        out << '<' << p << '>';
+        if (styled) out << afterParameter;
+    }
+}
+ 
+// Plain text of the usage (no decoration), e.g. to measure its width
+inline std::string FormatUsage(const HelpEntry& e)
+{
+    std::ostringstream usage;
+    WriteUsage(usage, e, false);
+    return usage.str();
+}
 
+// Prints the groups one after the other, separated by an empty line
+// (empty groups are skipped). All groups share the same column layout.
+inline void PrintHelp(std::ostream& out,
+                      const std::vector<HelpGroup>& groups,
+                      std::size_t termWidth)
+{
+    constexpr std::size_t indent = 2;     // left margin
+    constexpr std::size_t gap = 3;        // space between the two columns
+    constexpr std::size_t maxUsage = 32;  // longer usages: description goes on the next line
+    constexpr std::size_t minDesc = 20;   // minimum width of the description column
+ 
+    std::vector<std::vector<std::string>> usages;
+    usages.reserve(groups.size());
     std::size_t usageWidth = 0;
-    for (const auto& g: groups)
-        for (const auto& e: g)
-            if (e.usage.size() <= maxUsage)
-                usageWidth = std::max(usageWidth, e.usage.size());
-
+    for (const auto& g : groups)
+    {
+        usages.emplace_back();
+        for (const auto& e : g)
+        {
+            usages.back().push_back(FormatUsage(e));
+            const std::size_t w = DisplayWidth(usages.back().back());
+            if (w <= maxUsage)
+                usageWidth = std::max(usageWidth, w);
+        }
+    }
+ 
     const std::size_t descCol = indent + usageWidth + gap;
     const std::size_t descWidth =
         termWidth > descCol + minDesc ? termWidth - descCol : minDesc;
-
-    bool first = true;
-    for (const auto& g: groups)
+ 
+    bool firstGroup = true;
+    for (std::size_t gi = 0; gi < groups.size(); ++gi)
     {
-        if (g.empty()) continue;
-        if (!first) out << '\n';          // riga vuota tra i gruppi
-        first = false;
-
-        for (const auto& e: g)
+        if (groups[gi].empty())
+            continue;
+        if (!firstGroup)
+            out << '\n';
+        firstGroup = false;
+ 
+        for (std::size_t ei = 0; ei < groups[gi].size(); ++ei)
         {
-            const auto lines = Wrap(e.description, descWidth);
+            const HelpEntry& entry = groups[gi][ei];
+            const std::size_t plainWidth = DisplayWidth(usages[gi][ei]);
+            const std::vector<std::string> lines = Wrap(entry.description, descWidth);
             std::size_t next = 0;
-
-            out << std::string(indent, ' ') << e.usage;
-            if (e.usage.size() <= maxUsage && !lines.empty())
+ 
+            Spaces(out, indent);
+            WriteUsage(out, entry, true);   // styled; the width comes from the plain text
+            if (plainWidth <= maxUsage && !lines.empty())
             {
-                out << std::string(usageWidth - e.usage.size() + gap, ' ') << lines[0];
+                Spaces(out, usageWidth + gap - plainWidth);
+                out << lines[0];
                 next = 1;
             }
             out << '\n';
+ 
             for (; next < lines.size(); ++next)
-                out << std::string(descCol, ' ') << lines[next] << '\n';
+            {
+                Spaces(out, descCol);
+                out << lines[next] << '\n';
+            }
         }
     }
 }
