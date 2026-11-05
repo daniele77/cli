@@ -323,7 +323,7 @@ namespace cli
 
         void Prompt();
 
-        void Current(Menu* menu) { current = menu; }
+        void Current(Menu* menu);
 
         std::ostream& OutStream() { return out; }
 
@@ -459,13 +459,15 @@ namespace cli
         Menu(Menu&&) = delete;
         Menu& operator = (Menu&&) = delete;
 
-        Menu() : Command({}), parent(nullptr), description(), cmds(std::make_shared<Cmds>()) {}
+        Menu() : Command({}), parent(nullptr), description(), prompt(), onEnter(), cmds(std::make_shared<Cmds>()) {}
 
-        explicit Menu(const std::string& _name, std::string desc = "(menu)", const std::string& _prompt="") :
+        explicit Menu(const std::string& _name, std::string desc = "(menu)", const std::string& _prompt="",
+            std::function<void(std::ostream&)> _onEnter = {}) :
             Command(_name),
             parent(nullptr),
             description(std::move(desc)),
             prompt(_prompt.empty() ? _name : _prompt),
+            onEnter(std::move(_onEnter)),
             cmds(std::make_shared<Cmds>())
         {}
 
@@ -527,6 +529,17 @@ namespace cli
         std::string Prompt() const
         {
             return prompt;
+        }
+
+        void EnterAction(const std::function<void(std::ostream&)>& action)
+        {
+            onEnter = action;
+        }
+
+        void OnEnter(std::ostream& out) const
+        {
+            if (onEnter)
+                onEnter(out);
         }
 
         void MainHelp(detail::HelpGroup& entries)
@@ -705,11 +718,19 @@ namespace cli
         Menu* parent{ nullptr };
         const std::string description;
         const std::string prompt;
+        std::function<void(std::ostream&)> onEnter;
         // using shared_ptr instead of unique_ptr to get a weak_ptr
         // for the CmdHandler::Descriptor
         using Cmds = std::vector<std::shared_ptr<Command>>;
         std::shared_ptr<Cmds> cmds;
     };
+
+    inline void CliSession::Current(Menu* menu)
+    {
+        current = menu;
+        if (current)
+            current->OnEnter(out);
+    }
 
     // ********************************************************************
 

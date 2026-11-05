@@ -237,6 +237,27 @@ int main()
 
         rootMenu->Insert( std::move(subMenu) );
 
+        // An optional callback can be run whenever the menu becomes the current one.
+        // Try: help sub, help demo, or enter the "config" submenu.
+        auto configMenu = make_unique<Menu>(
+            "config",
+            "Enter the configuration submenu",
+            "config",
+            [](std::ostream& out)
+            {
+                out << "Welcome to the configuration menu. Try: help reload\n";
+            }
+        );
+        configMenu->Insert(
+            "reload",
+            [](std::ostream& out)
+            {
+                out << "Reloading configuration\n";
+            },
+            "Reload the application configuration" );
+
+        rootMenu->Insert( std::move(configMenu) );
+
         // create a cli with the given root menu and a persistent storage
         // you must pass to FileHistoryStorage the path of the history file
         // if you don't pass the second argument, the cli will use a VolatileHistoryStorage object that keeps in memory

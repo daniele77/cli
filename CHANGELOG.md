@@ -10,6 +10,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Help output improved format 
  - Help output with colors
  - Help for single command (issue [#230](https://github.com/daniele77/cli/issues/230))
+ - Execute callback on entering menu (issue [#257](https://github.com/daniele77/cli/issues/257))
 
 ## [2.2.0] - 2024-10-25
 

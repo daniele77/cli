@@ -36,6 +36,28 @@ using namespace cli::detail;
 
 BOOST_AUTO_TEST_SUITE(MenuSuite)
 
+BOOST_AUTO_TEST_CASE(MenuEnterCallback)
+{
+    std::stringstream oss;
+    bool entered = false;
+
+    auto rootMenu = make_unique<Menu>("root");
+    auto subMenu = make_unique<Menu>("submenu", "(menu)", "", [&entered](std::ostream& out)
+    {
+        entered = true;
+        out << "submenu entered";
+    });
+    auto* subMenuPtr = subMenu.get();
+    rootMenu->Insert(std::move(subMenu));
+
+    Cli cli(std::move(rootMenu));
+    CliSession session(cli, oss);
+    session.Current(subMenuPtr);
+
+    BOOST_CHECK(entered);
+    BOOST_CHECK_EQUAL(oss.str(), "submenu entered");
+}
+
 BOOST_AUTO_TEST_CASE(Basics)
 {
     Menu menu("menu");

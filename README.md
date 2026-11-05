@@ -174,8 +174,16 @@ This indicates you're in the root menu.
 ### Commands in any menu
 
 - `help`: Prints a list of available commands with descriptions.
+- `help <command>`: Prints the usage and description for a specific command.
 - `history`: Displays the list of previously entered commands.
 - `exit`: Terminates the CLI application.
+
+Example:
+
+```text
+cli> help
+cli> help int_cmd
+```
 - **Command execution:**
     - **Current menu:** Enter the name of a command available in the current menu to execute it.
     - **Submenu (full path):** Specify the complete path (separated by spaces) to a command within a submenu to execute it.
@@ -356,6 +364,22 @@ myprompt
              |
              +--- bb_prompt
 
+```
+
+You can also attach a custom callback that is executed every time a menu becomes the current one:
+
+```C++
+auto configMenu = make_unique<Menu>(
+    "config",
+    "Manage configuration",
+    "config",
+    [](std::ostream& out)
+    {
+        out << "Welcome to the configuration menu\n";
+    }
+);
+
+rootMenu->Insert(std::move(configMenu));
 ```
 
 Finally, you can add commands to menus, using the `Menu::Insert` method.
