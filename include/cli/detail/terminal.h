@@ -33,6 +33,7 @@
 #include <string>
 #include "../colorprofile.h"
 #include "inputdevice.h"
+#include "screen.h"
 
 namespace cli
 {
@@ -50,23 +51,17 @@ enum class Symbol
     clear
 };
 
-template <typename SCREEN>
+
 class Terminal
 {
   public:
-    explicit Terminal(std::ostream &_out) : out(_out) {}
+    explicit Terminal(std::ostream &_out, Screen& screen) : out(_out), screen_(screen) {}
 
     void ResetCursor() { position = 0; }
 
-    void Clear() const { SCREEN::Clear(out); }
+    void Clear() const { screen_.Clear(out); }
 
-    std::pair<int, int> GetSize() const
-    {
-        int cols = 80;
-        int rows = 24;
-        SCREEN::GetConsoleSize(cols, rows);
-        return {cols, rows};
-    }
+    std::pair<int, int> GetSize() const { return screen_.GetSize(); }
 
     void SetLine(const std::string &newLine)
     {
@@ -220,6 +215,7 @@ class Terminal
     std::string currentLine;
     std::size_t position = 0; // next writing position in currentLine
     std::ostream &out;
+    Screen& screen_;
 };
 
 } // namespace detail

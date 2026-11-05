@@ -34,7 +34,7 @@
 #include "detail/commandprocessor.h"
 #include "cli.h" // CliSession
 #include "detail/keyboard.h"
-#include "detail/screen.h"
+#include "detail/localscreen.h"
 
 namespace cli
 {
@@ -63,15 +63,16 @@ public:
     CliLocalTerminalSession(Cli& _cli, Scheduler& scheduler, std::ostream& _out, std::size_t historySize = 100) :
         CliSession(_cli, _out, historySize),
         kb(scheduler),
-        ih(*this, kb)
+        ih(*this, kb, screen)
     {
         Enter();
         Prompt();
     }
 
 private:
+    detail::LocalScreen screen;
     detail::Keyboard kb;
-    detail::CommandProcessor<detail::LocalScreen> ih;
+    detail::CommandProcessor ih;
 };
 
 using CliLocalSession = CliLocalTerminalSession;

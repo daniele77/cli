@@ -31,27 +31,27 @@
 #define CLI_DETAIL_TELNETSCREEN_H_
 
 #include <ostream>
-#include <sys/ioctl.h>
-#include <unistd.h>
+#include "screen.h"
+#include "linuxscreen.h"
 
 namespace cli
 {
 namespace detail
 {
 
-struct TelnetScreen
+class TelnetScreen : public Screen
 {
-    static void Clear(std::ostream& out) { out << "\033[H\033[J" << std::flush; }
-
-    static bool GetConsoleSize(int& cols, int& rows)
+  public:
+    void Clear(std::ostream &out) override { LinuxScreen::Clear(out); }
+    std::pair<int, int> GetSize() const override { return {cols_, rows_}; }
+    void OnWindowSize(int cols, int rows)
     {
-        winsize ws{};
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0)
-            return false;
-        cols = ws.ws_col;
-        rows = ws.ws_row;
-        return true;
+        rows_ = rows;
+        cols_ = cols;
     }
+  private:
+    int rows_ = 0;
+    int cols_ = 0;
 };
 
 } // namespace detail

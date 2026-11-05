@@ -30,17 +30,25 @@
 #ifndef CLI_DETAIL_SCREEN_H_
 #define CLI_DETAIL_SCREEN_H_
 
-#include "platform.h"
-#include "telnetscreen.h"
+#include <ostream>
+#include <utility> // std::pair
 
-#if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
-    namespace cli { namespace detail { using LocalScreen = TelnetScreen; } }
-#elif defined(CLI_OS_WIN)
-    #include "winscreen.h"
-    namespace cli { namespace detail { using LocalScreen = WinScreen; } }
-#else
-    #error "Platform not supported (yet)."
-#endif
+namespace cli
+{
+namespace detail
+{
+
+class Screen
+{
+  public:
+    virtual ~Screen() = default;
+    virtual void Clear(std::ostream &out) = 0;
+    // width, height (columns, rows)
+    virtual std::pair<int, int> GetSize() const= 0;
+};
+
+} // namespace detail
+} // namespace cli
 
 #endif // CLI_DETAIL_SCREEN_H_
 

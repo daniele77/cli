@@ -50,10 +50,7 @@ namespace detail
  * The CommandProcessor class is responsible for handling user input from an InputDevice,
  * processing the input into commands, and executing these commands in a CLI session.
  * It also provides functionality for command history navigation and command auto-completion.
- *
- * @tparam SCREEN The type of the terminal screen.
  */
-template <typename SCREEN>
 class CommandProcessor
 {
 public:
@@ -62,10 +59,11 @@ public:
      *
      * @param _session The CLI session to be managed.
      * @param _kb The input device to be used.
+     * @param screen The terminal screen to be used.
      */
-    CommandProcessor(CliSession& _session, InputDevice& _kb) :
+    CommandProcessor(CliSession& _session, InputDevice& _kb, Screen& screen) :
         session(_session),
-        terminal(session.OutStream()),
+        terminal(session.OutStream(), screen),
         kb(_kb)
     {
         kb.Register( [this](auto key){ this->Keypressed(key); } );
@@ -175,7 +173,7 @@ private:
     }
 
     CliSession& session;
-    Terminal<SCREEN> terminal;
+    Terminal terminal;
     InputDevice& kb;
 };
 

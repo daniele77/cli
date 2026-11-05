@@ -36,7 +36,7 @@
 #include "server.h"
 #include "inputdevice.h"
 #include "genericasioscheduler.h"
-#include "screen.h"
+#include "telnetscreen.h"
 
 namespace cli
 {
@@ -87,6 +87,10 @@ protected:
         static const std::string iacWillEcho{ "\x0FF\x0FB\x001", 3 };
         this -> OutStream() << iacWillEcho << std::flush;
 
+        // IAC DO NAWS (255 253 31).
+        static const std::string iacDoNaws{ "\x0FF\x0FD\x01F", 3 };
+        this -> OutStream() << iacDoNaws << std::flush;
+
 /*
         constexpr char IAC = '\x0FF'; // 255
         constexpr char DO = '\x0FD'; // 253
@@ -98,6 +102,8 @@ protected:
     }
     void OnDisconnect() override {}
     void OnError() override {}
+    virtual void OnWindowSize(int /* width */, int /* height */) {}
+
 #if 0
     void OnDataReceived(const std::string& data) override
     {
@@ -215,7 +221,8 @@ protected:
         TERMINAL_TYPE = '\x018',
         NEGOTIATE_ABOUT_WIN_SIZE = '\x01F',
         TERMINAL_SPEED = '\x020',
-        NEW_ENV_OPTION = '\x027'
+        NEW_ENV_OPTION = '\x027',
+        NAWS = '\x01F'
     };
 
     void OnDataReceived(const std::string& _data) override
@@ -276,7 +283,7 @@ private:
 
     void Command(char c)
     {
-/*
+        /*
         switch (static_cast<int>( c & 0xFF ))
         {
             case 0xFF: std::cout << "IAC" << std::endl; break;
@@ -295,14 +302,29 @@ private:
             case 0xF2: std::cout << "DataMark" << std::endl; break;
             case 0xF1: std::cout << "NOP" << std::endl; break;
             case 0xF0: std::cout << "SE" << std::endl; break;
+            case 0x1F: std::cout << "NAWS" << std::endl; break;
             default: std::cout << (static_cast<int>( c & 0xFF )) << std::endl;;
         }
-*/
+        */
         switch(c)
         {
             case SE:
                 if (state == State::sub)
+                {
+                    if (subOption == NEGOTIATE_ABOUT_WIN_SIZE && subBuffer.size() >= 4)
+                    {
+                        const auto width = static_cast<unsigned short>(
+                            (static_cast<unsigned char>(subBuffer[0]) << 8) |
+                            static_cast<unsigned char>(subBuffer[1]));
+                        const auto height = static_cast<unsigned short>(
+                            (static_cast<unsigned char>(subBuffer[2]) << 8) |
+                            static_cast<unsigned char>(subBuffer[3]));
+                        OnWindowSize(width, height);
+                    }
                     state = State::data;
+                    subOption = 0;
+                    subBuffer.clear();
+                }
                 else
                     std::cerr << "ERROR: received SE when not in sub state\n";
                 break;
@@ -319,7 +341,11 @@ private:
                 break;
             case SB:
                 if (state != State::sub)
+                {
                     state = State::sub;
+                    subOption = 0;
+                    subBuffer.clear();
+                }
                 else
                     std::cout << "ERROR: received SB when already in sub state" << std::endl;
                 break;
@@ -393,11 +419,18 @@ private:
         #endif
     }
     void RxSub(char c)
-    { 
+    {
+        if (subOption == 0)
+        {
+            subOption = static_cast<unsigned char>(c);
+            return;
+        }
+
+        if (subBuffer.size() < 4)
+            subBuffer += c;
+
         #ifdef CLI_TELNET_TRACE
         std::cout << "sub: " << static_cast<int>(c) << std::endl;
-        #else
-        (void)c;
         #endif
     }
     void SendIacCmd(char action, char op)
@@ -420,6 +453,8 @@ private:
     enum class State { data, sub, wait_will, wait_wont, wait_do, wait_dont };
     State state = State::data;
     bool escape = false;
+    unsigned char subOption = 0;
+    std::string subBuffer;
 
 #endif
 
@@ -455,7 +490,7 @@ public:
         InputDevice(_scheduler),
         TelnetSession(std::move(_socket)),
         CliSession(_cli, TelnetSession::OutStream(), historySize),
-        poll(*this, *this)
+        poll(*this, *this, screen)
     {
         ExitAction([this, _exitAction](std::ostream& _out){ _exitAction(_out), Disconnect(); } );
     }
@@ -466,6 +501,11 @@ protected:
         TelnetSession::OnConnect();
         Enter();
         Prompt();
+    }
+
+    void OnWindowSize(int width, int height) override
+    {
+        screen.OnWindowSize(width, height);
     }
 
     void Output(char c) override // NB: C++ does not specify wether char is signed or unsigned
@@ -544,7 +584,8 @@ private:
 
     enum class Step { _1, _2, _3, _4, wait_0 };
     Step step = Step::_1;
-    CommandProcessor<TelnetScreen> poll;
+    TelnetScreen screen;
+    CommandProcessor poll;
 };
 
 template <typename ASIOLIB>
