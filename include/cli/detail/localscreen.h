@@ -31,10 +31,10 @@
 #define CLI_DETAIL_LOCALSCREEN_H_
 
 #include "platform.h"
-#include "linuxscreen.h"
 #include "platformdependentscreen.h"
 
 #if defined(CLI_OS_LINUX) || defined(CLI_OS_MAC)
+    #include "linuxscreen.h"
     namespace cli { namespace detail { using LocalScreen = PlatformDependentScreen<LinuxScreen>; } }
 #elif defined(CLI_OS_WIN)
     #include "winscreen.h"
