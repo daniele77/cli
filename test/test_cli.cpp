@@ -142,6 +142,36 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK_EQUAL(ExtractContent(oss), R"(foo 'bar' "foo\2)");
 }
 
+BOOST_AUTO_TEST_CASE(CustomMessages)
+{
+    auto rootMenu = make_unique<Menu>("cli");
+    rootMenu->Insert("test_cmd", [](ostream& out, int par){ out << par << "\n"; }, "test_cmd help", {"int_par"});
+
+    Cli::Messages messages;
+    messages.wrongCommand = "custom wrong command: ";
+    messages.helpHeader = "custom commands:\n\n";
+    messages.commandNotFound = "custom command missing: ";
+    messages.helpUsage = "custom usage: aiuto [comando]";
+    messages.helpName = "aiuto";
+    messages.helpArgName = "comando";
+    messages.exitName = "uscita";
+
+    Cli cli(std::move(rootMenu), std::make_unique<VolatileHistoryStorage>(), messages);
+    stringstream oss;
+
+    UserInput(cli, oss, "unknown_command");
+    BOOST_CHECK(ExtractContent(oss).find("custom wrong command:") != string::npos);
+
+    UserInput(cli, oss, "aiuto");
+    BOOST_CHECK(ExtractContent(oss).find("custom commands:") != string::npos);
+
+    UserInput(cli, oss, "aiuto missing_cmd");
+    BOOST_CHECK(ExtractContent(oss).find("custom command missing:") != string::npos);
+
+    UserInput(cli, oss, "aiuto");
+    BOOST_CHECK(ExtractContent(oss).find("comando") != string::npos);
+}
+
 BOOST_AUTO_TEST_CASE(parameters)
 {
     auto rootMenu = make_unique<Menu>("cli");

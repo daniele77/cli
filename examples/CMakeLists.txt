@@ -28,8 +28,8 @@
 ################################################################################
 
 
-# pluginmanager, filesession and simplelocalsession can be compiled w/o asio
-set(SOURCES pluginmanager filesession simplelocalsession)
+# pluginmanager, filesession, simplelocalsession and italian_messages can be compiled w/o asio
+set(SOURCES pluginmanager filesession simplelocalsession italian_messages)
 
 if (CLI_UseBoostAsio OR CLI_UseStandaloneAsio)
     if (CLI_UseBoostAsio)

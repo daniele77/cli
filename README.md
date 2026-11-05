@@ -184,6 +184,26 @@ Example:
 cli> help
 cli> help int_cmd
 ```
+
+### Customizing built-in messages and command names
+
+You can override the default English strings used by the library, including the built-in commands (`help`, `exit`, `history`) and the help parameter name. This is useful when you want to localize the CLI or adapt the wording to your application.
+
+```C++
+Cli::Messages messages;
+messages.helpName = "aiuto";
+messages.helpArgName = "comando";
+messages.helpHeader = "Comandi disponibili:\n\n";
+messages.helpUsage = "uso: aiuto [comando]";
+messages.exitName = "esci";
+messages.historyName = "cronologia";
+messages.wrongCommand = "comando non valido: ";
+
+Cli cli(std::move(rootMenu), std::make_unique<VolatileHistoryStorage>(), messages);
+```
+
+The default values remain in English if you do not customize them. A ready-to-run example is available in `examples/italian_messages.cpp`.
+
 - **Command execution:**
     - **Current menu:** Enter the name of a command available in the current menu to execute it.
     - **Submenu (full path):** Specify the complete path (separated by spaces) to a command within a submenu to execute it.

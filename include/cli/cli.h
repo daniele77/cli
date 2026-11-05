@@ -116,6 +116,42 @@ namespace cli
 
     class Cli
     {
+    public:
+        struct Messages
+        {
+            std::string wrongCommand;
+            std::string unknownException;
+            std::string helpHeader;
+            std::string helpUsage;
+            std::string commandNotFound;
+            std::string helpName;
+            std::string helpArgName;
+            std::string helpCommand;
+            std::string exitName;
+            std::string exitCommand;
+            std::string historyName;
+            std::string historyCommand;
+            std::string historyIndexArg;
+            std::string historyExecCommand;
+
+            Messages() :
+                wrongCommand("wrong command: "),
+                unknownException("Cli. Unknown exception caught handling command line \""),
+                helpHeader("Commands available:\n\n"),
+                helpUsage("usage: help [command]"),
+                commandNotFound("command not found: "),
+                helpName("help"),
+                helpArgName("command"),
+                helpCommand("This help message"),
+                exitName("exit"),
+                exitCommand("Quit the session"),
+                historyName("history"),
+                historyCommand("Show the history"),
+                historyIndexArg("history entry index"),
+                historyExecCommand("Exec a command by index in the history")
+            {
+            }
+        };
 
     public:
         ~Cli() = default;
@@ -138,7 +174,8 @@ namespace cli
          *
          * However, you can develop your own, just derive a class from @c HistoryStorage .
          */
-        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>());
+        Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>(), Messages _messages = Messages{});
+        Cli(std::unique_ptr<Menu> _rootMenu, Messages _messages, std::unique_ptr<HistoryStorage> historyStorage = std::make_unique<VolatileHistoryStorage>());
 
         /**
          * @brief Add a global enter action that is called every time a session (local or remote) is established.
@@ -176,6 +213,16 @@ namespace cli
         void WrongCommandHandler(const std::function< void(std::ostream&, const std::string& cmd) >& handler)
         {
             wrongCmdHandler = handler;
+        }
+
+        void SetMessages(const Messages& _messages)
+        {
+            messages = _messages;
+        }
+
+        const Messages& GetMessages() const
+        {
+            return messages;
         }
 
         /**
@@ -224,7 +271,7 @@ namespace cli
             if (wrongCmdHandler)
                 wrongCmdHandler(out, cmd);
             else
-                out << "wrong command: " << cmd << '\n';
+                out << messages.wrongCommand << cmd << '\n';
         }
 
         void StoreCommands(const std::vector<std::string>& cmds)
@@ -244,6 +291,7 @@ namespace cli
         std::function<void(std::ostream&)> exitAction;
         std::function<void(std::ostream&, const std::string& cmd, const std::exception& )> exceptionHandler;
         std::function<void(std::ostream&, const std::string& cmd)> wrongCmdHandler;
+        Messages messages;
     };
 
     // ********************************************************************
@@ -900,11 +948,17 @@ namespace cli
 
     // Cli implementation
 
-    inline Cli::Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage) :
+    inline Cli::Cli(std::unique_ptr<Menu> _rootMenu, std::unique_ptr<HistoryStorage> historyStorage, Messages _messages) :
         globalHistoryStorage{std::move(historyStorage)},
         rootMenu{std::move(_rootMenu)},
         enterAction{},
-        exitAction{}
+        exitAction{},
+        messages{std::move(_messages)}
+    {
+    }
+
+    inline Cli::Cli(std::unique_ptr<Menu> _rootMenu, Messages _messages, std::unique_ptr<HistoryStorage> historyStorage) :
+        Cli(std::move(_rootMenu), std::move(historyStorage), std::move(_messages))
     {
     }
 
@@ -922,7 +976,7 @@ namespace cli
 
             coutPtr->Register(out);
             globalScopeMenu->Insert(
-                "help",
+                cli.GetMessages().helpName, {cli.GetMessages().helpArgName},
                 [this](std::ostream&, const std::vector<std::string>& args)
                 {
                     if (args.empty())
@@ -930,25 +984,24 @@ namespace cli
                     else if (args.size() == 1)
                         Help(args.front());
                     else
-                        out << "usage: help [command]\n";
+                        out << cli.GetMessages().helpUsage << '\n';
                 },
-                "This help message",
-                {"command"}
+                cli.GetMessages().helpCommand
             );
             globalScopeMenu->Insert(
-                "exit",
+                cli.GetMessages().exitName,
                 [this](std::ostream&){ Exit(); },
-                "Quit the session"
+                cli.GetMessages().exitCommand
             );
             globalScopeMenu->Insert(
-                "history",
+                cli.GetMessages().historyName,
                 [this](std::ostream&){ ShowHistory(); },
-                "Show the history"
+                cli.GetMessages().historyCommand
             );
             globalScopeMenu->Insert(
-                "!", {"history entry index"},
+                "!", {cli.GetMessages().historyIndexArg},
                 [this](std::ostream&, unsigned cmdIndex){ ExecFromHistory(cmdIndex); },
-                "Exec a command by index in the history"
+                cli.GetMessages().historyExecCommand
             );
         }
 
@@ -977,7 +1030,7 @@ namespace cli
         }
         catch(...)
         {
-            out << "Cli. Unknown exception caught handling command line \""
+            out << cli.GetMessages().unknownException
                 << cmd
                 << "\"\n";
         }
@@ -1008,7 +1061,7 @@ namespace cli
         for (auto& e : local)
             (e.isMenu ? menus : commands).push_back(std::move(e));
 
-        out << "Commands available:\n\n";
+        out << cli.GetMessages().helpHeader;
         detail::PrintHelp(out, { global, commands, menus }, TerminalWidth());
     }
 
@@ -1030,7 +1083,7 @@ namespace cli
 
         if (matches.empty())
         {
-            out << "command not found: " << commandName << '\n';
+            out << cli.GetMessages().commandNotFound << commandName << '\n';
             return;
         }
 
