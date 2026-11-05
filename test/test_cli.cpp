@@ -109,6 +109,13 @@ BOOST_AUTO_TEST_CASE(Basics)
     BOOST_CHECK(ExtractContent(oss).find("string_cmd") != string::npos);
     BOOST_CHECK(ExtractContent(oss).find("string_par") != string::npos);
 
+    UserInput(cli, oss, "help int_cmd");
+    BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
+    BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");
+    BOOST_CHECK(ExtractContent(oss).find("int_cmd") != string::npos);
+    BOOST_CHECK(ExtractContent(oss).find("int_cmd help") != string::npos);
+    BOOST_CHECK(ExtractContent(oss).find("int_par") != string::npos);
+
     UserInput(cli, oss, "int_cmd 42");
     BOOST_CHECK_EQUAL(ExtractFirstPrompt(oss), "cli");
     BOOST_CHECK_EQUAL(ExtractLastPrompt(oss), "cli");

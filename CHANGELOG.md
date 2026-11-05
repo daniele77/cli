@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Autocompletion formatted according window size
  - Help output improved format 
  - Help output with colors
+ - Help for single command (issue [#230](https://github.com/daniele77/cli/issues/230))
 
 ## [2.2.0] - 2024-10-25
 

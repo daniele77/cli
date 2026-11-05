@@ -328,6 +328,7 @@ namespace cli
         std::ostream& OutStream() { return out; }
 
         void Help() const;
+        void Help(const std::string& commandName) const;
 
         void Enter()
         {
@@ -901,8 +902,17 @@ namespace cli
             coutPtr->Register(out);
             globalScopeMenu->Insert(
                 "help",
-                [this](std::ostream&){ Help(); },
-                "This help message"
+                [this](std::ostream&, const std::vector<std::string>& args)
+                {
+                    if (args.empty())
+                        Help();
+                    else if (args.size() == 1)
+                        Help(args.front());
+                    else
+                        out << "usage: help [command]\n";
+                },
+                "This help message",
+                {"command"}
             );
             globalScopeMenu->Insert(
                 "exit",
@@ -979,6 +989,31 @@ namespace cli
 
         out << "Commands available:\n\n";
         detail::PrintHelp(out, { global, commands, menus }, TerminalWidth());
+    }
+
+    inline void CliSession::Help(const std::string& commandName) const
+    {
+        detail::HelpGroup matches;
+        auto appendMatches = [&](const detail::HelpGroup& entries)
+        {
+            for (const auto& entry : entries)
+                if (entry.name == commandName)
+                    matches.push_back(entry);
+        };
+
+        detail::HelpGroup global, local;
+        globalScopeMenu->MainHelp(global);
+        current->MainHelp(local);
+        appendMatches(global);
+        appendMatches(local);
+
+        if (matches.empty())
+        {
+            out << "command not found: " << commandName << '\n';
+            return;
+        }
+
+        detail::PrintHelp(out, { matches }, TerminalWidth());
     }
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const
