@@ -213,8 +213,16 @@ namespace cli
         globalScopeMenu->MainHelp(global);
         current->MainHelp(local);
 
+        // GCC 15 emits a false-positive -Wstrict-overflow warning inside <bits/stl_tempbuf.h>
+        // during std::stable_sort's temporary buffer creation. Since -Werror is enabled,
+        // we suppress the warning locally for this call.
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wstrict-overflow"
+
         std::stable_sort(local.begin(), local.end(),
             [](const detail::HelpEntry& a, const detail::HelpEntry& b) { return a.name < b.name; });
+
+        #pragma GCC diagnostic pop
 
         detail::HelpGroup commands, menus;
         for (auto& e : local)

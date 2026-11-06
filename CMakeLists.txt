@@ -45,6 +45,7 @@ option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
 option(CLI_UseBoostAsio "Use Boost.Asio library." OFF)
 option(CLI_UseStandaloneAsio "Use standalone Asio library." OFF)
+option(CLI_EnableWarnings "Enable strict compiler warnings." ON)
 
 # ---------------------------------------------------------------
 # Library
@@ -105,6 +106,39 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 14)
 endif()
 target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
+
+# ---------------------------------------------------------------
+# Project warnings (keep strict but opt-in)
+# ---------------------------------------------------------------
+set(CLI_WARNINGS_ALL
+    -pedantic
+    -Wall
+    -Wextra
+    -Wcast-align
+    -Wcast-qual
+    -Wctor-dtor-privacy
+    -Wdisabled-optimization
+    -Wformat=2
+    -Winit-self
+    -Wlogical-op
+    -Wmissing-declarations
+    -Wmissing-include-dirs
+    -Wnoexcept
+    -Wold-style-cast
+    -Woverloaded-virtual
+    -Wredundant-decls
+    -Wshadow
+    -Wsign-conversion
+    -Wsign-promo
+    -Wstrict-null-sentinel
+    -Wstrict-overflow=5
+    -Wundef
+    -Werror
+)
+
+if(CLI_EnableWarnings AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    target_compile_options(cli INTERFACE ${CLI_WARNINGS_ALL})
+endif()
 
 # ---------------------------------------------------------------
 # Windows specific

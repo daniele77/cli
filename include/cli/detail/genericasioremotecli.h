@@ -502,7 +502,8 @@ protected:
 
     virtual std::size_t TerminalWidth() const override
     {
-        return screen.GetSize().first;
+        const int width = screen.GetSize().first;
+        return width > 0 ? static_cast<std::size_t>(width) : 0u;
     }
 
     void OnConnect() override
@@ -630,8 +631,8 @@ public:
 private:
     Scheduler& scheduler_;
     Cli& cli_;
-    std::function< void(std::ostream&)> enterAction_ = [](std::ostream&) {};
-    std::function< void(std::ostream&)> exitAction_ = [](std::ostream&) {};
+    std::function< void(std::ostream&)> enterAction_ = [](std::ostream&) noexcept {};
+    std::function< void(std::ostream&)> exitAction_ = [](std::ostream&) noexcept {};
     const std::size_t historySize_;
 };
 

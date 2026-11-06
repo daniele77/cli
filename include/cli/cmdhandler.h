@@ -56,8 +56,8 @@ namespace cli
     private:
         struct Descriptor
         {
-            Descriptor() = default;
-            Descriptor(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) :
+            Descriptor() noexcept = default;
+            Descriptor(std::weak_ptr<Command> c, std::weak_ptr<CmdVec> v) noexcept :
                 cmd(std::move(c)), cmds(std::move(v))
             {}
 
