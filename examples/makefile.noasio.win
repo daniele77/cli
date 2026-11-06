@@ -28,7 +28,7 @@
 ################################################################################
 
 #define macros
-EXE_NAMES = filesession.exe simplelocalsession.exe pluginmanager.exe
+EXE_NAMES = filesession.exe simplelocalsession.exe italian_messages.exe pluginmanager.exe
 DIR_INCLUDE = /I..\include
 COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501
 CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)

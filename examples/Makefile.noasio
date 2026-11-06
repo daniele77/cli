@@ -30,7 +30,7 @@
 override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include
 override LDLIBS += -lpthread
 
-EXAMPLES := filesession simplelocalsession pluginmanager
+EXAMPLES := filesession simplelocalsession italian_messages pluginmanager
 
 .PHONY: clean all
 

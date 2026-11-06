@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_CLILOCALSESSION_H
-#define CLI_CLILOCALSESSION_H
+#ifndef CLI_CLILOCALSESSION_H_
+#define CLI_CLILOCALSESSION_H_
 
 #include <ostream> // std::ostream
 #include "detail/commandprocessor.h"
@@ -85,5 +85,5 @@ using CliLocalSession = CliLocalTerminalSession;
 
 } // namespace cli
 
-#endif // CLI_CLILOCALSESSION_H
+#endif // CLI_CLILOCALSESSION_H_
 

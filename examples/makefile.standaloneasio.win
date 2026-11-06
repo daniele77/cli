@@ -28,7 +28,7 @@
 ################################################################################
 
 #define macros
-EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe pluginmanager.exe standaloneasio_nonowner_iocontext.exe
+EXE_NAMES = complete.exe filesession.exe simplelocalsession.exe italian_messages.exe pluginmanager.exe standaloneasio_nonowner_iocontext.exe
 DIR_INCLUDE = /I%ASIO% /I..\include
 COMPILE_FLAGS = /nologo /MD /EHsc /D_WIN32_WINNT=0x0501 /DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
 CPPFLAGS = $(COMPILE_FLAGS) $(DIR_INCLUDE)

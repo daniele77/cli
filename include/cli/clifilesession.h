@@ -27,8 +27,8 @@
  * DEALINGS IN THE SOFTWARE.
  ******************************************************************************/
 
-#ifndef CLI_CLIFILESESSION_H
-#define CLI_CLIFILESESSION_H
+#ifndef CLI_CLIFILESESSION_H_
+#define CLI_CLIFILESESSION_H_
 
 #include <string>
 #include <iostream>
@@ -78,5 +78,5 @@ private:
 
 } // namespace cli
 
-#endif // CLI_CLIFILESESSION_H
+#endif // CLI_CLIFILESESSION_H_
 

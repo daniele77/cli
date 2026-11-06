@@ -30,7 +30,7 @@
 override CXXFLAGS += -O3 -Werror -Wall -Wextra -Wpedantic -std=c++1y -I../include -DCLI_EXAMPLES_USE_STANDALONEASIO_SCHEDULER
 override LDLIBS += -lpthread
 
-EXAMPLES := complete asyncsession filesession simplelocalsession pluginmanager standaloneasio_nonowner_iocontext
+EXAMPLES := complete asyncsession filesession simplelocalsession italian_messages pluginmanager standaloneasio_nonowner_iocontext
 
 .PHONY: clean all
 
