@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
  - Customizable messages (issue [#64](https://github.com/daniele77/cli/issues/64))
  - Initialize the default telnet session exit action (pr [#254](https://github.com/daniele77/cli/pull/254))
  - Fix entryaction for telnet sessions
+ - Process the final file-session command without a trailing newline (pr [#252](https://github.com/daniele77/cli/pull/252))
 
 ## [2.2.0] - 2024-10-25
 
