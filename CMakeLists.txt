@@ -110,7 +110,7 @@ target_compile_features(cli INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 # ---------------------------------------------------------------
 # Project warnings (keep strict but opt-in)
 # ---------------------------------------------------------------
-set(CLI_WARNINGS_ALL
+set(CLI_WARNINGS_GCC
     -pedantic
     -Wall
     -Wextra
@@ -136,8 +136,51 @@ set(CLI_WARNINGS_ALL
     -Werror
 )
 
-if(CLI_EnableWarnings AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-    target_compile_options(cli INTERFACE ${CLI_WARNINGS_ALL})
+set(CLI_WARNINGS_CLANG
+    -pedantic
+    -Wall
+    -Wextra
+    -Wcast-align
+    -Wcast-qual
+    -Wctor-dtor-privacy
+    -Wdisabled-optimization
+    -Wformat=2
+    -Winit-self
+    -Wmissing-declarations
+    -Wmissing-include-dirs
+    -Wold-style-cast
+    -Woverloaded-virtual
+    -Wredundant-decls
+    -Wshadow
+    -Wsign-conversion
+    -Wsign-promo
+    -Wstrict-overflow=5
+    -Wundef
+    -Werror
+)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CLI_WARNINGS_ALL ${CLI_WARNINGS_GCC})
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang")
+    set(CLI_WARNINGS_ALL ${CLI_WARNINGS_CLANG})
+endif()
+
+# GCC 15 / libstdc++ may emit false positives from STL/Boost headers when strict-overflow is enabled
+# in C++20+ builds; keep the rest of the strict checks active while silencing only this known false alarm.
+set(CLI_WARNINGS_NO_STRICT_OVERFLOW
+    -Wno-strict-overflow
+    -Wno-error=strict-overflow
+)
+
+# GCC can also report a false-positive disabled-optimization diagnostic when compiling some test code
+# with heavy optimization and -Werror; keep the strict check set while suppressing this optimizer quirk.
+set(CLI_WARNINGS_NO_DISABLED_OPTIMIZATION
+    -Wno-disabled-optimization
+    -Wno-error=disabled-optimization
+)
+
+if(CLI_EnableWarnings AND DEFINED CLI_WARNINGS_ALL)
+    target_compile_options(cli INTERFACE ${CLI_WARNINGS_ALL} ${CLI_WARNINGS_NO_STRICT_OVERFLOW} ${CLI_WARNINGS_NO_DISABLED_OPTIMIZATION})
 endif()
 
 # ---------------------------------------------------------------

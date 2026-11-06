@@ -92,7 +92,7 @@ namespace cli
             }
         };
 
-        ~Cli() = default;
+        ~Cli();
         Cli(const Cli&) = delete;
         Cli& operator=(const Cli&) = delete;
         Cli(Cli&&) = default;
@@ -192,6 +192,18 @@ namespace cli
         Messages messages;
     };
 
+}
+
+#include "command.h"
+#include "cmdhandler.h"
+#include "select.h"
+#include "variadicfunctioncommand.h"
+#include "freeformcommand.h"
+#include "menu.h"
+#include "clisession.h"
+
+namespace cli
+{
     inline Cli::Cli(std::unique_ptr<Menu> _rootMenu,
         std::unique_ptr<HistoryStorage> historyStorage,
         Messages _messages) :
@@ -209,14 +221,8 @@ namespace cli
         Cli(std::move(_rootMenu), std::move(historyStorage), std::move(_messages))
     {
     }
-}
 
-#include "command.h"
-#include "cmdhandler.h"
-#include "select.h"
-#include "variadicfunctioncommand.h"
-#include "freeformcommand.h"
-#include "menu.h"
-#include "clisession.h"
+    inline Cli::~Cli() = default;
+}
 
 #endif // CLI_CLI_H_

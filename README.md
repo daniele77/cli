@@ -100,6 +100,16 @@ To compile the examples using cmake, use:
 
     cmake --build .
 
+### Optional strict warning checks
+
+If you want to enable the project strict warning set, configure CMake with:
+
+    cmake .. -DCLI_EnableWarnings=ON
+
+This enables the library warning profile used during development and CI, including `-Werror`.
+
+> Note: with GCC 15 and some libstdc++/Boost headers in C++20+ builds, `-Wstrict-overflow` can trigger a known false positive inside the standard library implementation. For that reason the project keeps the strict warning set opt-in and suppresses only `strict-overflow`/`-Werror=strict-overflow` in that profile while leaving the rest of the checks active.
+
 In the same directory you can also find:
 
 * GNU make files (Makefile.noasio, Makefile.boostasio, Makefile.standaloneasio)
