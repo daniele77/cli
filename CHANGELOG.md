@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [2.3.0] - 2026-11-06
 
  - Fix mutex initialization issue in cli library (pr [#249](https://github.com/daniele77/cli/pull/249))
  - Autocompletion formatted according window size
