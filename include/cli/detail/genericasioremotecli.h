@@ -627,7 +627,7 @@ private:
     Scheduler& scheduler;
     Cli& cli;
     std::function< void(std::ostream&)> enterAction;
-    std::function< void(std::ostream&)> exitAction;
+    std::function< void(std::ostream&)> exitAction = [](std::ostream&) {};
     std::size_t historySize;
 };
 
