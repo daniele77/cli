@@ -91,6 +91,21 @@ void UserInput(Cli& cli, stringstream& oss, const string& input)
 
 BOOST_AUTO_TEST_SUITE(CliSuite)
 
+BOOST_AUTO_TEST_CASE(FileSessionFinalLine)
+{
+    for (const auto& input : {string("add 2 3"), string("add 2 3\n")})
+    {
+        auto rootMenu = make_unique<Menu>("cli");
+        rootMenu->Insert("add", [](ostream& out, int a, int b){ out << a + b << '\n'; });
+        Cli cli(std::move(rootMenu));
+        stringstream in(input);
+        stringstream out;
+        CliFileSession session(cli, in, out);
+        session.Start();
+        BOOST_CHECK(out.str().find("5\n") != string::npos);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(Basics)
 {
     auto rootMenu = make_unique<Menu>("cli");

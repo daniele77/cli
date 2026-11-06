@@ -64,13 +64,10 @@ public:
         {
             Prompt();
             std::string line;
-            if (!in.good())
-                Exit();
-            std::getline(in, line);
-            if (in.eof())
-                Exit();
-            else
+            if (std::getline(in, line))
                 Feed(line);
+            else
+                Exit();
         }
     }
 
