@@ -44,9 +44,9 @@ namespace detail
 class CompletionsFormat
 {
 public:
-    CompletionsFormat(std::size_t width, std::size_t height) :
-        width_(width),
-        height_(height)
+    CompletionsFormat(std::size_t width, std::size_t /* height */) 
+        : width_(width)
+        // , height_(height)
     {
     }
 
@@ -78,7 +78,7 @@ public:
 private:
     static constexpr std::size_t SPACING = 5;
     const std::size_t width_;
-    const std::size_t height_; // not used yet
+    // const std::size_t height_;
     std::vector<std::string> completions_;
     std::size_t columns_ = 1;
     std::size_t max_size_ = 0;

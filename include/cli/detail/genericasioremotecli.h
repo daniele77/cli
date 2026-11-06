@@ -495,7 +495,7 @@ public:
         CliSession(_cli, TelnetSession::OutStream(), historySize),
         poll(*this, *this, screen)
     {
-        EnterAction([this, _enterAction](std::ostream& _out){ _enterAction(_out); } );
+        EnterAction([_enterAction](std::ostream& _out){ _enterAction(_out); } );
         ExitAction([this, _exitAction](std::ostream& _out){ _exitAction(_out); Disconnect(); } );
     }
 protected:

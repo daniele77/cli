@@ -45,7 +45,7 @@ option(CLI_BuildExamples "Build the examples." OFF)
 option(CLI_BuildTests "Build the unit tests." OFF)
 option(CLI_UseBoostAsio "Use Boost.Asio library." OFF)
 option(CLI_UseStandaloneAsio "Use standalone Asio library." OFF)
-option(CLI_EnableWarnings "Enable strict compiler warnings." ON)
+option(CLI_EnableWarnings "Enable strict compiler warnings." OFF)
 
 # ---------------------------------------------------------------
 # Library
