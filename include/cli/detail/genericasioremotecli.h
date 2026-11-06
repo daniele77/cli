@@ -486,13 +486,17 @@ class CliTelnetSession : public InputDevice, public TelnetSession, public CliSes
 {
 public:
 
-    CliTelnetSession(Scheduler& _scheduler, asiolib::ip::tcp::socket _socket, Cli& _cli, const std::function< void(std::ostream&)>& _exitAction, std::size_t historySize ) :
+    CliTelnetSession(Scheduler& _scheduler, asiolib::ip::tcp::socket _socket, Cli& _cli,
+        const std::function< void(std::ostream&)>& _enterAction, const std::function< void(std::ostream&)>& _exitAction,
+        std::size_t historySize 
+    ) :
         InputDevice(_scheduler),
         TelnetSession(std::move(_socket)),
         CliSession(_cli, TelnetSession::OutStream(), historySize),
         poll(*this, *this, screen)
     {
-        ExitAction([this, _exitAction](std::ostream& _out){ _exitAction(_out), Disconnect(); } );
+        EnterAction([this, _enterAction](std::ostream& _out){ _enterAction(_out); } );
+        ExitAction([this, _exitAction](std::ostream& _out){ _exitAction(_out); Disconnect(); } );
     }
 protected:
 
@@ -597,38 +601,38 @@ template <typename ASIOLIB>
 class CliGenericTelnetServer : public Server<ASIOLIB>
 {
 public:
-    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& _scheduler, unsigned short port, std::size_t _historySize=100 ) :
-        Server<ASIOLIB>(_scheduler.AsioContext(), port),
-        scheduler(_scheduler),
-        cli(_cli),
-        historySize(_historySize)
+    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& scheduler, unsigned short port, std::size_t historySize=100 ) :
+        Server<ASIOLIB>(scheduler.AsioContext(), port),
+        scheduler_(scheduler),
+        cli_(_cli),
+        historySize_(historySize)
     {}
-    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& _scheduler, std::string address, unsigned short port, std::size_t _historySize=100 ) :
-        Server<ASIOLIB>(_scheduler.AsioContext(), address, port),
-        scheduler(_scheduler),
-        cli(_cli),
-        historySize(_historySize)
+    CliGenericTelnetServer(Cli& _cli, GenericAsioScheduler<ASIOLIB>& scheduler, std::string address, unsigned short port, std::size_t historySize=100 ) :
+        Server<ASIOLIB>(scheduler.AsioContext(), address, port),
+        scheduler_(scheduler),
+        cli_(_cli),
+        historySize_(historySize)
     {}
 
     void EnterAction(std::function< void(std::ostream&)> action)
     {
-        enterAction = action;
+        enterAction_ = action;
     }
 
     void ExitAction( std::function< void(std::ostream&)> action )
     {
-        exitAction = action;
+        exitAction_ = action;
     }
     std::shared_ptr<Session> CreateSession(asiolib::ip::tcp::socket _socket) override
     {
-        return std::make_shared<CliTelnetSession>(scheduler, std::move(_socket), cli, exitAction, historySize);
+        return std::make_shared<CliTelnetSession>(scheduler_, std::move(_socket), cli_, enterAction_, exitAction_, historySize_);
     }
 private:
-    Scheduler& scheduler;
-    Cli& cli;
-    std::function< void(std::ostream&)> enterAction;
-    std::function< void(std::ostream&)> exitAction = [](std::ostream&) {};
-    std::size_t historySize;
+    Scheduler& scheduler_;
+    Cli& cli_;
+    std::function< void(std::ostream&)> enterAction_ = [](std::ostream&) {};
+    std::function< void(std::ostream&)> exitAction_ = [](std::ostream&) {};
+    const std::size_t historySize_;
 };
 
 

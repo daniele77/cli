@@ -299,6 +299,8 @@ int main()
         // setup server
 
         CliTelnetServer server(cli, scheduler, 5000);
+        // entry action for all the connections
+        server.EnterAction( [](auto& out) { out << "Starting a new session...\n"; } );
         // exit action for all the connections
         server.ExitAction( [](auto& out) { out << "Terminating this session...\n"; } );
 
