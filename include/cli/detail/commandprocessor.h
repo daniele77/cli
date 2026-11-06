@@ -149,8 +149,8 @@ private:
                 }
                 session.OutStream() << '\n';
 
-                auto size = terminal.GetSize();
-                CompletionsFormat cf(size.first, size.second);
+                const auto size = terminal.GetSize();
+                CompletionsFormat cf(static_cast<std::size_t>(size.first), static_cast<std::size_t>(size.second));
                 cf.Completions(std::move(completions));
                 cf.Format(session.OutStream());
 

@@ -72,7 +72,7 @@ public:
 protected:
     virtual std::size_t TerminalWidth() const override
     {
-        return screen.GetSize().first;
+        return static_cast<std::size_t>(screen.GetSize().first);
     }
 
 private:
