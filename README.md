@@ -24,6 +24,12 @@ A cross-platform header only C++14 library for interactive command line interfac
 * Async interface
 * Colors
 
+## Documentation
+
+The generated documentation is available at:
+
+https://daniele77.github.io/cli/
+
 ## How to get CLI library
 
 * From [GitHub](https://github.com/daniele77/cli/releases)

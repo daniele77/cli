@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Unreleased
 
  - Fix clang build
+ - Add GitHub Actions workflow for generating and deploying Doxygen documentation
 
 ## [2.3.0] - 2026-11-06
 
