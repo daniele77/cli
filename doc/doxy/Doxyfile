@@ -30,14 +30,18 @@
 #---------------------------------------------------------------------------
 PROJECT_NAME           = "Interactive CLI"
 PROJECT_NUMBER         = 2.3
+PROJECT_BRIEF          = "A cross-platform C++14 library for interactive command-line interfaces"
+
+# Main page and source files
+USE_MDFILE_AS_MAINPAGE = mainpage.md
+INPUT                  = ../../include/cli mainpage.md
+FILE_PATTERNS          = *.h *.hpp *.md
 #---------------------------------------------------------------------------
 FULL_PATH_NAMES        = NO
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = NO
-#---------------------------------------------------------------------------
-INPUT                  = ../../include/cli
 #---------------------------------------------------------------------------
 SOURCE_BROWSER         = YES
 VERBATIM_HEADERS       = NO
@@ -58,7 +62,6 @@ GENERATE_AUTOGEN_DEF   = NO
 GENERATE_PERLMOD       = NO
 #---------------------------------------------------------------------------
 HAVE_DOT               = YES
-CLASS_DIAGRAMS         = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = NO
 INCLUDE_GRAPH          = YES
