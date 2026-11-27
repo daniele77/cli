@@ -206,6 +206,15 @@ endif()
 if(CLI_BuildTests)
     enable_testing()
     add_subdirectory(test)
+    if(CLI_UseBoostAsio)
+        add_test(NAME cli_install_consumer
+            COMMAND ${CMAKE_COMMAND}
+                "-DTEST_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/install-consumer"
+                "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}"
+                "-DVCPKG_TARGET_TRIPLET=${VCPKG_TARGET_TRIPLET}"
+                "-DBoost_ROOT=${Boost_ROOT}"
+                -P "${CMAKE_CURRENT_SOURCE_DIR}/test/cmake/install-consumer.cmake")
+    endif()
 endif()
 
 # ---------------------------------------------------------------
